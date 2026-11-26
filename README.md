@@ -129,3 +129,7 @@ Every statement PDF runs `statements/tamper.py`: editing-tool producers (iLovePD
 ## Counterparty invites
 
 `GET /businesses/{id}/counterparties/top` lists the top 5 counterparties by value over the last 6 months of money data (statements on hold excluded), with masked UPI ID, bank payee name and supplier/customer role. The owner cannot add or swap names; they only give a phone number per partner (`POST /businesses/{id}/invites`). The invite goes out on WhatsApp (SMS fallback) in the confirmer's language with a `/confirm/{token}` link. The owner's own number is refused, and one number routed for several partners is flagged. The public invite view shows only the claim being confirmed.
+
+## Reverse penny drop
+
+The confirmer opens `/confirm/{token}` (no login) and pays ₹1 from their UPI app to our verification UPI ID (`POST /invites/{token}/penny-drop` gives the UPI link). `POST /invites/{token}/penny-drop/check` compares the payer UPI ID (exact) and bank-registered name (≥ 80 similarity) with the counterparty in the owner's payments: a match proves control; anything else rejects the confirmation, opens a reviewer dispute and red-flags the business. The ₹1 is always refunded. In Sandbox a simulated gateway stands in, and the page lets you choose which UPI ID "pays".

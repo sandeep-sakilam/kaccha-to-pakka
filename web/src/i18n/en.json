@@ -194,5 +194,19 @@
     "status_confirmed": "Confirmed",
     "status_rejected": "Not confirmed",
     "status_expired": "Expired"
+  },
+  "confirm": {
+    "title": "Confirm a trading partner",
+    "asked": "{{business}} ({{city}}) says you are their {{role}}.",
+    "step_pay": "To prove this is your account, pay ₹1 from the UPI account they trade with ({{masked}}). We refund it.",
+    "pay": "Pay ₹1 with UPI",
+    "check": "I have paid, check now",
+    "sandbox_pay": "Sandbox: pretend to pay from this UPI ID",
+    "your_vpa": "Your UPI ID",
+    "your_name": "Name on your bank account",
+    "pending": "We have not received the ₹1 yet.",
+    "proven": "Thank you! Your account is confirmed.",
+    "rejected": "The ₹1 came from a different account than the one in their payments, so we cannot accept this confirmation.",
+    "not_valid": "This link is not valid any more."
   }
 }
