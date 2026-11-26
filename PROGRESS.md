@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f26-demo-seed`
+Current: none; next is `feat/f27-deploy`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -31,7 +31,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F23 Explanations in the owner's language, with template fallback (`feat/f23-explanations`)
 - [x] F24 Passport issuance: signed credential, QR, Hindi and English PDF (`feat/f24-passport`)
 - [x] F25 Owner passport screen with coaching tips (`feat/f25-passport-ui`)
-- [ ] F26 Seed data and the scripted fraud-attempt scenario (`feat/f26-demo-seed`)
+- [x] F26 Seed data and the scripted fraud-attempt scenario (`feat/f26-demo-seed`)
 - [ ] F27 Deployment files and deploy guide (submission cut, 30 Nov 2026) (`feat/f27-deploy`)
 - [ ] F28 Scoped shares, expiry, revoke, owner view notifications (`feat/f28-shares`)
 - [ ] F29 Lender portal: QR verify, live status, evidence view, watermark (`feat/f29-lender-portal`)

@@ -36,6 +36,8 @@ def job(name: str) -> Callable[[JobFn], JobFn]:
 
 def run_now(db: Session, name: str, *args: Any, attempt: int = 1) -> bool:
     """Run a job synchronously in `db`. Returns True on success. Used inline and by the worker."""
+    if name not in REGISTRY:
+        import app.job_registry  # noqa: F401  (registers every job)
     fn = REGISTRY[name]
     try:
         with db.begin_nested():

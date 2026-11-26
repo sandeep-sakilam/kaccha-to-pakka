@@ -2,6 +2,9 @@
 signing-key:  ## print a new Ed25519 passport signing key for .env
 	$(BACKEND) uv run python -c "from app.core.signing import new_key_b64; print(new_key_b64())"
 
+seed:  ## reset the local database and load the Sandbox demo businesses
+	$(BACKEND) uv run python -m scripts.seed_demo
+
 migrate:  ## apply database migrations
 	$(BACKEND) uv run alembic upgrade head
 
