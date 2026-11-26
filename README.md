@@ -109,3 +109,7 @@ For pages in Mahajani or Sarrafi script, or handwriting the AI can't read, the o
 ## Ledger-app CSV import
 
 `POST /businesses/{id}/imports/csv` reads Khatabook ("You Gave / You Got"), OkCredit ("Type, Amount") and Vyapar ("Type, Received/Paid") exports, detected from the header row (title rows above it are skipped). Unknown layouts are refused with a reason; the same file twice is refused; entries are stored with confidence 1.0 and need no read-back.
+
+## Statement PDFs
+
+`POST /businesses/{id}/statements` reads bank and UPI statement PDFs with pdfplumber. Known layouts are parsed by fixed rules; an unknown layout is read by the LLM only if its running balance then adds up row by row, else it is rejected with the reason. Scanned PDFs are refused. Transactions are stored once (by UTR, or by date/amount/balance), so overlapping statements never double-count; every UPI ID becomes a counterparty node. `app/sandbox/statements.py` generates sandbox statements.

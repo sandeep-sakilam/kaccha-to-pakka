@@ -13,6 +13,7 @@ from app.modules.evidence.api import router as evidence_router
 from app.modules.extraction.api import router as ledger_router
 from app.modules.identity.api import router as auth_router
 from app.modules.imports.api import router as imports_router
+from app.modules.statements.api import router as statements_router
 from app.modules.voice.api import router as voice_router
 
 ROUTERS = [
@@ -23,6 +24,7 @@ ROUTERS = [
     evidence_router,
     ledger_router,
     imports_router,
+    statements_router,
 ]
 
 
