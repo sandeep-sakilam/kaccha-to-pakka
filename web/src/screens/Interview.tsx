@@ -42,9 +42,9 @@ export default function Interview() {
     setError(null);
     try {
       const body = { ...profile, udyam: udyam || null, gstin: gstin || null };
-      await api("/businesses", { method: "POST", json: body });
+      const biz = await api<{ id: string }>("/businesses", { method: "POST", json: body });
       void speak([t("interview.done")], i18n.language);
-      nav("/home");
+      nav(`/capture/${biz.id}/shop_front?next=/home`);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t("common.error"));
     }

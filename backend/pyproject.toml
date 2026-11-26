@@ -17,6 +17,7 @@ dependencies = [
   "cryptography>=50.0.2",
   "boto3>=1.44.12",
   "pillow>=13.0.0",
+  "python-multipart>=0.0.34",
 ]
 
 [dependency-groups]

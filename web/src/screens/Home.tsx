@@ -40,6 +40,17 @@ export default function Home() {
           {biz.started_on && <p className="text-gray-700">{biz.started_on.slice(0, 4)}</p>}
         </Card>
       )}
+      {biz && (
+        <>
+          <h2 className="text-xl font-semibold">{t("home.next_steps")}</h2>
+          <BigButton icon="📒" onClick={() => nav(`/capture/${biz.id}/ledger_page`)}>
+            {t("home.add_ledger")}
+          </BigButton>
+          <BigButton variant="secondary" icon="🏪" onClick={() => nav(`/capture/${biz.id}/shop_front`)}>
+            {t("home.add_shop")}
+          </BigButton>
+        </>
+      )}
       <BigButton variant="ghost" onClick={() => void signOut().then(() => nav("/"))}>
         {t("home.logout")}
       </BigButton>

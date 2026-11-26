@@ -38,5 +38,11 @@ test("owner joins by phone, consents, and builds a profile", async ({ page }) =>
   await page.getByRole("button", { name: "Yes", exact: true }).click();
 
   await page.getByRole("button", { name: "Skip" }).click();
+
+  await expect(page.getByRole("heading", { name: "Photo of your shop front" })).toBeVisible();
+  await page.waitForFunction(() => (document.querySelector("video") as HTMLVideoElement | null)?.videoWidth);
+  await page.getByRole("button", { name: "Take photo" }).click();
+  await expect(page.getByTestId("capture-status")).toHaveText("Photo sent!");
+  await page.getByRole("button", { name: "Done" }).click();
   await expect(page.getByTestId("business-name")).toHaveText("Sharma Kirana");
 });

@@ -26,5 +26,15 @@ export default defineConfig({
       timeout: 180_000,
     },
   ],
-  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        browserName: "chromium",
+        permissions: ["camera", "geolocation"],
+        geolocation: { latitude: 22.7186, longitude: 75.8553, accuracy: 15 },
+        launchOptions: { args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] },
+      },
+    },
+  ],
 });

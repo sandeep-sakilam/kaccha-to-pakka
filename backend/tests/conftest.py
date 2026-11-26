@@ -99,3 +99,53 @@ def login(
         r = client.post("/auth/pin/set", json={"pin": pin}, headers=headers)
     assert r.status_code == 200, r.text
     return headers
+
+
+def setup_business(
+    client: "TestClient",
+    name: str = "Sharma Kirana",
+    category: str = "kirana",
+    phone: str | None = None,
+    device: str = "device-test-1",
+) -> tuple[dict[str, str], str]:
+    """Logged-in owner with build_passport consent and one business."""
+    h = login(client, phone, device=device)
+    client.post("/consents", json={"purpose": "build_passport"}, headers=h)
+    r = client.post(
+        "/businesses", json={"name": name, "category": category, "started_year": 2012}, headers=h
+    )
+    assert r.status_code == 200, r.text
+    return h, r.json()["id"]
+
+
+def photo(kind: str = "sharp", size: tuple[int, int] = (800, 1000)) -> bytes:
+    """Test images: 'sharp' (a sandbox ledger page), 'blurry', 'dark'."""
+    import io
+
+    from PIL import Image, ImageFilter
+
+    from app.adapters.sandbox_images import ledger_png
+
+    if kind == "sharp":
+        return ledger_png(
+            {
+                "entries": [
+                    {
+                        "entry_date": "2026-10-12",
+                        "party_text": "Sharma ji",
+                        "amount_paise": 400000,
+                        "direction": "in",
+                        "confidence": {"date": 0.9, "party": 0.9, "amount": 0.9, "direction": 0.9},
+                    }
+                ],
+                "page_total_paise": 400000,
+                "page_confidence": 0.9,
+            },
+            noise="x" * 80,
+        )
+    img = Image.new("RGB", size, (128, 128, 128) if kind == "blurry" else (5, 5, 5))
+    if kind == "blurry":
+        img = img.filter(ImageFilter.GaussianBlur(8))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
