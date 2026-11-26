@@ -31,8 +31,15 @@ Status of each functionality is in `PROGRESS.md`; working rules are in `CLAUDE.m
 ```bash
 make services      # or: docker compose up -d db redis
 make install
+make migrate       # create tables (Alembic)
 make dev-api       # http://localhost:8000/health
 make dev-web       # http://localhost:5173
 ```
 
 Or everything in containers: `cp .env.example .env && docker compose up --build` (web on http://localhost:8080).
+
+## Data model
+
+All tables from SPEC are in `backend/app/db/models.py`, with Alembic migrations in `backend/alembic/versions`.
+Money is integer paise (`*_paise` columns, never floats). Timestamps are stored in UTC and shown in IST.
+Counterparty names, ledger party text, narrations and account references are encrypted at the field level (AES-256-GCM, key from `FIELD_ENCRYPTION_KEY`).

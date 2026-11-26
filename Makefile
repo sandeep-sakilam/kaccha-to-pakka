@@ -1,5 +1,8 @@
 # Local quality gate and dev helpers. `make check` must pass before every PR.
-.PHONY: help services install check check-backend check-web e2e dev-api dev-web dev-worker up down
+migrate:  ## apply database migrations
+	$(BACKEND) uv run alembic upgrade head
+
+.PHONY: migrate help services install check check-backend check-web e2e dev-api dev-web dev-worker up down
 
 BACKEND := cd backend &&
 WEB := cd web &&

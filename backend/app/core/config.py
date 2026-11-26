@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     secret_key: str = "dev-only-insecure-secret-change-me"  # noqa: S105
     public_base_url: str = "http://localhost:5173"
+    field_encryption_key: str = ""
 
 
 @lru_cache
