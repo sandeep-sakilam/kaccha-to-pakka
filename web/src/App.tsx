@@ -23,6 +23,9 @@ const Partners = lazy(() => import("@/screens/Partners"));
 const Confirm = lazy(() => import("@/screens/Confirm"));
 const PassportScreen = lazy(() => import("@/screens/PassportScreen"));
 const Shares = lazy(() => import("@/screens/Shares"));
+const VerifyPassport = lazy(() => import("@/screens/lender/VerifyPassport"));
+const LenderView = lazy(() => import("@/screens/lender/LenderView"));
+const LenderHome = lazy(() => import("@/screens/lender/LenderHome"));
 const SandboxAA = lazy(() => import("@/screens/SandboxAA"));
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -47,6 +50,9 @@ export function AppRoutes() {
           <Route path="/consent" element={<RequireAuth><Consent /></RequireAuth>} />
           <Route path="/interview" element={<RequireAuth><Interview /></RequireAuth>} />
           <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
+          <Route path="/v/:passportId" element={<VerifyPassport />} />
+          <Route path="/l/:token" element={<LenderView />} />
+          <Route path="/lender" element={<LenderHome />} />
           <Route path="/shares/:businessId" element={<RequireAuth><Shares /></RequireAuth>} />
           <Route path="/passport/:businessId" element={<RequireAuth><PassportScreen /></RequireAuth>} />
           <Route path="/confirm/:token" element={<Confirm />} />

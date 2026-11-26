@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Header, Request
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
@@ -111,3 +112,25 @@ def lender_view(
     data = service.lender_view(db, s)
     db.commit()
     return data
+
+
+@router.get("/l/{token}/passport.pdf")
+def lender_pdf(token: str, request: Request, db: DB, language: str = "en") -> Response:
+    """The passport PDF for a lender, watermarked with the lender's name and the date."""
+    from app.db.base import utcnow
+    from app.modules.passport import credential, pdf
+    from app.modules.passport import service as passports
+
+    s = service.by_token(db, token)
+    service.log_view(
+        db, s, f"{s.lender_org} (PDF)", request.client.host if request.client else None
+    )
+    biz = service.business_of(db, s)
+    p = passports.latest(db, biz.id)
+    assert p is not None
+    lang = "hi" if language == "hi" else "en"
+    url = credential.verify_url(p.id, credential.qr_token(p.vc_json))
+    mark = f"Shared with {s.lender_org} · {utcnow():%d %b %Y} · do not forward"
+    data = pdf.render_pdf(p.vc_json, passports.explanation_for(db, p, lang), url, lang, mark)
+    db.commit()
+    return Response(content=data, media_type="application/pdf")

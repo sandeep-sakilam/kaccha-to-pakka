@@ -9,12 +9,13 @@ export async function onboard(page: Page, name = "Test Kirana") {
   await page.goto("/");
   await page.getByRole("button", { name: "English", exact: true }).click();
   await page.getByRole("button", { name: "Start" }).click();
-  const phone = "9" + String(Date.now()).slice(-9);
+  const phone = "9" + String(Math.floor(Math.random() * 1e9)).padStart(9, "0");
   await typeDigits(page, phone);
   await page.getByRole("button", { name: "Send OTP" }).click();
   const otp = (await page.getByTestId("sandbox-otp").textContent())!.replace(/\D/g, "");
   await typeDigits(page, otp);
   await page.getByRole("button", { name: "Check OTP" }).click();
+  await expect(page.getByText(/4-digit PIN/).first()).toBeVisible();
   await typeDigits(page, "4826");
   await page.getByRole("button", { name: "Next" }).click();
   await page.getByRole("button", { name: "Yes, I agree" }).click();
