@@ -14,9 +14,14 @@ export default function Home() {
   const nav = useNavigate();
   const [businesses, setBusinesses] = useState<Business[] | null>(null);
 
+  const [toCheck, setToCheck] = useState(0);
+
   useEffect(() => {
     api<Business[]>("/businesses")
-      .then(setBusinesses)
+      .then(async (list) => {
+        setBusinesses(list);
+        if (list[0]) setToCheck((await api<unknown[]>(`/businesses/${list[0].id}/readback`)).length);
+      })
       .catch(() => setBusinesses([]));
   }, []);
 
@@ -43,6 +48,11 @@ export default function Home() {
       {biz && (
         <>
           <h2 className="text-xl font-semibold">{t("home.next_steps")}</h2>
+          {toCheck > 0 && (
+            <BigButton icon="🔎" onClick={() => nav(`/readback/${biz.id}`)}>
+              {t("home.to_check", { count: toCheck })}
+            </BigButton>
+          )}
           <BigButton icon="📒" onClick={() => nav(`/capture/${biz.id}/ledger_page`)}>
             {t("home.add_ledger")}
           </BigButton>

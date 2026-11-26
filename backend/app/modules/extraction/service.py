@@ -114,6 +114,10 @@ def extract_evidence(db: Session, evidence_id: str) -> ExtractionOutcome:
         db.flush()
         raise RetryableJobError(str(exc)) from exc
     outcome = apply_extraction(db, ev, result.value, result.provider, result.model, result.sandbox)
+    if outcome.status == "extracted":
+        from app.modules.extraction.checks import run_checksum
+
+        run_checksum(db, ev)
     _discard_original(db, ev, biz)
     record(
         db,
