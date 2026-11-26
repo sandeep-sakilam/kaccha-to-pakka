@@ -50,6 +50,8 @@ class User(TimestampMixin, Base):
     device_ids: Mapped[list[str]] = mapped_column(Json, default=list)
     roles: Mapped[list[str]] = mapped_column(Json, default=lambda: ["owner"])
     status: Mapped[str] = mapped_column(String(16), default="active")
+    pin_failures: Mapped[int] = mapped_column(Integer, default=0)
+    pin_locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -287,3 +289,43 @@ class AuditLog(Base):
     object: Mapped[str] = mapped_column(String(128))
     details: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
     at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class OtpChallenge(TimestampMixin, Base):
+    """One-time code sent to a phone. Only a hash of the code is stored."""
+
+    __tablename__ = "otp_challenges"
+    id: Mapped[str] = _id()
+    phone: Mapped[str] = mapped_column(String(16), index=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AuthSession(TimestampMixin, Base):
+    """A login on one device. stage: 'otp' (phone proven, PIN still needed) or 'full'."""
+
+    __tablename__ = "auth_sessions"
+    id: Mapped[str] = _id()
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    device_id: Mapped[str] = mapped_column(String(128))
+    stage: Mapped[str] = mapped_column(String(8), default="otp")
+    new_device: Mapped[bool] = mapped_column(Boolean, default=False)
+    acting_as_sahayak: Mapped[bool] = mapped_column(Boolean, default=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class DeviceBinding(TimestampMixin, Base):
+    """A device bound to a user after OTP. A new device triggers the account-takeover freeze."""
+
+    __tablename__ = "device_bindings"
+    __table_args__ = (UniqueConstraint("user_id", "device_id", name="user_device"),)
+    id: Mapped[str] = _id()
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    device_id: Mapped[str] = mapped_column(String(128))
+    label: Mapped[str | None] = mapped_column(String(100))
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

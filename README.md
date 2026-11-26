@@ -63,3 +63,9 @@ Each `*_PROVIDER` setting is `auto` (real when its keys are in `.env`, otherwise
 
 Every read, share, score and reviewer action is written with `app.modules.audit.service.record()` in the same transaction as the change.
 Entries are hash-chained (`sha256(prev_hash || canonical record)`), a Postgres trigger refuses UPDATE and DELETE, and `verify_chain()` finds the first altered entry.
+
+## Login
+
+Phone OTP (`/auth/otp/request`, `/auth/otp/verify`) proves the phone and binds the device; a 4-digit PIN per profile (`/auth/pin/set`, `/auth/pin/verify`) opens it, because family members often share a phone.
+On a bound device the PIN alone logs in (`/auth/login`). Weak PINs are refused, 5 wrong PINs lock the profile for 30 minutes, and a login from a new device is flagged for the takeover freeze.
+When SMS is Sandbox the OTP is returned as `sandbox_code` so the demo can run without real messages.
