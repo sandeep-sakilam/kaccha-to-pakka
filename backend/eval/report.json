@@ -1,0 +1,172 @@
+{
+  "generated_at": "2026-11-26T20:12:49+00:00",
+  "sandbox": true,
+  "golden_set": {
+    "pages": 10,
+    "real_pages": false
+  },
+  "extraction": [
+    {
+      "provider": "mock",
+      "pages": 10,
+      "failures": 0,
+      "field_accuracy": {
+        "date": 1.0,
+        "party": 1.0,
+        "amount": 1.0,
+        "direction": 1.0
+      },
+      "exact_amount_match_rate": 1.0
+    },
+    {
+      "provider": "mock",
+      "pages": 10,
+      "failures": 0,
+      "field_accuracy": {
+        "date": 1.0,
+        "party": 1.0,
+        "amount": 1.0,
+        "direction": 1.0
+      },
+      "exact_amount_match_rate": 1.0
+    }
+  ],
+  "reconciliation": {
+    "businesses": 10,
+    "precision": 1.0,
+    "recall": 0.613,
+    "tp": 147,
+    "fp": 0,
+    "fn": 93,
+    "owner_questions": 20,
+    "note": "unmatched pairs with unclear names become owner questions, not guesses"
+  },
+  "red_team": {
+    "cases": 13,
+    "caught": 13,
+    "catch_rate": 1.0,
+    "results": [
+      {
+        "attack": "Edited bank statement PDF",
+        "defence": "producer metadata + balance continuity",
+        "caught": true,
+        "detail": "edited_with_tool,balance_break,closing_mismatch"
+      },
+      {
+        "attack": "AI-generated or staged ledger photos",
+        "defence": "ledger only counts when it reconciles with real money",
+        "caught": true,
+        "detail": "band U"
+      },
+      {
+        "attack": "Friend poses as supplier",
+        "defence": "system-selected partner + reverse penny drop",
+        "caught": true,
+        "detail": "account_mismatch"
+      },
+      {
+        "attack": "Round-tripping",
+        "defence": "cycle detection + net-flow netting",
+        "caught": true,
+        "detail": "on_hold"
+      },
+      {
+        "attack": "Collusion ring of new accounts",
+        "defence": "graph clusters + confirmer weighting",
+        "caught": true,
+        "detail": "on_hold"
+      },
+      {
+        "attack": "Photo of someone else's shop",
+        "defence": "random-day presence checks with GPS",
+        "caught": true,
+        "detail": "far_from_shop"
+      },
+      {
+        "attack": "Identity theft",
+        "defence": "KYC + account-holder name match",
+        "caught": true,
+        "detail": "on_hold"
+      },
+      {
+        "attack": "Sahayak creating fake businesses",
+        "defence": "per-Sahayak anomaly monitoring",
+        "caught": true,
+        "detail": "shared_device,gps_cluster"
+      },
+      {
+        "attack": "Account takeover",
+        "defence": "new-device 24-hour share freeze",
+        "caught": true,
+        "detail": ""
+      },
+      {
+        "attack": "Prompt injection inside an image",
+        "defence": "strict schema; scoring is code",
+        "caught": true,
+        "detail": ""
+      },
+      {
+        "attack": "Forged passport shown to a lender",
+        "defence": "Ed25519 signature + live status",
+        "caught": true,
+        "detail": ""
+      },
+      {
+        "attack": "Lender leaking or misusing data",
+        "defence": "scoped expiring shares, no PII",
+        "caught": true,
+        "detail": ""
+      },
+      {
+        "attack": "Stale passport of an abandoned business",
+        "defence": "freshness decay + expiry",
+        "caught": true,
+        "detail": "stale"
+      }
+    ]
+  },
+  "stt": {
+    "status": "not run: add eval/golden/transcripts.json with audio files"
+  },
+  "ai_cost": {
+    "calls": {
+      "vision": 6,
+      "stt": 6,
+      "tts": 8,
+      "llm": 2
+    },
+    "rupees_per_passport": 10.7,
+    "note": "per-call prices are estimates in AI_COST_RUPEES; replace with invoice data"
+  },
+  "band_distribution": {
+    "category:kirana": {
+      "D": 4
+    },
+    "gender:male": {
+      "D": 6
+    },
+    "seasonal:False": {
+      "D": 6
+    },
+    "gender:female": {
+      "D": 6
+    },
+    "category:namkeen": {
+      "D": 2
+    },
+    "seasonal:True": {
+      "D": 6
+    },
+    "category:tailor": {
+      "D": 4
+    },
+    "category:vegetables": {
+      "D": 2
+    }
+  },
+  "not_measured_here": [
+    "time from first message to first passport (needs field sessions)",
+    "unaided completion with 5 shopkeepers"
+  ]
+}

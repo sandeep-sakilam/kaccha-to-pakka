@@ -204,3 +204,7 @@ Disputes come from the system (tamper holds, page totals, failed confirmations, 
 ## Abuse limits and takeover freeze
 
 `abuse/limits.py` keeps fixed-window counters in Redis (in-process if Redis is down): OTP per phone (5/hour) and per network (30/hour), photos per device (200/day), Sahayak actions (300/day), invites per business (10/day), ₹1 attempts per invite (3/day), a confirmer may confirm at most 10 different businesses a month, lender views per link (60/hour). Over the limit → HTTP 429 with a spoken-friendly message. A login from a new device freezes sharing for 24 hours (no new shares, existing lender links answer 423 "paused") and the owner is told at once.
+
+## Evaluation
+
+`make eval` runs `app/evaluation/harness.py` on a scratch database and writes `backend/eval/report.md` and `report.json`: field-level extraction accuracy and exact-amount match per provider (golden set in `backend/eval/golden/`, synthetic until real pages are added), reconciliation precision/recall on synthetic businesses with known ground truth, the red-team suite (one case per fraud-table row plus stale passport; currently 13/13 caught), speech-to-text WER (when transcripts are added), AI cost per passport, and band distribution by business type, season and owner gender. With Sandbox models the numbers show the harness works, not real model accuracy.
