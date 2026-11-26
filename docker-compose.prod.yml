@@ -1,0 +1,87 @@
+# Production on a single Indian-region VPS: Caddy (HTTPS) -> web static + API; worker; Postgres; Redis; backups.
+# Usage: docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ktp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-ktp}
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ktp}"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: ["redisdata:/data"]
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-ktp}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-ktp}
+      REDIS_URL: redis://redis:6379/0
+      PUBLIC_BASE_URL: https://${DOMAIN:?set DOMAIN in .env}
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_started }
+    volumes: ["filestore:/app/var"]
+
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    command: ["arq", "app.worker.WorkerSettings"]
+    env_file: [.env]
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-ktp}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-ktp}
+      REDIS_URL: redis://redis:6379/0
+      PUBLIC_BASE_URL: https://${DOMAIN}
+    depends_on: [api]
+    volumes: ["filestore:/app/var"]
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    command: ["sh", "-c", "mkdir -p /out && cp -r /srv/. /out/"]
+    volumes: ["webroot:/out"]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - webroot:/srv:ro
+      - caddydata:/data
+    depends_on: [api, web]
+
+  backup:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:?set BACKUP_PASSPHRASE in .env}
+    volumes:
+      - ./deploy/backup.sh:/backup.sh:ro
+      - backups:/backups
+    entrypoint: ["sh", "-c", "while true; do sh /backup.sh; sleep 86400; done"]
+    depends_on: [db]
+
+volumes:
+  pgdata:
+  redisdata:
+  filestore:
+  webroot:
+  caddydata:
+  backups:

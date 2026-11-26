@@ -170,3 +170,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 ## Demo data
 
 `make seed` resets the **local** database (refused in production) and loads three fictional Indore businesses (kirana → A, namkeen maker → B, tailor with PDF only → C) and the scripted fraud attempt (a friend posing as a supplier). See `docs/demo-script.md` for logins and the scene-by-scene demo.
+
+## Deploy
+
+`docker-compose.prod.yml` runs Caddy (automatic HTTPS, security headers), the API (migrates on start), the worker, Postgres 16, Redis 7 and a daily encrypted backup job on one Indian-region VPS. Step-by-step guide: `docs/deploy.md`.

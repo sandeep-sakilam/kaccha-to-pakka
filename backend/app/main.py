@@ -51,6 +51,19 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok", "env": settings.app_env}
 
+    @app.get("/ready")
+    def ready() -> dict[str, str]:
+        """Readiness: database and Redis reachable (used by deploy checks)."""
+        from redis import Redis
+        from sqlalchemy import text
+
+        from app.db.base import get_engine
+
+        with get_engine().connect() as conn:
+            conn.execute(text("SELECT 1"))
+        Redis.from_url(settings.redis_url, socket_timeout=2).ping()
+        return {"status": "ready"}
+
     @app.get("/meta/sandbox")
     def sandbox() -> dict[str, object]:
         """Which outside services are mocks, so the UI can label them "Sandbox"."""
