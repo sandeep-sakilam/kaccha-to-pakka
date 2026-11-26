@@ -74,3 +74,9 @@ When SMS is Sandbox the OTP is returned as `sandbox_code` so the demo can run wi
 
 One consent row per purpose (`build_passport`, `aa_fetch`, `monthly_refresh`, `share_lender`, `keep_originals`, `presence_location`, optional `model_training`), each with a scope and expiry.
 `consent.service.require()` guards every step that needs permission; `/consents/revoke-purpose` withdraws in one call. `/consents/notice` returns the consent screen text (what we collect, why, who sees it, how to delete) in Hindi or English for read-aloud.
+
+## Web app
+
+Installable web app (manifest + service worker via `vite-plugin-pwa`), Hindi and English with `i18next` (`web/src/i18n/*.json`), Hindi by default.
+Every screen uses `<Screen title spoken={[...]}>`, which adds a Listen button: server voice (Sarvam Bulbul via `POST /voice/tts`) when real, the phone's own speech engine in Sandbox or offline. Amounts are read in words (`rupeesInWords`).
+A yellow "Sandbox" badge shows whenever any outside service is a mock. First-load JS is about 73 KB gzipped (budget: 300 KB).

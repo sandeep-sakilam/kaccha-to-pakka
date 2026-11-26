@@ -1,0 +1,32 @@
+{
+  "app": { "name": "Kaccha to Pakka", "tagline": "Your Business Trust Passport" },
+  "common": {
+    "listen": "Listen",
+    "stop": "Stop",
+    "yes": "Yes",
+    "no": "No",
+    "next": "Next",
+    "back": "Back",
+    "sandbox": "Sandbox",
+    "sandbox_hint": "Test mode: no real money, bank or messages are used.",
+    "language": "Language",
+    "offline": "You are offline. Your work is saved and will send when the network returns.",
+    "loading": "Please wait…",
+    "error": "Something went wrong. Please try again."
+  },
+  "welcome": {
+    "title": "Namaste! Welcome",
+    "intro": "Prove your business is real, and show it to a lender, with your phone.",
+    "pick_language": "Tap your language",
+    "start": "Start",
+    "never": "What we never do"
+  },
+  "never": {
+    "title": "What we never do",
+    "lend": "We never lend money.",
+    "sell": "We never sell your data.",
+    "share": "We never share without your yes.",
+    "train": "We never use your data to train AI without separate permission.",
+    "delete": "You can delete everything at any time."
+  }
+}
