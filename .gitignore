@@ -30,3 +30,5 @@ var/
 storage/
 *.sqlite3
 .DS_Store
+*.tsbuildinfo
+dev-dist/

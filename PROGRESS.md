@@ -1,12 +1,12 @@
 # Progress
 
-Current: none (bootstrap done; next is `feat/f01-foundation`)
+Current: none; next is `feat/f02-data-model`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
 ## Functionality backlog
 
-- [ ] F01 Monorepo layout, Docker Compose (API, worker, Postgres, Redis, web), Makefile with the quality gate (`feat/f01-foundation`)
+- [x] F01 Monorepo layout, Docker Compose (API, worker, Postgres, Redis, web), Makefile with the quality gate (`feat/f01-foundation`)
 - [ ] F02 Database models and migrations for all tables in the Data model, money in paise (`feat/f02-data-model`)
 - [ ] F03 AI gateway and adapter interfaces with mocks for every outside service (`feat/f03-adapters`)
 - [ ] F04 Hash-chained audit log (`feat/f04-audit-log`)

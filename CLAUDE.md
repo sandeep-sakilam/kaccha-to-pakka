@@ -50,3 +50,9 @@
 ## Tasks only Sandeep can do
 
 Keep these listed in `README.md` under "What Sandeep must provide"; build everything else with mocks meanwhile.
+
+## Helper scripts
+
+- `python3 scripts/tick.py F07` ticks a backlog item and updates the "Current" line.
+- `bash scripts/preflight.sh` runs the identity and wording checks for the branch.
+- `bash scripts/merge.sh <branch> "<title>"` merges locally with `--no-ff`, re-checks, pushes `main`, deletes the local branch.
