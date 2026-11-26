@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     public_base_url: str = "http://localhost:5173"
     field_encryption_key: str = ""
     passport_signing_key: str = ""
+    jobs_inline: bool = False  # run background jobs in-process (tests, e2e, single-box demo)
 
     # Adapter selection ("mock" or "real"); real adapters also need their keys.
     ai_provider: str = "auto"

@@ -91,3 +91,8 @@ Login (phone keypad, OTP, PIN) → consent screen read aloud → voice interview
 
 Live camera only (no gallery picker). The phone checks blur (Laplacian variance), darkness, over-exposure and glare before saving (`web/src/lib/quality.ts`), compresses to JPEG, stamps time and GPS, and queues the photo in IndexedDB (`web/src/lib/queue.ts`). The queue syncs when the network returns, every upload carrying an `Idempotency-Key`.
 The API (`POST /businesses/{id}/captures`) repeats the cheap checks, refuses photos older than 7 days or with old camera EXIF dates, flags the same photo sent twice, stores the file and a SHA-256 hash, and logs it.
+
+## Ledger extraction and jobs
+
+A ledger or bill capture queues `extract_ledger` (Arq worker; in-process when `JOBS_INLINE=true` or in tests). The AI gateway returns a schema-checked page; each entry keeps per-field confidence, and entries below 0.8 are marked `needs_readback`. Trader scripts or unreadable pages are marked `needs_voice`.
+The raw photo is deleted after extraction unless the owner gave `keep_originals` consent. If every AI provider is down the job is retried with backoff, then lands in `job_failures` (dead letter); the owner is told on WhatsApp (SMS if WhatsApp is down) and again when a retry succeeds.

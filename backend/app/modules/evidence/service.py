@@ -101,6 +101,10 @@ def ingest_capture(
     db.flush()
     ext = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}[c.mime]
     ev.storage_key = get_adapters().storage.put(storage_key(biz.id, ev.id, ext), c.data, c.mime)
+    if c.kind in {"ledger_page", "bill"} and ev.status == "received":
+        from app.jobs import enqueue
+
+        enqueue(db, "extract_ledger", ev.id)
     record(
         db,
         actor or f"user:{user.id}",
