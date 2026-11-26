@@ -178,3 +178,9 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 ## Sharing with lenders
 
 `POST /businesses/{id}/shares` (owner only) creates a link for one named lender with a scope (`summary`, or `evidence` for summary plus evidence) and an expiry (default 30 days, max 90), backed by a `share_lender` consent. The lender opens `/l/{token}`; every view is logged and the owner is notified ("SBI Rajwada branch viewed your passport"). Partner names, UPI IDs and phone numbers are never in the lender view: partners appear as "verified supplier, trading 5+ years". Revoking stops the link (HTTP 410) and the consent at once.
+
+## Lender portal
+
+- `/lender`: scan a passport QR (BarcodeDetector camera) or paste a link.
+- `/v/{id}#{token}`: verifies the QR signature in the browser with the Ed25519 public key (`tweetnacl`, key cached for offline use), then fetches live status. A changed QR shows "Signature NOT valid".
+- `/l/{token}`: the shared scope only, with a diagonal watermark "Shared with {lender} · {date} · do not forward"; evidence scope adds monthly money totals, ledger match rate, partner confirmations as labels, presence checks, evidence hashes and flags. `GET /l/{token}/passport.pdf` gives a watermarked PDF. Every view is logged and shown to the owner.

@@ -90,3 +90,44 @@ def test_expiry_and_rules(client: TestClient, db: Session) -> None:
     row.expires_at = utcnow() - timedelta(minutes=1)
     db.flush()
     assert client.get(f"/l/{s['link'].rsplit('/l/', 1)[1]}").json()["code"] == "share_expired"
+
+
+def test_lender_pdf_is_watermarked(client: TestClient) -> None:
+    import io
+
+    import pdfplumber
+
+    h, biz = owner_with_passport(client)
+    s = client.post(
+        f"/businesses/{biz}/shares", headers=h, json={"lender_org": "Indore Urban Coop Bank"}
+    ).json()
+    r = client.get(f"/l/{s['link'].rsplit('/l/', 1)[1]}/passport.pdf")
+    assert r.status_code == 200
+    with pdfplumber.open(io.BytesIO(r.content)) as pdf:
+        assert len(pdf.pages) >= 1
+    from app.modules.passport.pdf import render_html
+
+    vc = {
+        "credentialSubject": {
+            "name": "A",
+            "category": "k",
+            "band": "B",
+            "pillars": {},
+            "rulesVersion": "r",
+            "sandbox": False,
+        },
+        "validUntil": "2027-01-01",
+        "id": "x",
+    }
+    ex = {
+        "band_label": "",
+        "confidence_label": "",
+        "status_label": "",
+        "headline": "",
+        "positives": [],
+        "gaps": [],
+        "improve": [],
+    }
+    assert "Shared with Indore Urban Coop Bank" in render_html(
+        vc, ex, "u", "en", "Shared with Indore Urban Coop Bank"
+    )

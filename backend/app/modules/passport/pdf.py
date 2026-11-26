@@ -92,7 +92,11 @@ LABELS = {
 
 
 def render_html(
-    passport: dict[str, Any], explanation: dict[str, Any], verify_url: str, lang: str
+    passport: dict[str, Any],
+    explanation: dict[str, Any],
+    verify_url: str,
+    lang: str,
+    watermark: str | None = None,
 ) -> str:
     L = LABELS["hi" if lang == "hi" else "en"]
     s = passport["credentialSubject"]
@@ -107,6 +111,8 @@ def render_html(
         for k, v in s["pillars"].items()
     )
     sandbox = f"<p class='sandbox'>{L['sandbox']}</p>" if s.get("sandbox") else ""
+    mark = f"<div class='wm'>{html.escape(watermark)}</div>" if watermark else ""
+    mark = f"<div class='wm'>{html.escape(watermark)}</div>" if watermark else ""
     return f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8"><style>
 {_font_faces()}
 @page {{ size: A4; margin: 16mm; }}
@@ -120,8 +126,13 @@ h1 {{ color: #14532d; margin: 0 0 4mm; font-size: 20pt; }}
 .sandbox {{ background: #fde047; padding: 2mm; font-weight: 700; }}
 .small {{ font-size: 8.5pt; color: #374151; }}
 svg {{ width: 42mm; height: 42mm; }}
+.wm {{ position: fixed; top: 110mm; left: -20mm; width: 250mm; text-align: center;
+       transform: rotate(-35deg); font-size: 22pt; color: rgba(185, 28, 28, 0.18); }}
+.wm {{ position: fixed; top: 110mm; left: -20mm; width: 250mm; text-align: center;
+       transform: rotate(-35deg); font-size: 22pt; color: rgba(185, 28, 28, 0.18); }}
 </style></head><body>
-{sandbox}
+{mark}
+{mark}{sandbox}
 <h1>{L["title"]}</h1>
 <div class="top"><div>
 <p style="font-size:14pt;font-weight:700">{e(s["name"])}</p>
@@ -145,8 +156,13 @@ svg {{ width: 42mm; height: 42mm; }}
 
 
 def render_pdf(
-    passport: dict[str, Any], explanation: dict[str, Any], verify_url: str, lang: str
+    passport: dict[str, Any],
+    explanation: dict[str, Any],
+    verify_url: str,
+    lang: str,
+    watermark: str | None = None,
 ) -> bytes:
     from weasyprint import HTML
 
-    return bytes(HTML(string=render_html(passport, explanation, verify_url, lang)).write_pdf())
+    page = render_html(passport, explanation, verify_url, lang, watermark)
+    return bytes(HTML(string=page).write_pdf())
