@@ -247,6 +247,25 @@
     "scan": "A lender scans this to check it is real",
     "not_credit": "This is proof of your business, not a loan. The lender decides.",
     "do_it": "Do it now",
-    "none": "You do not have a passport yet."
+    "none": "You do not have a passport yet.",
+    "share": "Share with a lender"
+  },
+  "shares": {
+    "title": "Share with a lender",
+    "intro": "Share with one lender at a time. It stops on its own after the days you choose, and you can stop it any time.",
+    "lender": "Lender name and branch",
+    "scope_summary": "Summary only",
+    "scope_evidence": "Summary and evidence",
+    "days": "{{count}} days",
+    "create": "Create share link",
+    "active": "Active",
+    "expired": "Expired",
+    "revoked": "Stopped",
+    "views": "Viewed {{count}} times",
+    "revoke": "Stop sharing",
+    "send": "Send on WhatsApp",
+    "log_title": "Who viewed your passport",
+    "viewed": "{{who}} viewed on {{when}}",
+    "none": "No views yet."
   }
 }

@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f28-shares`
+Current: none; next is `feat/f29-lender-portal`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -33,7 +33,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F25 Owner passport screen with coaching tips (`feat/f25-passport-ui`)
 - [x] F26 Seed data and the scripted fraud-attempt scenario (`feat/f26-demo-seed`)
 - [x] F27 Deployment files and deploy guide (submission cut, 30 Nov 2026) (`feat/f27-deploy`)
-- [ ] F28 Scoped shares, expiry, revoke, owner view notifications (`feat/f28-shares`)
+- [x] F28 Scoped shares, expiry, revoke, owner view notifications (`feat/f28-shares`)
 - [ ] F29 Lender portal: QR verify, live status, evidence view, watermark (`feat/f29-lender-portal`)
 - [ ] F30 WhatsApp bot: onboarding, capture, confirmations (`feat/f30-whatsapp`)
 - [ ] F31 Sahayak mode with action tagging and permissions (`feat/f31-sahayak`)
