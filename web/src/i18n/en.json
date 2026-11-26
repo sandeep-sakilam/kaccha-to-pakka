@@ -96,7 +96,8 @@
     "to_check": "{{count}} entries to check",
     "read_aloud": "Read ledger aloud",
     "needs_voice": "{{count}} page(s) could not be read. Read them aloud.",
-    "import_csv": "Add Khatabook / OkCredit / Vyapar file"
+    "import_csv": "Add Khatabook / OkCredit / Vyapar file",
+    "add_statement": "Add bank / UPI statement PDF"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -150,5 +151,11 @@
     "intro": "In Khatabook, OkCredit or Vyapar, export your entries as a CSV file, then pick it here.",
     "pick": "Choose CSV file",
     "done": "{{rows}} entries added from {{source}}."
+  },
+  "statement": {
+    "title": "Add a bank or UPI statement",
+    "intro": "Download the PDF statement from your bank or UPI app, then pick it here. Linking your bank directly is stronger: a PDF alone can reach at most band C.",
+    "pick": "Choose PDF statement",
+    "done": "{{count}} payments added."
   }
 }

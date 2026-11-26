@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f14-statement-parsers`
+Current: none; next is `feat/f15-tamper-checks`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -19,7 +19,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F11 Page-total checksum and owner read-back confirmation (`feat/f11-readback`)
 - [x] F12 Voice entry for unreadable ledgers (`feat/f12-voice-entry`)
 - [x] F13 Ledger-app CSV import (Khatabook, OkCredit, Vyapar) (`feat/f13-csv-import`)
-- [ ] F14 UPI and bank statement PDF parsers (`feat/f14-statement-parsers`)
+- [x] F14 UPI and bank statement PDF parsers (`feat/f14-statement-parsers`)
 - [ ] F15 PDF tamper checks (`feat/f15-tamper-checks`)
 - [ ] F16 Account Aggregator sandbox adapter and consent flow (`feat/f16-account-aggregator`)
 - [ ] F17 Reconciliation engine with transliterated name matching and owner disambiguation (`feat/f17-reconciliation`)
