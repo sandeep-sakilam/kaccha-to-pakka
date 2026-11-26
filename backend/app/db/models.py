@@ -353,3 +353,17 @@ class Notification(TimestampMixin, Base):
     text: Mapped[str] = mapped_column(Text)
     kind: Mapped[str] = mapped_column(String(48))
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class NameAlias(TimestampMixin, Base):
+    """The owner's answer to "Is Sharma ji the same as RAKESH SHARMA?", reused in later runs."""
+
+    __tablename__ = "name_aliases"
+    __table_args__ = (
+        UniqueConstraint("business_id", "party_key", "counterparty_key", name="alias"),
+    )
+    id: Mapped[str] = _id()
+    business_id: Mapped[str] = mapped_column(ForeignKey("businesses.id"), index=True)
+    party_key: Mapped[str] = mapped_column(String(200))
+    counterparty_key: Mapped[str] = mapped_column(String(200))
+    same: Mapped[bool] = mapped_column(Boolean)

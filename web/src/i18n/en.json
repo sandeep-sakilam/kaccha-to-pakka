@@ -98,7 +98,8 @@
     "needs_voice": "{{count}} page(s) could not be read. Read them aloud.",
     "import_csv": "Add Khatabook / OkCredit / Vyapar file",
     "add_statement": "Add bank / UPI statement PDF",
-    "link_bank": "Link bank account (strongest)"
+    "link_bank": "Link bank account (strongest)",
+    "recon_questions": "{{count}} name question(s) to answer"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -171,5 +172,10 @@
     "fetching": "Getting your bank data…",
     "done": "{{count}} payments received from {{bank}}.",
     "rejected": "You said no. Nothing was shared."
+  },
+  "recon": {
+    "title": "Are these the same person?",
+    "intro": "Your ledger name and the bank name look different. Tell us if they are the same.",
+    "done": "Thank you. {{rate}}% of your ledger now matches your bank payments."
   }
 }
