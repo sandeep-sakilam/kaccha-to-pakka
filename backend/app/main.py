@@ -22,6 +22,7 @@ from app.modules.shares.api import router as shares_router
 from app.modules.statements.api import router as statements_router
 from app.modules.trust.api import router as trust_router
 from app.modules.voice.api import router as voice_router
+from app.modules.whatsapp.api import router as whatsapp_router
 
 ROUTERS = [
     auth_router,
@@ -39,6 +40,7 @@ ROUTERS = [
     trust_router,
     passport_router,
     shares_router,
+    whatsapp_router,
 ]
 
 
