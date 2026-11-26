@@ -51,7 +51,7 @@ def list_requests(business_id: str, db: DB, user: CurrentUser) -> list[RequestOu
 
 @router.post("/businesses/{business_id}/presence/start", response_model=list[RequestOut])
 def start(business_id: str, db: DB, user: CurrentUser) -> list[RequestOut]:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, allow_sahayak=False)
     reqs = service.start_checks(db, user, biz)
     db.commit()
     now = utcnow()

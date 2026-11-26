@@ -104,7 +104,9 @@
     "presence_today": "Shop photo for today (asked by us)",
     "start_presence": "Start shop presence checks",
     "presence_why": "On a few random days we will ask for a shop photo with location. It proves your shop is real and open.",
-    "passport": "My Trust Passport"
+    "passport": "My Trust Passport",
+    "helpers": "My helpers (Sahayak)",
+    "sahayak_mode": "I help other owners"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -296,5 +298,29 @@
     "pdf": "Download watermarked PDF",
     "watermark": "Shared with {{lender}} · {{date}} · do not forward",
     "disclaimer": "We verify evidence. We do not lend and this is not a credit score: the credit decision is yours."
+  },
+  "sahayak": {
+    "title": "Sahayak (helper) mode",
+    "register_intro": "Help shop owners who can't use a phone alone. Every action you take is recorded with your name.",
+    "name": "Your name",
+    "woman": "I am a woman (owners can ask for a woman Sahayak)",
+    "register": "Register as Sahayak",
+    "owners": "Owners you help",
+    "none": "No owner has added you yet. Ask them to add your phone number.",
+    "photo": "Ledger photo",
+    "voice": "Read aloud",
+    "check": "Check entries",
+    "helpers_title": "My helpers",
+    "helpers_intro": "Add a trusted helper. Choose what they may do. You can remove them any time.",
+    "add": "Add helper",
+    "women_only": "Show only women Sahayaks",
+    "perm_capture": "Take photos",
+    "perm_voice_entry": "Read ledger aloud",
+    "perm_readback": "Confirm entries",
+    "perm_import": "Add CSV",
+    "perm_statement": "Add statements",
+    "perm_invite": "Invite partners",
+    "perm_passport": "Make passport",
+    "remove": "Remove"
   }
 }

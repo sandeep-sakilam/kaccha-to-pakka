@@ -41,7 +41,7 @@ def _out(p: Passport) -> PassportOut:
 
 @router.post("/businesses/{business_id}/passport", response_model=PassportOut)
 def issue(business_id: str, db: DB, user: CurrentUser) -> PassportOut:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="passport")
     p = service.issue(db, biz, f"user:{user.id}")
     db.commit()
     return _out(p)

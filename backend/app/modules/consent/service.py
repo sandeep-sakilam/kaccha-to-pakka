@@ -72,6 +72,13 @@ PURPOSES: dict[str, Purpose] = {
             "दुकान की फ़ोटो पर फ़ोन की लोकेशन, दुकान होने के सबूत के लिए।",
         ),
         Purpose(
+            "sahayak_help",
+            None,
+            True,
+            "To let a helper you chose add evidence for you. Every action is tagged with them.",
+            "आपके चुने सहायक को आपके लिए सबूत जोड़ने देने के लिए। हर काम पर उनका नाम दर्ज होता है।",
+        ),
+        Purpose(
             "model_training",
             None,
             False,
