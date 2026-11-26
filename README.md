@@ -69,3 +69,8 @@ Entries are hash-chained (`sha256(prev_hash || canonical record)`), a Postgres t
 Phone OTP (`/auth/otp/request`, `/auth/otp/verify`) proves the phone and binds the device; a 4-digit PIN per profile (`/auth/pin/set`, `/auth/pin/verify`) opens it, because family members often share a phone.
 On a bound device the PIN alone logs in (`/auth/login`). Weak PINs are refused, 5 wrong PINs lock the profile for 30 minutes, and a login from a new device is flagged for the takeover freeze.
 When SMS is Sandbox the OTP is returned as `sandbox_code` so the demo can run without real messages.
+
+## Consent
+
+One consent row per purpose (`build_passport`, `aa_fetch`, `monthly_refresh`, `share_lender`, `keep_originals`, `presence_location`, optional `model_training`), each with a scope and expiry.
+`consent.service.require()` guards every step that needs permission; `/consents/revoke-purpose` withdraws in one call. `/consents/notice` returns the consent screen text (what we collect, why, who sees it, how to delete) in Hindi or English for read-aloud.
