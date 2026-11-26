@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f04-audit-log`
+Current: none; next is `feat/f05-auth`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -9,7 +9,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F01 Monorepo layout, Docker Compose (API, worker, Postgres, Redis, web), Makefile with the quality gate (`feat/f01-foundation`)
 - [x] F02 Database models and migrations for all tables in the Data model, money in paise (`feat/f02-data-model`)
 - [x] F03 AI gateway and adapter interfaces with mocks for every outside service (`feat/f03-adapters`)
-- [ ] F04 Hash-chained audit log (`feat/f04-audit-log`)
+- [x] F04 Hash-chained audit log (`feat/f04-audit-log`)
 - [ ] F05 Phone OTP, PIN, sessions, device binding (`feat/f05-auth`)
 - [ ] F06 Consent records: grant, scope, expiry, revoke (`feat/f06-consent`)
 - [ ] F07 Web app shell: installable, i18n (Hindi, English), voice playback of each screen (`feat/f07-web-shell`)
