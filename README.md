@@ -154,3 +154,7 @@ The first shop-front photo with good GPS sets the shop's home location. With `pr
 | Presence (15%) | business age, shop-front photo, random presence checks passed, in-person visit |
 
 Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C; nothing verified → U; under 3 months → Low confidence. Red flags (tamper signal, round-tripping, failed confirmation, holder-name mismatch) put the assessment **on hold** without changing the band. Money data older than 120 days makes it **stale**. Assessments are immutable (Postgres trigger), store their rules version, model versions, feature snapshot and inputs hash, and `GET /assessments/{id}/verify` recomputes them.
+
+## Explanations
+
+`trust/explain.py` turns an assessment's structured reasons into the owner's language: a headline ("Your passport is strong because 82% of your ledger matches your bank payments and 3 trading partners confirmed you."), top positives, gaps and what would raise it. The LLM (Sarvam-105B) may rephrase each reason, but its output must have exactly one line per reason with exactly the same numbers; otherwise, or when it is down, fixed Hindi/English templates are used. `GET /businesses/{id}/explanation?language=hi`.
