@@ -4,6 +4,9 @@ migrate:  ## apply database migrations
 
 .PHONY: migrate help services install check check-backend check-web e2e dev-api dev-web dev-worker up down
 
+export UV_SYSTEM_CERTS := 1
+unexport UV_NATIVE_TLS
+
 BACKEND := cd backend &&
 WEB := cd web &&
 
@@ -17,6 +20,10 @@ services:  ## start local Postgres and Redis (cloud session)
 install:
 	$(BACKEND) uv sync
 	$(WEB) npm ci --no-audit --no-fund
+
+fix:  ## auto-fix lint and formatting
+	$(BACKEND) uv run ruff check --fix -q . ; uv run ruff format -q .
+	$(WEB) npx eslint --fix . || true
 
 check: check-backend check-web
 

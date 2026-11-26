@@ -55,4 +55,5 @@ Keep these listed in `README.md` under "What Sandeep must provide"; build everyt
 
 - `python3 scripts/tick.py F07` ticks a backlog item and updates the "Current" line.
 - `bash scripts/preflight.sh` runs the identity and wording checks for the branch.
+- `bash scripts/ship.sh F07 "<message>"` ticks, runs `make check`, commits, preflights and pushes the branch.
 - `bash scripts/merge.sh <branch> "<title>"` merges locally with `--no-ff`, re-checks, pushes `main`, deletes the local branch.

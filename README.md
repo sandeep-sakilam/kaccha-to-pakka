@@ -43,3 +43,18 @@ Or everything in containers: `cp .env.example .env && docker compose up --build`
 All tables from SPEC are in `backend/app/db/models.py`, with Alembic migrations in `backend/alembic/versions`.
 Money is integer paise (`*_paise` columns, never floats). Timestamps are stored in UTC and shown in IST.
 Counterparty names, ledger party text, narrations and account references are encrypted at the field level (AES-256-GCM, key from `FIELD_ENCRYPTION_KEY`).
+
+## Outside services (adapters)
+
+Every outside service sits behind an interface in `backend/app/adapters/` with a mock and a real adapter.
+Each `*_PROVIDER` setting is `auto` (real when its keys are in `.env`, otherwise mock), `mock` or `real`.
+`GET /meta/sandbox` reports which services are mocks so the UI shows a "Sandbox" label. Tests always force mocks.
+
+| Service | Interface | Real adapter | Mock |
+| --- | --- | --- | --- |
+| Document vision, STT, TTS, LLM | `AIProvider` via `AIGateway` (fallback, model versions) | Sarvam; fallback Gemini or Anthropic | `MockAI` reads sandbox ledger PNGs that carry ground truth |
+| Bank data | `AccountAggregator` | Setu AA | `MockAccountAggregator` (seeded or synthetic accounts) |
+| Reverse penny drop | `PaymentGateway` | Cashfree | `MockPaymentGateway` (simulated ₹1 payment) |
+| WhatsApp / SMS | `WhatsApp`, `SMS` | Meta Cloud API, MSG91 | outbox recorders, never message real people |
+| KYC | `KYCProvider` | licensed PAN API | `MockKYC` |
+| Files | `Storage` | S3-compatible (India region) | local disk or memory |
