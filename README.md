@@ -158,3 +158,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 ## Explanations
 
 `trust/explain.py` turns an assessment's structured reasons into the owner's language: a headline ("Your passport is strong because 82% of your ledger matches your bank payments and 3 trading partners confirmed you."), top positives, gaps and what would raise it. The LLM (Sarvam-105B) may rephrase each reason, but its output must have exactly one line per reason with exactly the same numbers; otherwise, or when it is down, fixed Hindi/English templates are used. `GET /businesses/{id}/explanation?language=hi`.
+
+## Passport
+
+`POST /businesses/{id}/passport` assesses afresh and issues a W3C Verifiable Credential (`BusinessTrustPassport`) signed with Ed25519 (`DataIntegrityProof`, `eddsa-jcs-2022`), valid for up to 60 days (less if the money data is ageing). It contains the band, confidence, pillar scores, reason codes and rules version, never phone numbers or partner names. The QR code encodes `/v/{id}#{token}`: a compact signed summary a lender can verify offline with the public key from `/.well-known/ktp-keys.json`; live status comes from `GET /passports/{id}/status` (valid, on_hold, expired, revoked, superseded). `GET /businesses/{id}/passport.pdf?language=hi|en` renders the passport with WeasyPrint and bundled Noto Sans Devanagari (OFL).
