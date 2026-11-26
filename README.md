@@ -196,3 +196,7 @@ A helper registers (`/sahayak/register`, optional women's directory). The owner 
 ## Fraud graph
 
 `fraud/graph.py` (NetworkX, nightly worker job and on demand): **payment cycles** between known businesses (A → B → C → A within 10 days per hop, amounts within 5%) and **collusion rings** (3+ businesses confirming each other, all joined in the last year, with little trade outside the cluster) become `graph_flags` that put every member's passport on hold. **Confirmer standing** (0.3–1.2) scales each confirmation's weight in the Network pillar: it grows with the confirmer's age and number of independent partners and drops to 30% once any of their confirmations is shown false.
+
+## Review queue and Sahayak monitoring
+
+Disputes come from the system (tamper holds, page totals, failed confirmations, fraud-graph flags, Sahayak anomalies, random audits) and from people: an owner can contest a ledger line, a confirmation or the result (`POST /businesses/{id}/disputes`), a confirmer can contest through their invite link. Reviewers (role `reviewer`) work `/review`: every queue view, case view and decision is written to the audit log. Clearing a held statement makes it count again; upholding a false confirmation marks it `disproved` (the confirmer's standing drops everywhere); upholding a Sahayak anomaly suspends that Sahayak. Nightly monitoring flags Sahayaks for high volume, high failure rate, one device used for many businesses, or shop photos of different businesses clustered within 25 m, and opens random audits of 5% of Sahayak-created evidence.

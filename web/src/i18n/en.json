@@ -322,5 +322,16 @@
     "perm_invite": "Invite partners",
     "perm_passport": "Make passport",
     "remove": "Remove"
+  },
+  "review": {
+    "title": "Review queue",
+    "none": "No open cases.",
+    "open": "Open case",
+    "cleared": "Cleared: evidence is fine",
+    "upheld": "Upheld: problem is real",
+    "note": "Note for the log",
+    "sahayaks": "Sahayak monitoring",
+    "run": "Run checks now",
+    "logged": "Every case you open is logged."
   }
 }

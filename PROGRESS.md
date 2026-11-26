@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f33-review-queue`
+Current: none; next is `feat/f34-abuse-limits`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -38,7 +38,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F30 WhatsApp bot: onboarding, capture, confirmations (`feat/f30-whatsapp`)
 - [x] F31 Sahayak mode with action tagging and permissions (`feat/f31-sahayak`)
 - [x] F32 Fraud graph: cycles, collusion clusters, confirmer weighting (`feat/f32-fraud-graph`)
-- [ ] F33 Sahayak anomaly monitoring and reviewer dispute queue (`feat/f33-review-queue`)
+- [x] F33 Sahayak anomaly monitoring and reviewer dispute queue (`feat/f33-review-queue`)
 - [ ] F34 Rate and abuse limits, account-takeover freeze (`feat/f34-abuse-limits`)
 - [ ] F35 Evaluation harness: golden set, red-team suite, metrics report (`feat/f35-evaluation`)
 - [ ] F36 Accessibility audit fixes (WCAG 2.2 AA) and low-end phone performance budget (`feat/f36-accessibility`)

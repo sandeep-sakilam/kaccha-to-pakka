@@ -23,6 +23,7 @@ from app.db.models import (
     BankTransaction,
     Business,
     Counterparty,
+    Dispute,
     EvidenceItem,
     GraphFlag,
 )
@@ -205,6 +206,16 @@ def scan(db: Session, actor: str = "system:fraud_graph") -> list[GraphFlag]:
         if key not in active:
             f = GraphFlag(business_id=key[0], code=key[1], detail=detail)
             db.add(f)
+            db.flush()
+            db.add(
+                Dispute(
+                    target_type="graph_flag",
+                    target_id=f.id,
+                    business_id=key[0],
+                    raised_by="system:fraud_graph",
+                    reason=f"Fraud graph: {key[1]}",
+                )
+            )
             created.append(f)
             record(db, actor, f"fraud.{key[1]}", f"business:{key[0]}", detail)
     for key, f in active.items():
