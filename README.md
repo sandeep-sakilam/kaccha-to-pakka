@@ -101,3 +101,7 @@ The raw photo is deleted after extraction unless the owner gave `keep_originals`
 
 After extraction, the entries on a page must add up to the page total (by direction: received, paid or net). A mismatch puts the page on review (a `disputes` row) and its entries stop counting.
 `GET /businesses/{id}/readback` lists entries the owner must hear ("Sharma ji, चार हज़ार रुपये, 12 अक्टूबर को मिले: सही?") because a field was below 0.8 confidence or the page did not add up. The owner says yes, corrects the amount with the keypad (read back in words), or rejects the entry. Once a page adds up again its review closes automatically.
+
+## Voice entry
+
+For pages in Mahajani or Sarrafi script, or handwriting the AI can't read, the owner reads entries aloud (`/voice-entry/:businessId`). Speech-to-text gives a transcript; `extraction/voice_parse.py` pulls out party, amount (digits or words like "chaar hazaar", "dedh lakh"), received/paid and date by rules; the entry is read back in words for a yes or no. After two misses the screen switches to large-button entry (keypad + received/paid). Saved entries are stored as confirmed by the owner, linked to the unreadable photo.

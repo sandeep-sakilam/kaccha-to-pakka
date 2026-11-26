@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f12-voice-entry`
+Current: none; next is `feat/f13-csv-import`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -17,7 +17,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F09 Live-camera capture with on-phone quality check, offline queue and sync (`feat/f09-capture`)
 - [x] F10 Ledger extraction through Sarvam Vision with schema and confidence; fallback model (`feat/f10-ledger-extraction`)
 - [x] F11 Page-total checksum and owner read-back confirmation (`feat/f11-readback`)
-- [ ] F12 Voice entry for unreadable ledgers (`feat/f12-voice-entry`)
+- [x] F12 Voice entry for unreadable ledgers (`feat/f12-voice-entry`)
 - [ ] F13 Ledger-app CSV import (Khatabook, OkCredit, Vyapar) (`feat/f13-csv-import`)
 - [ ] F14 UPI and bank statement PDF parsers (`feat/f14-statement-parsers`)
 - [ ] F15 PDF tamper checks (`feat/f15-tamper-checks`)

@@ -93,7 +93,9 @@
     "next_steps": "Next steps",
     "add_ledger": "Photograph ledger page",
     "add_shop": "Shop front photo",
-    "to_check": "{{count}} entries to check"
+    "to_check": "{{count}} entries to check",
+    "read_aloud": "Read ledger aloud",
+    "needs_voice": "{{count}} page(s) could not be read. Read them aloud."
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -131,5 +133,15 @@
     "not_mine": "This is not in my ledger",
     "all_done": "All entries checked. Thank you!",
     "left": "{{count}} left"
+  },
+  "voice_entry": {
+    "title": "Read your ledger aloud",
+    "intro": "Say one entry at a time, like: Sharma ji se chaar hazaar mile, 12 October.",
+    "added": "{{count}} entries ready",
+    "save_all": "Save all entries",
+    "buttons_mode": "Let us use big buttons instead.",
+    "party": "Name (optional)",
+    "add": "Add entry",
+    "saved": "Entries saved. Thank you!"
   }
 }
