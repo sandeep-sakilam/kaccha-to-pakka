@@ -18,6 +18,7 @@ for _var in (
 os.environ["STORAGE_PROVIDER"] = "memory"
 
 from collections.abc import Iterator  # noqa: E402
+from typing import TYPE_CHECKING  # noqa: E402
 
 import pytest  # noqa: E402
 from sqlalchemy import Connection  # noqa: E402
@@ -25,6 +26,9 @@ from sqlalchemy.orm import Session  # noqa: E402
 
 from app.db import models, triggers  # noqa: E402, F401
 from app.db.base import Base, get_engine  # noqa: E402
+
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="session")
@@ -57,3 +61,41 @@ def db(connection: Connection) -> Iterator[Session]:
         yield session
     finally:
         session.close()
+
+
+@pytest.fixture
+def client(db: Session) -> Iterator["TestClient"]:
+    from fastapi.testclient import TestClient
+
+    from app.db.base import get_db
+    from app.main import create_app
+
+    app = create_app()
+    app.dependency_overrides[get_db] = lambda: db
+    with TestClient(app) as c:
+        yield c
+
+
+_phone_counter = iter(range(10_000_000))
+
+
+def new_phone() -> str:
+    return f"+9198{next(_phone_counter):08d}"
+
+
+def login(
+    client: "TestClient", phone: str | None = None, device: str = "device-test-1", pin: str = "4826"
+) -> dict[str, str]:
+    """OTP + PIN login through the API. Returns auth headers."""
+    phone = phone or new_phone()
+    sent = client.post("/auth/otp/request", json={"phone": phone}).json()
+    res = client.post(
+        "/auth/otp/verify", json={"phone": phone, "code": sent["sandbox_code"], "device_id": device}
+    ).json()
+    headers = {"Authorization": f"Bearer {res['token']}"}
+    if res["has_pin"]:
+        r = client.post("/auth/pin/verify", json={"pin": pin}, headers=headers)
+    else:
+        r = client.post("/auth/pin/set", json={"pin": pin}, headers=headers)
+    assert r.status_code == 200, r.text
+    return headers
