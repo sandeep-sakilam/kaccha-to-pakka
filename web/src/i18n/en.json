@@ -15,7 +15,8 @@
     "language": "Language",
     "offline": "You are offline. Your work is saved and will send when the network returns.",
     "loading": "Please wait…",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "skip": "Skip to main content"
   },
   "welcome": {
     "title": "Namaste! Welcome",

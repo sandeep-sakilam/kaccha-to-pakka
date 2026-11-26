@@ -13,6 +13,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const other: Lang = i18n.language === "hi" ? "en" : "hi";
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-xl focus:bg-yellow-300 focus:p-3 focus:text-gray-900">
+        {t("common.skip")}
+      </a>
       <header className="flex items-center justify-between gap-2 border-b border-gray-200 px-4 py-3">
         <Link to="/" className="text-lg font-bold text-brand">
           {t("app.name")}
@@ -35,7 +38,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           {t("common.offline")}
         </p>
       )}
-      <main className="flex-1 p-4">{children}</main>
+      <main id="main" tabIndex={-1} className="flex-1 p-4 focus:outline-none">
+        {children}
+      </main>
     </div>
   );
 }

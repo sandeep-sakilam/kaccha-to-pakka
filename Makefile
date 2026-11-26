@@ -51,6 +51,7 @@ check-web:
 	$(WEB) npx eslint .
 	$(WEB) npx tsc -b --noEmit
 	$(WEB) npx vitest run
+	$(WEB) npx vite build --logLevel error && node scripts/budget.mjs
 
 e2e:
 	$(WEB) npx playwright test --trace off
