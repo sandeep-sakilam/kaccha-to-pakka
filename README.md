@@ -141,3 +141,16 @@ After the ₹1 proof the confirmer answers four bucketed questions (supplier/cus
 ## Presence checks
 
 The first shop-front photo with good GPS sets the shop's home location. With `presence_location` consent, `POST /businesses/{id}/presence/start` schedules 4 checks on random days and hours over the next 28 days; their dates stay hidden from the owner. The worker sends each request when due (WhatsApp/SMS) and marks it missed after 24 hours. A presence photo passes when it arrives in the window with GPS accuracy ≤ 100 m, within 150 m of the shop, and is not a re-sent photo. `POST /sandbox/presence/{id}/now` brings the next check forward for demos (not in production).
+
+## Trust engine
+
+`trust/features.py` gathers a feature snapshot; `trust/rules.py` (`RULES_VERSION = 2026.11-r1`) turns it into a band A–E (or **U**: unverified / insufficient evidence), a confidence level and reasons. No AI is involved.
+
+| Pillar | Built from |
+| --- | --- |
+| Money (40%) | AA or PDF transactions, last 12 months: active months, weekly regularity, volume, seasonality (same month last year when there are 13+ months), freshness; round-trips are netted out |
+| Records (20%) | match rate by value of independent ledgers against money; a ledger that mirrors the bank statement counts once (as money) |
+| Network (25%) | confirmed attestations by weight (3 full = 100); discrepancies subtract |
+| Presence (15%) | business age, shop-front photo, random presence checks passed, in-person visit |
+
+Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C; nothing verified → U; under 3 months → Low confidence. Red flags (tamper signal, round-tripping, failed confirmation, holder-name mismatch) put the assessment **on hold** without changing the band. Money data older than 120 days makes it **stale**. Assessments are immutable (Postgres trigger), store their rules version, model versions, feature snapshot and inputs hash, and `GET /assessments/{id}/verify` recomputes them.

@@ -1,6 +1,8 @@
 """Direct-to-DB builders for scoring and reconciliation tests."""
 
+from collections.abc import Sequence
 from datetime import date
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -40,7 +42,7 @@ def evidence(
 def ledger(
     db: Session,
     ev: EvidenceItem,
-    rows: list[tuple[date, str | None, int, str]],
+    rows: Sequence[tuple[Any, ...]],
     status: str = "extracted",
 ) -> list[LedgerEntry]:
     out = []
@@ -62,9 +64,7 @@ def ledger(
     return out
 
 
-def money(
-    db: Session, ev: EvidenceItem, rows: list[tuple[date, int, str, str | None, str | None]]
-) -> list[BankTransaction]:
+def money(db: Session, ev: EvidenceItem, rows: Sequence[tuple[Any, ...]]) -> list[BankTransaction]:
     out = []
     for i, (d, paise, direction, vpa, name) in enumerate(rows):
         t = BankTransaction(

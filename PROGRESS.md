@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f22-trust-engine`
+Current: none; next is `feat/f23-explanations`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -27,7 +27,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F19 Reverse penny drop verification (sandbox or simulated gateway) (`feat/f19-penny-drop`)
 - [x] F20 Bucketed claims, GSTIN/Udyam check, money match, signed attestation (`feat/f20-attestations`)
 - [x] F21 Presence checks: geotagged photos on random days (`feat/f21-presence`)
-- [ ] F22 Trust engine pillars, caps, red-flag holds, seasonality, freshness, versioning (`feat/f22-trust-engine`)
+- [x] F22 Trust engine pillars, caps, red-flag holds, seasonality, freshness, versioning (`feat/f22-trust-engine`)
 - [ ] F23 Explanations in the owner's language, with template fallback (`feat/f23-explanations`)
 - [ ] F24 Passport issuance: signed credential, QR, Hindi and English PDF (`feat/f24-passport`)
 - [ ] F25 Owner passport screen with coaching tips (`feat/f25-passport-ui`)
