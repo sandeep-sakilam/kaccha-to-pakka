@@ -8,3 +8,5 @@ One line per decision: date | question | choice | reason.
 2026-11-26 | Extra columns beyond the spec table list? | Add a few (status, meta, roles, women_owned, is_sandbox, idempotency_key) | Needed by later flows; spec fields are all present.
 2026-11-26 | How are real vs mock adapters chosen? | Provider setting auto/mock/real, default auto (real only when keys present) | Spec: real turns on when keys are in .env; tests force mock.
 2026-11-26 | Real adapter endpoints can't be verified without keys | Implement against public API docs with model names and URLs in .env; covered by MockTransport tests only | External services never block the build; verify once Sandeep adds keys.
+2026-11-26 | Play Integrity on a web app? | Record device_attestation as web_unattested with device id; real attestation comes with an Android wrapper or WhatsApp capture | Web browsers can't call Play Integrity; ledgers only score when they reconcile with money, so the risk stays bounded.
+2026-11-26 | How long may an offline capture wait? | Up to 7 days between capture and upload | Weak networks need slack; older captures are refused as not live.

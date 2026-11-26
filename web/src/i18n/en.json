@@ -90,6 +90,32 @@
     "no_business": "Let us set up your business.",
     "setup": "Set up business",
     "logout": "Log out",
-    "next_steps": "Next steps"
+    "next_steps": "Next steps",
+    "add_ledger": "Photograph ledger page",
+    "add_shop": "Shop front photo"
+  },
+  "capture": {
+    "title_ledger_page": "Photograph a ledger page",
+    "title_shop_front": "Photo of your shop front",
+    "title_presence": "Shop photo for today",
+    "title_bill": "Photograph a bill",
+    "hint_ledger_page": "Hold the phone straight over one page, in good light.",
+    "hint_shop_front": "Stand outside so the shop board is visible.",
+    "hint_presence": "Take a photo of your shop now. We ask on random days to check the shop is open.",
+    "hint_bill": "Hold the bill flat in good light.",
+    "take": "Take photo",
+    "retake": "Take again",
+    "use": "Use this photo",
+    "why_camera": "We use the live camera only, not old photos, so nobody can send someone else's picture.",
+    "no_camera": "Camera is not available. Please allow camera access.",
+    "blurry": "The photo is blurry. Hold the phone still and try again.",
+    "too_dark": "It is too dark. Move to more light.",
+    "too_bright": "Too much light. Move out of direct sun.",
+    "glare": "There is a shine on the page. Tilt the phone a little.",
+    "saved": "Saved on your phone. It will be sent when there is network.",
+    "sent": "Photo sent!",
+    "pending": "{{count}} photo(s) waiting to send",
+    "rejected": "This photo was not accepted: {{reason}}",
+    "done": "Done"
   }
 }

@@ -86,3 +86,8 @@ A yellow "Sandbox" badge shows whenever any outside service is a mock. First-loa
 
 Login (phone keypad, OTP, PIN) → consent screen read aloud → voice interview (name, what you sell, since when, where; each answer is read back for a yes or no, with icon choices and typing as fallbacks) → optional Udyam/GSTIN (format and checksum checked) → profile.
 `POST /onboarding/interpret` turns a transcript or audio into a field with deterministic rules (`business/interview.py`), never an AI guess. `make e2e` runs the full flow against a real API on the `ktp_e2e` database.
+
+## Capture
+
+Live camera only (no gallery picker). The phone checks blur (Laplacian variance), darkness, over-exposure and glare before saving (`web/src/lib/quality.ts`), compresses to JPEG, stamps time and GPS, and queues the photo in IndexedDB (`web/src/lib/queue.ts`). The queue syncs when the network returns, every upload carrying an `Idempotency-Key`.
+The API (`POST /businesses/{id}/captures`) repeats the cheap checks, refuses photos older than 7 days or with old camera EXIF dates, flags the same photo sent twice, stores the file and a SHA-256 hash, and logs it.
