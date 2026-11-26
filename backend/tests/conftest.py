@@ -118,7 +118,7 @@ def setup_business(
     return h, r.json()["id"]
 
 
-def photo(kind: str = "sharp", size: tuple[int, int] = (800, 1000)) -> bytes:
+def photo(kind: str = "sharp", size: tuple[int, int] = (800, 1000), variant: str = "") -> bytes:
     """Test images: 'sharp' (a sandbox ledger page), 'blurry', 'dark'."""
     import io
 
@@ -141,7 +141,7 @@ def photo(kind: str = "sharp", size: tuple[int, int] = (800, 1000)) -> bytes:
                 "page_total_paise": 400000,
                 "page_confidence": 0.9,
             },
-            noise="x" * 80,
+            noise="x" * 80 + variant,
         )
     img = Image.new("RGB", size, (128, 128, 128) if kind == "blurry" else (5, 5, 5))
     if kind == "blurry":

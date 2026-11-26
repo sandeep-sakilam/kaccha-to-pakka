@@ -137,3 +137,7 @@ The confirmer opens `/confirm/{token}` (no login) and pays ₹1 from their UPI a
 ## Attestations
 
 After the ₹1 proof the confirmer answers four bucketed questions (supplier/customer, years trading, typical monthly value, payment behaviour) and may add a GSTIN or Udyam (format and checksum checked, business name compared with the bank-registered name). `attestations/claims.py` compares the claimed relationship and monthly-value bucket with the actual flows between the two accounts over 12 months: a match is a full confirmation (weight 1.0 with an ID, 0.7 without); a mismatch is a discrepancy (weight 0.2) that lowers the Network pillar. The attestation is saved against the confirmer's own profile, signed with Ed25519 (`core/signing.py`, `make signing-key`) and expires after 6 months. A Sahayak or field officer can confirm a cash-only partner in person (separate evidence type, weight 0.5).
+
+## Presence checks
+
+The first shop-front photo with good GPS sets the shop's home location. With `presence_location` consent, `POST /businesses/{id}/presence/start` schedules 4 checks on random days and hours over the next 28 days; their dates stay hidden from the owner. The worker sends each request when due (WhatsApp/SMS) and marks it missed after 24 hours. A presence photo passes when it arrives in the window with GPS accuracy ≤ 100 m, within 150 m of the shop, and is not a re-sent photo. `POST /sandbox/presence/{id}/now` brings the next check forward for demos (not in production).

@@ -105,6 +105,10 @@ def ingest_capture(
         from app.jobs import enqueue
 
         enqueue(db, "extract_ledger", ev.id)
+    if c.kind in {"shop_front", "presence"}:
+        from app.modules.presence.service import on_capture
+
+        on_capture(db, biz, ev)
     record(
         db,
         actor or f"user:{user.id}",

@@ -384,3 +384,16 @@ class CounterpartyInvite(TimestampMixin, Base):
     penny_ref: Mapped[str | None] = mapped_column(String(64))
     flags: Mapped[list[str]] = mapped_column(Json, default=list)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PresenceRequest(TimestampMixin, Base):
+    """A request, on a random day, for a live geotagged photo of the shop."""
+
+    __tablename__ = "presence_requests"
+    id: Mapped[str] = _id()
+    business_id: Mapped[str] = mapped_column(ForeignKey("businesses.id"), index=True)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    due_by: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(16), default="scheduled")
+    evidence_id: Mapped[str | None] = mapped_column(ForeignKey("evidence_items.id"))
+    result: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
