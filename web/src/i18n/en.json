@@ -103,7 +103,8 @@
     "partners": "Ask partners to confirm",
     "presence_today": "Shop photo for today (asked by us)",
     "start_presence": "Start shop presence checks",
-    "presence_why": "On a few random days we will ask for a shop photo with location. It proves your shop is real and open."
+    "presence_why": "On a few random days we will ask for a shop photo with location. It proves your shop is real and open.",
+    "passport": "My Trust Passport"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -231,5 +232,21 @@
     "done": "Thank you. Your confirmation is signed and saved.",
     "discrepancy": "Thank you. Your answer did not match the payments we see, so it counts for less.",
     "not_guarantor": "You are not a guarantor. But false confirmations lower the weight of all your confirmations."
+  },
+  "passport": {
+    "title": "My Trust Passport",
+    "get": "Make my passport",
+    "refresh": "Update my passport",
+    "band": "Trust band",
+    "why": "Why",
+    "gaps": "What is missing",
+    "improve": "How to make it stronger",
+    "valid_until": "Valid until {{date}}",
+    "download_hi": "Download PDF (Hindi)",
+    "download_en": "Download PDF (English)",
+    "scan": "A lender scans this to check it is real",
+    "not_credit": "This is proof of your business, not a loan. The lender decides.",
+    "do_it": "Do it now",
+    "none": "You do not have a passport yet."
   }
 }

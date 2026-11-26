@@ -56,6 +56,9 @@ export default function Home() {
       )}
       {biz && (
         <>
+          <BigButton icon="🛂" onClick={() => nav(`/passport/${biz.id}`)}>
+            {t("home.passport")}
+          </BigButton>
           <h2 className="text-xl font-semibold">{t("home.next_steps")}</h2>
           {toCheck > 0 && (
             <BigButton icon="🔎" onClick={() => nav(`/readback/${biz.id}`)}>
