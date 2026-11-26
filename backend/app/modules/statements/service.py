@@ -5,11 +5,12 @@ from sqlalchemy.orm import Session
 
 from app.adapters.registry import get_adapters
 from app.core.errors import DomainError
-from app.db.models import Business, EvidenceItem, User
+from app.db.models import Business, Dispute, EvidenceItem, User
 from app.modules.audit.service import record
 from app.modules.consent import service as consent
 from app.modules.statements.money import MoneyTxn, store_transactions
 from app.modules.statements.parsers import ParsedStatement, StatementError, parse_statement
+from app.modules.statements.tamper import run_checks
 
 MAX_BYTES = 10 * 1024 * 1024
 
@@ -87,6 +88,27 @@ def ingest_statement(
         ],
     )
     ev.meta = {**ev.meta, "txns": stored, "duplicates_skipped": skipped}
+    report = run_checks(data, st)
+    ev.meta = {**ev.meta, "tamper": report.as_dict()}
+    if report.verdict == "hold":
+        ev.status = "on_hold"
+        db.add(
+            Dispute(
+                target_type="evidence",
+                target_id=ev.id,
+                business_id=biz.id,
+                raised_by="system",
+                reason="Statement PDF failed tamper checks: "
+                + ", ".join(sg.code for sg in report.signals if sg.severity == "hold"),
+            )
+        )
+        record(
+            db,
+            "system",
+            "money.tamper_hold",
+            f"business:{biz.id}",
+            {"evidence_id": ev.id, "signals": [sg.code for sg in report.signals]},
+        )
     record(
         db,
         f"user:{user.id}",

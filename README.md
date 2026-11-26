@@ -113,3 +113,7 @@ For pages in Mahajani or Sarrafi script, or handwriting the AI can't read, the o
 ## Statement PDFs
 
 `POST /businesses/{id}/statements` reads bank and UPI statement PDFs with pdfplumber. Known layouts are parsed by fixed rules; an unknown layout is read by the LLM only if its running balance then adds up row by row, else it is rejected with the reason. Scanned PDFs are refused. Transactions are stored once (by UTR, or by date/amount/balance), so overlapping statements never double-count; every UPI ID becomes a counterparty node. `app/sandbox/statements.py` generates sandbox statements.
+
+## PDF tamper checks
+
+Every statement PDF runs `statements/tamper.py`: editing-tool producers (iLovePDF, Word, Sejda, Canva…), changes appended after the first save, a few characters in a different font, malformed or repeated UTRs, running-balance breaks and closing-balance mismatch put it **on hold** (status `on_hold` plus a reviewer dispute); unknown producers, later modification dates and out-of-order dates are recorded as warnings. A hold pauses the passport; it is never offset by good evidence elsewhere.
