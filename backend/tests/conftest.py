@@ -149,3 +149,13 @@ def photo(kind: str = "sharp", size: tuple[int, int] = (800, 1000), variant: str
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return buf.getvalue()
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits() -> Iterator[None]:
+    from app.modules.abuse.limits import MemoryCounter, counter
+
+    c = counter()
+    if isinstance(c, MemoryCounter):
+        c.data.clear()
+    yield

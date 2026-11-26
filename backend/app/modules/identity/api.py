@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
 from app.core.deps import DB, CurrentUser, SessionDep
@@ -67,8 +67,9 @@ def _out(r: service.LoginResult) -> LoginOut:
 
 
 @router.post("/otp/request", response_model=OtpRequested)
-def otp_request(body: OtpRequest, db: DB) -> OtpRequested:
-    sent = service.request_otp(db, body.phone, body.language)
+def otp_request(body: OtpRequest, db: DB, request: Request) -> OtpRequested:
+    ip = request.client.host if request.client else None
+    sent = service.request_otp(db, body.phone, body.language, ip)
     db.commit()
     return OtpRequested(
         challenge_id=sent.challenge_id, expires_at=sent.expires_at, sandbox_code=sent.sandbox_code

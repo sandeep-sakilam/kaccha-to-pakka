@@ -55,6 +55,11 @@ def ingest_capture(
             raise DomainError("Upload key already used", "idempotency_conflict", 409)
         return existing, False
     consent.require(db, biz.owner_user_id, "build_passport", biz.id)
+    from app.modules.abuse.limits import hit
+
+    hit("capture_device", c.device_id)
+    if user.id != biz.owner_user_id:
+        hit("sahayak_actions", user.id)
     if c.kind not in CAPTURE_KINDS:
         raise DomainError("Unknown capture kind", "bad_kind")
     if c.mime not in ALLOWED_MIME:

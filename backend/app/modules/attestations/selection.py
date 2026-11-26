@@ -107,6 +107,9 @@ def invite(
             "You can only invite the partners we picked from your payments", "not_selected", 403
         )
     phone = normalise_phone(phone)
+    from app.modules.abuse.limits import hit
+
+    hit("invites_business", biz.id)
     owner = db.get(User, biz.owner_user_id)
     flags: list[str] = []
     if owner is not None and phone == owner.phone:

@@ -155,6 +155,9 @@ def submit(
     if inv.status != "proven":
         raise DomainError("Prove your account with ₹1 first", "not_proven", 409)
     validate(claim)
+    from app.modules.abuse.limits import count_distinct
+
+    count_distinct("confirmer_month", inv.phone, inv.business_id)
     cp = db.get(Counterparty, inv.counterparty_id)
     assert cp is not None
     id_status = "none"

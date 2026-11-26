@@ -125,6 +125,13 @@ def by_token(db: Session, token: str) -> Share:
     st = state(s)
     if st != "active":
         raise Gone(f"This share has {st}. Ask the owner for a new link.", f"share_{st}")
+    from app.modules.abuse.limits import hit
+    from app.modules.abuse.service import Frozen, frozen_until
+
+    hit("lender_views", s.id)
+    owner = db.get(User, business_of(db, s).owner_user_id)
+    if owner is not None and frozen_until(db, owner) is not None:
+        raise Frozen("This share is paused for 24 hours for the owner's safety.", "share_paused")
     return s
 
 

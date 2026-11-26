@@ -48,8 +48,13 @@ class OtpSent:
     sandbox_code: str | None  # only when SMS is a mock, so the demo can proceed
 
 
-def request_otp(db: Session, phone: str, language: str = "hi") -> OtpSent:
+def request_otp(db: Session, phone: str, language: str = "hi", ip: str | None = None) -> OtpSent:
+    from app.modules.abuse.limits import hit
+
     phone = normalise_phone(phone)
+    hit("otp_phone", phone)
+    if ip:
+        hit("otp_ip", ip)
     code = security.new_otp()
     ch = OtpChallenge(
         phone=phone, code_hash=security.hash_token(code), expires_at=utcnow() + OTP_TTL
@@ -141,6 +146,18 @@ def verify_otp(
     if user.status != "active":
         raise AuthError("This account is not active", "inactive")
     new_device = _bind_device(db, user, device_id)
+    if new_device:
+        from app.modules.notify import notify
+
+        notify(
+            db,
+            user,
+            "new_device",
+            "नए फ़ोन से लॉग इन हुआ। सुरक्षा के लिए 24 घंटे शेयर रुके हैं। अगर यह आप नहीं थे, तो तुरंत "
+            "PIN बदलें और हमें बताएँ।",
+            "A new phone logged in. Sharing is paused for 24 hours for your safety. If this was "
+            "not you, change your PIN and tell us.",
+        )
     token = _issue_session(db, user, device_id, "otp", new_device)
     record(
         db,
