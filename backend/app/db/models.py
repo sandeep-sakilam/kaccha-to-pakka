@@ -329,3 +329,27 @@ class DeviceBinding(TimestampMixin, Base):
     label: Mapped[str | None] = mapped_column(String(100))
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class JobFailure(TimestampMixin, Base):
+    """Dead-letter queue: a job that failed all its retries, kept with its error for review."""
+
+    __tablename__ = "job_failures"
+    id: Mapped[str] = _id()
+    job: Mapped[str] = mapped_column(String(64))
+    args: Mapped[list[Any]] = mapped_column(Json, default=list)
+    error: Mapped[str] = mapped_column(Text)
+    attempts: Mapped[int] = mapped_column(Integer, default=1)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Notification(TimestampMixin, Base):
+    """Every message we send an owner, kept so the app can show it too."""
+
+    __tablename__ = "notifications"
+    id: Mapped[str] = _id()
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    channel: Mapped[str] = mapped_column(String(16))
+    text: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(String(48))
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -38,7 +38,7 @@ def _upload(
 def test_capture_and_idempotent_retry(client: TestClient) -> None:
     h, biz = setup_business(client)
     first = _upload(client, h, biz, photo(), "key-aaaaaaaa")
-    assert first["_status"] == 200 and first["status"] == "received" and first["has_geo"]
+    assert first["_status"] == 200 and first["status"] == "extracted" and first["has_geo"]
     again = _upload(client, h, biz, photo(), "key-aaaaaaaa")
     assert again["id"] == first["id"]
     listing = client.get(f"/businesses/{biz}/evidence", headers=h).json()

@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f10-ledger-extraction`
+Current: none; next is `feat/f11-readback`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -15,7 +15,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F07 Web app shell: installable, i18n (Hindi, English), voice playback of each screen (`feat/f07-web-shell`)
 - [x] F08 Voice onboarding and business profile (`feat/f08-onboarding`)
 - [x] F09 Live-camera capture with on-phone quality check, offline queue and sync (`feat/f09-capture`)
-- [ ] F10 Ledger extraction through Sarvam Vision with schema and confidence; fallback model (`feat/f10-ledger-extraction`)
+- [x] F10 Ledger extraction through Sarvam Vision with schema and confidence; fallback model (`feat/f10-ledger-extraction`)
 - [ ] F11 Page-total checksum and owner read-back confirmation (`feat/f11-readback`)
 - [ ] F12 Voice entry for unreadable ledgers (`feat/f12-voice-entry`)
 - [ ] F13 Ledger-app CSV import (Khatabook, OkCredit, Vyapar) (`feat/f13-csv-import`)
