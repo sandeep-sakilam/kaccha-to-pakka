@@ -1,4 +1,7 @@
 # Local quality gate and dev helpers. `make check` must pass before every PR.
+signing-key:  ## print a new Ed25519 passport signing key for .env
+	$(BACKEND) uv run python -c "from app.core.signing import new_key_b64; print(new_key_b64())"
+
 migrate:  ## apply database migrations
 	$(BACKEND) uv run alembic upgrade head
 

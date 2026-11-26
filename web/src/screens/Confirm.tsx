@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
+import { ClaimForm } from "@/components/ClaimForm";
 import { Screen } from "@/components/Screen";
 import { BigButton, Card, SandboxBadge } from "@/components/ui";
 import { setLanguage } from "@/i18n";
@@ -109,7 +110,7 @@ export default function Confirm({ children }: { children?: (token: string) => Re
           <p role="status" className="rounded-xl bg-brand-light p-3 text-lg" data-testid="confirm-status">
             {t("confirm.proven")}
           </p>
-          {children?.(token)}
+          {children ? children(token) : <ClaimForm token={token} defaultRelationship={inv.relationship} />}
         </>
       )}
     </Screen>
