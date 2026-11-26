@@ -22,6 +22,8 @@ dependencies = [
   "reportlab>=5.1.2",
   "rapidfuzz>=3.14.6",
   "pynacl>=1.6.2",
+  "weasyprint>=70.0",
+  "qrcode>=8.2",
 ]
 
 [dependency-groups]
