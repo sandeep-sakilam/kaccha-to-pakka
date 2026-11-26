@@ -23,7 +23,7 @@ import pytest  # noqa: E402
 from sqlalchemy import Connection  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
-from app.db import models  # noqa: E402, F401
+from app.db import models, triggers  # noqa: E402, F401
 from app.db.base import Base, get_engine  # noqa: E402
 
 

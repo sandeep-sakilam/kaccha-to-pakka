@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.adapters.registry import get_adapters
 from app.core.config import get_settings
+from app.db import triggers  # noqa: F401  (database guarantees)
 
 
 def create_app() -> FastAPI:

@@ -58,3 +58,8 @@ Each `*_PROVIDER` setting is `auto` (real when its keys are in `.env`, otherwise
 | WhatsApp / SMS | `WhatsApp`, `SMS` | Meta Cloud API, MSG91 | outbox recorders, never message real people |
 | KYC | `KYCProvider` | licensed PAN API | `MockKYC` |
 | Files | `Storage` | S3-compatible (India region) | local disk or memory |
+
+## Audit log
+
+Every read, share, score and reviewer action is written with `app.modules.audit.service.record()` in the same transaction as the change.
+Entries are hash-chained (`sha256(prev_hash || canonical record)`), a Postgres trigger refuses UPDATE and DELETE, and `verify_chain()` finds the first altered entry.
