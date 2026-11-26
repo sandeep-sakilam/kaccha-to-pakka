@@ -367,3 +367,20 @@ class NameAlias(TimestampMixin, Base):
     party_key: Mapped[str] = mapped_column(String(200))
     counterparty_key: Mapped[str] = mapped_column(String(200))
     same: Mapped[bool] = mapped_column(Boolean)
+
+
+class CounterpartyInvite(TimestampMixin, Base):
+    """An invitation to a system-selected trading partner to confirm the relationship."""
+
+    __tablename__ = "counterparty_invites"
+    id: Mapped[str] = _id()
+    business_id: Mapped[str] = mapped_column(ForeignKey("businesses.id"), index=True)
+    counterparty_id: Mapped[str] = mapped_column(ForeignKey("counterparties.id"), index=True)
+    phone: Mapped[str] = mapped_column(String(16), index=True)
+    language: Mapped[str] = mapped_column(String(8), default="hi")
+    token: Mapped[str] = mapped_column(String(64), unique=True)
+    relationship_hint: Mapped[str] = mapped_column(String(16))  # supplier or customer
+    status: Mapped[str] = mapped_column(String(16), default="sent")
+    penny_ref: Mapped[str | None] = mapped_column(String(64))
+    flags: Mapped[list[str]] = mapped_column(Json, default=list)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

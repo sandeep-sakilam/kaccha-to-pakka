@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.core.errors import install_handlers
 from app.db import triggers  # noqa: F401  (database guarantees)
 from app.modules.aa.api import router as aa_router
+from app.modules.attestations.api import router as attest_router
 from app.modules.business.api import router as business_router
 from app.modules.consent.api import router as consent_router
 from app.modules.evidence.api import router as evidence_router
@@ -29,6 +30,7 @@ ROUTERS = [
     statements_router,
     aa_router,
     recon_router,
+    attest_router,
 ]
 
 
