@@ -92,7 +92,8 @@
     "logout": "Log out",
     "next_steps": "Next steps",
     "add_ledger": "Photograph ledger page",
-    "add_shop": "Shop front photo"
+    "add_shop": "Shop front photo",
+    "to_check": "{{count}} entries to check"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -117,5 +118,18 @@
     "pending": "{{count}} photo(s) waiting to send",
     "rejected": "This photo was not accepted: {{reason}}",
     "done": "Done"
+  },
+  "readback": {
+    "title": "Check these entries",
+    "intro": "Listen and say if each entry is right.",
+    "reason_low_confidence": "We were not sure we read this right.",
+    "reason_page_total": "This page's total does not match its entries.",
+    "correct_amount": "Say or tap the right amount",
+    "received": "Received",
+    "paid": "Paid",
+    "save": "Save",
+    "not_mine": "This is not in my ledger",
+    "all_done": "All entries checked. Thank you!",
+    "left": "{{count}} left"
   }
 }
