@@ -208,5 +208,25 @@
     "proven": "Thank you! Your account is confirmed.",
     "rejected": "The ₹1 came from a different account than the one in their payments, so we cannot accept this confirmation.",
     "not_valid": "This link is not valid any more."
+  },
+  "claim": {
+    "intro": "Four quick questions. Pick the closest answer.",
+    "q_relationship": "You are their…",
+    "q_years": "How long have you traded?",
+    "q_value": "Typical value per month",
+    "q_behaviour": "How do they pay?",
+    "on_time": "On time",
+    "sometimes_late": "Sometimes late",
+    "often_late": "Often late",
+    "years_lt1": "Less than 1 year",
+    "years_1_3": "1 to 3 years",
+    "years_3_5": "3 to 5 years",
+    "years_5p": "More than 5 years",
+    "id_optional": "Your GSTIN or Udyam (optional, makes your word count more)",
+    "business_name": "Your business name",
+    "submit": "Confirm",
+    "done": "Thank you. Your confirmation is signed and saved.",
+    "discrepancy": "Thank you. Your answer did not match the payments we see, so it counts for less.",
+    "not_guarantor": "You are not a guarantor. But false confirmations lower the weight of all your confirmations."
   }
 }

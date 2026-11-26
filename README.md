@@ -133,3 +133,7 @@ Every statement PDF runs `statements/tamper.py`: editing-tool producers (iLovePD
 ## Reverse penny drop
 
 The confirmer opens `/confirm/{token}` (no login) and pays ₹1 from their UPI app to our verification UPI ID (`POST /invites/{token}/penny-drop` gives the UPI link). `POST /invites/{token}/penny-drop/check` compares the payer UPI ID (exact) and bank-registered name (≥ 80 similarity) with the counterparty in the owner's payments: a match proves control; anything else rejects the confirmation, opens a reviewer dispute and red-flags the business. The ₹1 is always refunded. In Sandbox a simulated gateway stands in, and the page lets you choose which UPI ID "pays".
+
+## Attestations
+
+After the ₹1 proof the confirmer answers four bucketed questions (supplier/customer, years trading, typical monthly value, payment behaviour) and may add a GSTIN or Udyam (format and checksum checked, business name compared with the bank-registered name). `attestations/claims.py` compares the claimed relationship and monthly-value bucket with the actual flows between the two accounts over 12 months: a match is a full confirmation (weight 1.0 with an ID, 0.7 without); a mismatch is a discrepancy (weight 0.2) that lowers the Network pillar. The attestation is saved against the confirmer's own profile, signed with Ed25519 (`core/signing.py`, `make signing-key`) and expires after 6 months. A Sahayak or field officer can confirm a cash-only partner in person (separate evidence type, weight 0.5).
