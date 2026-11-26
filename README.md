@@ -117,3 +117,7 @@ For pages in Mahajani or Sarrafi script, or handwriting the AI can't read, the o
 ## PDF tamper checks
 
 Every statement PDF runs `statements/tamper.py`: editing-tool producers (iLovePDF, Word, Sejda, Canva…), changes appended after the first save, a few characters in a different font, malformed or repeated UTRs, running-balance breaks and closing-balance mismatch put it **on hold** (status `on_hold` plus a reviewer dispute); unknown producers, later modification dates and out-of-order dates are recorded as warnings. A hold pauses the passport; it is never offset by good evidence elsewhere.
+
+## Account Aggregator
+
+"Link bank" records our `aa_fetch` consent (12 months) and, by default, `monthly_refresh`, then asks the AA for consent. In Sandbox the AA app is replaced by an in-app approve/reject page (`/sandbox/aa/approve/:handle`, labelled Sandbox; the API route exists only while the AA adapter is the mock). Approved data is stored once per transaction, so re-fetches never double-count. The worker runs a daily cron that refreshes links older than 30 days; revoking stops both the AA consent and the refresh. If the AA is down the owner is pointed to the PDF fallback.
