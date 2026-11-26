@@ -97,7 +97,8 @@
     "read_aloud": "Read ledger aloud",
     "needs_voice": "{{count}} page(s) could not be read. Read them aloud.",
     "import_csv": "Add Khatabook / OkCredit / Vyapar file",
-    "add_statement": "Add bank / UPI statement PDF"
+    "add_statement": "Add bank / UPI statement PDF",
+    "link_bank": "Link bank account (strongest)"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -157,5 +158,18 @@
     "intro": "Download the PDF statement from your bank or UPI app, then pick it here. Linking your bank directly is stronger: a PDF alone can reach at most band C.",
     "pick": "Choose PDF statement",
     "done": "{{count}} payments added."
+  },
+  "aa": {
+    "title": "Link your bank",
+    "why": "Your bank sends 12 months of payments straight to us, through Account Aggregator. Nobody can edit it, so it is the strongest proof.",
+    "monthly": "Refresh every month so the passport stays fresh",
+    "link": "Link bank",
+    "sandbox_title": "Sandbox Account Aggregator",
+    "sandbox_hint": "In real use, your AA app opens here. In Sandbox, approve or reject below.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "fetching": "Getting your bank data…",
+    "done": "{{count}} payments received from {{bank}}.",
+    "rejected": "You said no. Nothing was shared."
   }
 }
