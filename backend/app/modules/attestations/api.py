@@ -7,7 +7,7 @@ from sqlalchemy import select
 from app.core.access import business_for
 from app.core.deps import DB, CurrentUser
 from app.db.models import Business, Counterparty, CounterpartyInvite
-from app.modules.attestations import selection
+from app.modules.attestations import penny_drop, selection
 
 router = APIRouter(tags=["attestations"])
 
@@ -126,3 +126,59 @@ def public_invite(token: str, db: DB) -> PublicInvite:
         expires_at=inv.expires_at,
         sandbox=get_adapters().payments.sandbox,
     )
+
+
+class PennyDropOut(BaseModel):
+    ref: str
+    pay_to_vpa: str
+    amount_paise: int
+    upi_link: str
+    sandbox: bool
+
+
+@router.post("/invites/{token}/penny-drop", response_model=PennyDropOut)
+def start_penny_drop(token: str, db: DB) -> PennyDropOut:
+    from app.adapters.registry import get_adapters
+
+    inv = selection.by_token(db, token)
+    req = penny_drop.start(db, inv)
+    db.commit()
+    return PennyDropOut(
+        ref=req.ref,
+        pay_to_vpa=req.pay_to_vpa,
+        amount_paise=req.amount_paise,
+        upi_link=req.upi_link,
+        sandbox=get_adapters().payments.sandbox,
+    )
+
+
+class ProofOut(BaseModel):
+    status: str
+    reason: str | None
+
+
+@router.post("/invites/{token}/penny-drop/check", response_model=ProofOut)
+def check_penny_drop(token: str, db: DB) -> ProofOut:
+    inv = selection.by_token(db, token)
+    res = penny_drop.check(db, inv)
+    db.commit()
+    return ProofOut(status=res.status, reason=res.reason)
+
+
+class SandboxPayIn(BaseModel):
+    payer_vpa: str = Field(min_length=3, max_length=128)
+    payer_name: str = Field(min_length=1, max_length=200)
+
+
+@router.post("/sandbox/payments/{ref}/pay")
+def sandbox_pay(ref: str, body: SandboxPayIn) -> dict[str, str]:
+    """Stands in for the confirmer's UPI app. Only exists while payments are simulated."""
+    from app.adapters.payments import MockPaymentGateway
+    from app.adapters.registry import get_adapters
+    from app.core.errors import NotFound
+
+    gw = get_adapters().payments
+    if not isinstance(gw, MockPaymentGateway):
+        raise NotFound("Not found", "not_found")
+    gw.simulate_payment(ref, body.payer_vpa, body.payer_name)
+    return {"status": "PAID"}
