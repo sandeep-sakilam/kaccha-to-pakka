@@ -166,3 +166,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 ## Owner passport screen
 
 `/passport/:businessId` shows the band as a large coloured tile, its label, confidence, status (Active / On hold / Expired) and valid-until date in IST, the headline, reasons and gaps, and coaching tips each with a "Do it now" button to the right screen (link bank, ask partners, add ledger, shop photo). It shows the verification QR, PDF downloads in Hindi and English, the Sandbox badge when relevant, and "not a loan: the lender decides". The Listen button reads the headline, gaps and tips aloud.
+
+## Demo data
+
+`make seed` resets the **local** database (refused in production) and loads three fictional Indore businesses (kirana → A, namkeen maker → B, tailor with PDF only → C) and the scripted fraud attempt (a friend posing as a supplier). See `docs/demo-script.md` for logins and the scene-by-scene demo.
