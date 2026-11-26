@@ -1,11 +1,22 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { SandboxProvider } from "@/lib/sandbox";
 import Welcome from "@/screens/Welcome";
 
 const Never = lazy(() => import("@/screens/Never"));
+const Login = lazy(() => import("@/screens/Login"));
+const Consent = lazy(() => import("@/screens/Consent"));
+const Interview = lazy(() => import("@/screens/Interview"));
+const Home = lazy(() => import("@/screens/Home"));
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { me, loading } = useAuth();
+  if (loading) return <Loading />;
+  return me ? <>{children}</> : <Navigate to="/start" replace />;
+}
 
 function Loading() {
   const { t } = useTranslation();
@@ -19,6 +30,10 @@ export function AppRoutes() {
         <Routes>
           <Route path="/" element={<Welcome />} />
           <Route path="/never" element={<Never />} />
+          <Route path="/start" element={<Login />} />
+          <Route path="/consent" element={<RequireAuth><Consent /></RequireAuth>} />
+          <Route path="/interview" element={<RequireAuth><Interview /></RequireAuth>} />
+          <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
           <Route path="*" element={<Welcome />} />
         </Routes>
       </Suspense>
@@ -29,9 +44,11 @@ export function AppRoutes() {
 export default function App() {
   return (
     <SandboxProvider>
+      <AuthProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AppRoutes />
       </BrowserRouter>
+      </AuthProvider>
     </SandboxProvider>
   );
 }

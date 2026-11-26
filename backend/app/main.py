@@ -6,11 +6,12 @@ from app.adapters.registry import get_adapters
 from app.core.config import get_settings
 from app.core.errors import install_handlers
 from app.db import triggers  # noqa: F401  (database guarantees)
+from app.modules.business.api import router as business_router
 from app.modules.consent.api import router as consent_router
 from app.modules.identity.api import router as auth_router
 from app.modules.voice.api import router as voice_router
 
-ROUTERS = [auth_router, consent_router, voice_router]
+ROUTERS = [auth_router, consent_router, voice_router, business_router]
 
 
 def create_app() -> FastAPI:
