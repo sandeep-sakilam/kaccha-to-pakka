@@ -99,7 +99,8 @@
     "import_csv": "Add Khatabook / OkCredit / Vyapar file",
     "add_statement": "Add bank / UPI statement PDF",
     "link_bank": "Link bank account (strongest)",
-    "recon_questions": "{{count}} name question(s) to answer"
+    "recon_questions": "{{count}} name question(s) to answer",
+    "partners": "Ask partners to confirm"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -177,5 +178,21 @@
     "title": "Are these the same person?",
     "intro": "Your ledger name and the bank name look different. Tell us if they are the same.",
     "done": "Thank you. {{rate}}% of your ledger now matches your bank payments."
+  },
+  "partners": {
+    "title": "Ask your trading partners",
+    "intro": "We picked your top partners from your payments. You cannot change this list. Enter each one's phone number and we will ask them to confirm.",
+    "none": "Add bank data first. We pick partners from your payments.",
+    "supplier": "Supplier",
+    "customer": "Customer",
+    "months": "{{count}} months of payments",
+    "enter_phone": "Their mobile number",
+    "send": "Send invite",
+    "status_sent": "Invite sent",
+    "status_opened": "Opened",
+    "status_proven": "Account proven",
+    "status_confirmed": "Confirmed",
+    "status_rejected": "Not confirmed",
+    "status_expired": "Expired"
   }
 }

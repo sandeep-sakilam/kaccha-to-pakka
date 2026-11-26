@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f18-counterparty-invites`
+Current: none; next is `feat/f19-penny-drop`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -23,7 +23,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F15 PDF tamper checks (`feat/f15-tamper-checks`)
 - [x] F16 Account Aggregator sandbox adapter and consent flow (`feat/f16-account-aggregator`)
 - [x] F17 Reconciliation engine with transliterated name matching and owner disambiguation (`feat/f17-reconciliation`)
-- [ ] F18 Counterparty selection from money data and invite flow (`feat/f18-counterparty-invites`)
+- [x] F18 Counterparty selection from money data and invite flow (`feat/f18-counterparty-invites`)
 - [ ] F19 Reverse penny drop verification (sandbox or simulated gateway) (`feat/f19-penny-drop`)
 - [ ] F20 Bucketed claims, GSTIN/Udyam check, money match, signed attestation (`feat/f20-attestations`)
 - [ ] F21 Presence checks: geotagged photos on random days (`feat/f21-presence`)

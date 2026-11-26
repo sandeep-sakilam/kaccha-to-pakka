@@ -79,6 +79,9 @@ export default function Home() {
           <BigButton icon="🏦" onClick={() => nav(`/link-bank/${biz.id}`)}>
             {t("home.link_bank")}
           </BigButton>
+          <BigButton variant="secondary" icon="🤝" onClick={() => nav(`/partners/${biz.id}`)}>
+            {t("home.partners")}
+          </BigButton>
           <BigButton variant="secondary" icon="🧾" onClick={() => nav(`/statement/${biz.id}`)}>
             {t("home.add_statement")}
           </BigButton>

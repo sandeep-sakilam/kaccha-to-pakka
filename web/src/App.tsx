@@ -19,6 +19,7 @@ const ImportCsv = lazy(() => import("@/screens/ImportCsv"));
 const Statement = lazy(() => import("@/screens/Statement"));
 const LinkBank = lazy(() => import("@/screens/LinkBank"));
 const ReconQuestions = lazy(() => import("@/screens/ReconQuestions"));
+const Partners = lazy(() => import("@/screens/Partners"));
 const SandboxAA = lazy(() => import("@/screens/SandboxAA"));
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -43,6 +44,7 @@ export function AppRoutes() {
           <Route path="/consent" element={<RequireAuth><Consent /></RequireAuth>} />
           <Route path="/interview" element={<RequireAuth><Interview /></RequireAuth>} />
           <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
+          <Route path="/partners/:businessId" element={<RequireAuth><Partners /></RequireAuth>} />
           <Route path="/recon/:businessId" element={<RequireAuth><ReconQuestions /></RequireAuth>} />
           <Route path="/link-bank/:businessId" element={<RequireAuth><LinkBank /></RequireAuth>} />
           <Route path="/sandbox/aa/approve/:handle" element={<RequireAuth><SandboxAA /></RequireAuth>} />

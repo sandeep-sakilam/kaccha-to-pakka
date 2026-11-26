@@ -125,3 +125,7 @@ Every statement PDF runs `statements/tamper.py`: editing-tool producers (iLovePD
 ## Reconciliation
 
 `reconciliation/engine.py` matches counted ledger entries (high-confidence or owner-confirmed) to money data (excluding statements on hold): same direction, exact amount, dates within ±3 days, and names that agree across scripts (`names.py` transliterates Devanagari, drops honorifics like "ji" and words like "traders", and uses rapidfuzz token-set similarity). A nameless entry matches only when it is the single candidate both ways (weaker rule). Unclear names become owner questions ("Is Pappu the same as PRADEEP KUMAR?"), remembered as aliases. A party's entries on nearby days can add up to one payment (many-to-one). The match rate by value feeds the Records pillar.
+
+## Counterparty invites
+
+`GET /businesses/{id}/counterparties/top` lists the top 5 counterparties by value over the last 6 months of money data (statements on hold excluded), with masked UPI ID, bank payee name and supplier/customer role. The owner cannot add or swap names; they only give a phone number per partner (`POST /businesses/{id}/invites`). The invite goes out on WhatsApp (SMS fallback) in the confirmer's language with a `/confirm/{token}` link. The owner's own number is refused, and one number routed for several partners is flagged. The public invite view shows only the claim being confirmed.
