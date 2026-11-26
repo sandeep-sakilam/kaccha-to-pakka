@@ -30,6 +30,7 @@ class WhatsApp(Protocol):
         self, to: str, text: str, buttons: list[str] | None = None, media_url: str | None = None
     ) -> str: ...
     def verify_signature(self, body: bytes, signature: str) -> bool: ...
+    def fetch_media(self, media_id: str) -> tuple[bytes, str]: ...
 
 
 class SMS(Protocol):
@@ -58,6 +59,13 @@ class MockWhatsApp:
 
     def verify_signature(self, body: bytes, signature: str) -> bool:
         return True
+
+    media: dict[str, tuple[bytes, str]] = field(default_factory=dict)
+
+    def fetch_media(self, media_id: str) -> tuple[bytes, str]:
+        if media_id not in self.media:
+            raise AdapterError("unknown media")
+        return self.media[media_id]
 
     def last_to(self, to: str) -> OutboundMessage | None:
         return next((m for m in reversed(self.outbox) if m.to == to), None)
@@ -116,6 +124,17 @@ class MetaWhatsApp:
             return str(res.json()["messages"][0]["id"])
         except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
             raise AdapterError(f"whatsapp: {exc}") from exc
+
+    def fetch_media(self, media_id: str) -> tuple[bytes, str]:
+        try:
+            meta = self.client.get(f"/{media_id}")
+            meta.raise_for_status()
+            info = meta.json()
+            data = self.client.get(str(info["url"]))
+            data.raise_for_status()
+            return data.content, str(info.get("mime_type", "application/octet-stream"))
+        except (httpx.HTTPError, KeyError, ValueError) as exc:
+            raise AdapterError(f"whatsapp media: {exc}") from exc
 
     def verify_signature(self, body: bytes, signature: str) -> bool:
         if not self.s.whatsapp_app_secret:

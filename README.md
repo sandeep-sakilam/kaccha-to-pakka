@@ -184,3 +184,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 - `/lender`: scan a passport QR (BarcodeDetector camera) or paste a link.
 - `/v/{id}#{token}`: verifies the QR signature in the browser with the Ed25519 public key (`tweetnacl`, key cached for offline use), then fetches live status. A changed QR shows "Signature NOT valid".
 - `/l/{token}`: the shared scope only, with a diagonal watermark "Shared with {lender} · {date} · do not forward"; evidence scope adds monthly money totals, ledger match rate, partner confirmations as labels, presence checks, evidence hashes and flags. `GET /l/{token}/passport.pdf` gives a watermarked PDF. Every view is logged and shown to the owner.
+
+## WhatsApp bot
+
+`POST /whatsapp/webhook` (Meta Cloud API, signature checked when real; `GET` handles the verify challenge). Conversation state is kept per phone in `wa_conversations`; repeated webhook deliveries are handled once. Flow: "Hi" → language buttons → 4-digit PIN (WhatsApp already proves the number) → consent text with Yes/No → name, what you sell, since when, where (text or voice note, each read back for Yes/No) → profile. Then: send a ledger photo (extracted, then low-confidence entries read back with Yes/No buttons), "check" for pending entries, "passport" for the band, headline, tips and verify link. SMS is used when WhatsApp is down.

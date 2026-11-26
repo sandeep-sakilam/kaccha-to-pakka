@@ -397,3 +397,16 @@ class PresenceRequest(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(16), default="scheduled")
     evidence_id: Mapped[str | None] = mapped_column(ForeignKey("evidence_items.id"))
     result: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+
+
+class WaConversation(TimestampMixin, Base):
+    """WhatsApp bot state per phone number."""
+
+    __tablename__ = "wa_conversations"
+    id: Mapped[str] = _id()
+    phone: Mapped[str] = mapped_column(String(16), unique=True)
+    state: Mapped[str] = mapped_column(String(24), default="new")
+    data: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )

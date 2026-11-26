@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f30-whatsapp`
+Current: none; next is `feat/f31-sahayak`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -35,7 +35,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F27 Deployment files and deploy guide (submission cut, 30 Nov 2026) (`feat/f27-deploy`)
 - [x] F28 Scoped shares, expiry, revoke, owner view notifications (`feat/f28-shares`)
 - [x] F29 Lender portal: QR verify, live status, evidence view, watermark (`feat/f29-lender-portal`)
-- [ ] F30 WhatsApp bot: onboarding, capture, confirmations (`feat/f30-whatsapp`)
+- [x] F30 WhatsApp bot: onboarding, capture, confirmations (`feat/f30-whatsapp`)
 - [ ] F31 Sahayak mode with action tagging and permissions (`feat/f31-sahayak`)
 - [ ] F32 Fraud graph: cycles, collusion clusters, confirmer weighting (`feat/f32-fraud-graph`)
 - [ ] F33 Sahayak anomaly monitoring and reviewer dispute queue (`feat/f33-review-queue`)
