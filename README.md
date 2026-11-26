@@ -208,3 +208,7 @@ Disputes come from the system (tamper holds, page totals, failed confirmations, 
 ## Evaluation
 
 `make eval` runs `app/evaluation/harness.py` on a scratch database and writes `backend/eval/report.md` and `report.json`: field-level extraction accuracy and exact-amount match per provider (golden set in `backend/eval/golden/`, synthetic until real pages are added), reconciliation precision/recall on synthetic businesses with known ground truth, the red-team suite (one case per fraud-table row plus stale passport; currently 13/13 caught), speech-to-text WER (when transcripts are added), AI cost per passport, and band distribution by business type, season and owner gender. With Sandbox models the numbers show the harness works, not real model accuracy.
+
+## Accessibility and performance
+
+WCAG 2.2 AA checks (axe-core) and a slow-3G / 4× CPU Moto G4 run are part of `make e2e`; the first-load budget (300 KB gzipped, currently ~120 KB) is part of `make check`. Details in `docs/accessibility.md`.

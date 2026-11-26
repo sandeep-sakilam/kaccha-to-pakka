@@ -4,3 +4,24 @@
 
 html { font-size: 18px; }
 body { @apply bg-white text-gray-900; }
+
+/* WCAG 2.2: visible focus on every interactive element, at least 3px and high contrast. */
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #ca8a04;
+  outline-offset: 2px;
+}
+
+/* Respect reduced-motion settings. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

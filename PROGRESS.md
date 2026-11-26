@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f36-accessibility`
+Current: none; backlog complete
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -41,4 +41,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F33 Sahayak anomaly monitoring and reviewer dispute queue (`feat/f33-review-queue`)
 - [x] F34 Rate and abuse limits, account-takeover freeze (`feat/f34-abuse-limits`)
 - [x] F35 Evaluation harness: golden set, red-team suite, metrics report (`feat/f35-evaluation`)
-- [ ] F36 Accessibility audit fixes (WCAG 2.2 AA) and low-end phone performance budget (`feat/f36-accessibility`)
+- [x] F36 Accessibility audit fixes (WCAG 2.2 AA) and low-end phone performance budget (`feat/f36-accessibility`)
