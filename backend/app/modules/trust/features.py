@@ -20,6 +20,7 @@ from app.db.models import (
     ReconMatch,
     User,
 )
+from app.modules.fraud.graph import active_flags, confirmer_standing
 from app.modules.reconciliation.engine import COUNTABLE_LEDGER, reconcile
 from app.modules.reconciliation.names import similarity
 from app.modules.trust.rules import (
@@ -214,9 +215,11 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
             continue
         if a.status not in {"confirmed", "discrepancy"}:
             continue
+        standing = confirmer_standing(db, a.confirmer_business_id)
         confirmations.append(
             {
-                "weight": a.weight,
+                "weight": round(a.weight * standing, 3),
+                "standing": standing,
                 "status": a.status,
                 "type": a.evidence_type,
                 "confirmer": a.confirmer_business_id or "in_person",
@@ -262,6 +265,13 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
                 "detail": "one phone number was given for several partners",
             }
         )
+    for gf in active_flags(db, biz.id):
+        detail = (
+            "money went round in a circle between businesses"
+            if gf.code == "payment_cycle"
+            else "new businesses confirming only each other"
+        )
+        flags.append({"code": gf.code, "severity": "hold", "detail": detail})
     network = NetworkFeatures(confirmations=confirmations, rejected_confirmations=len(rejected))
 
     # ---- presence

@@ -192,3 +192,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 ## Sahayak (helper) mode
 
 A helper registers (`/sahayak/register`, optional women's directory). The owner adds them by phone with chosen permissions (capture, voice entry, read-back, CSV, statements, invites, passport) backed by a `sahayak_help` consent, and can remove them at once. Sahayaks see only owners who added them and only while allowed; sharing, consents and bank linking stay owner-only. Every Sahayak action is tagged: evidence carries `sahayak_user_id` and audit entries use `sahayak:{id}`. Screens: `/sahayak` (helper dashboard) and `/helpers/:businessId` (owner).
+
+## Fraud graph
+
+`fraud/graph.py` (NetworkX, nightly worker job and on demand): **payment cycles** between known businesses (A → B → C → A within 10 days per hop, amounts within 5%) and **collusion rings** (3+ businesses confirming each other, all joined in the last year, with little trade outside the cluster) become `graph_flags` that put every member's passport on hold. **Confirmer standing** (0.3–1.2) scales each confirmation's weight in the Network pillar: it grows with the confirmer's age and number of independent partners and drops to 30% once any of their confirmations is shown false.
