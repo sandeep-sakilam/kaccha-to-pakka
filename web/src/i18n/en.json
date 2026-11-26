@@ -100,7 +100,10 @@
     "add_statement": "Add bank / UPI statement PDF",
     "link_bank": "Link bank account (strongest)",
     "recon_questions": "{{count}} name question(s) to answer",
-    "partners": "Ask partners to confirm"
+    "partners": "Ask partners to confirm",
+    "presence_today": "Shop photo for today (asked by us)",
+    "start_presence": "Start shop presence checks",
+    "presence_why": "On a few random days we will ask for a shop photo with location. It proves your shop is real and open."
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",

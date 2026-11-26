@@ -16,6 +16,7 @@ export default function Home() {
 
   const [toCheck, setToCheck] = useState(0);
   const [reconQs, setReconQs] = useState(0);
+  const [presence, setPresence] = useState<{ status: string }[] | null>(null);
   const [needsVoice, setNeedsVoice] = useState<{ evidence_id: string }[]>([]);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function Home() {
           setNeedsVoice(await api<{ evidence_id: string }[]>(`/businesses/${list[0].id}/needs-voice`));
           await api(`/businesses/${list[0].id}/reconcile`, { method: "POST" });
           setReconQs((await api<unknown[]>(`/businesses/${list[0].id}/recon/questions`)).length);
+          setPresence(await api<{ status: string }[]>(`/businesses/${list[0].id}/presence`));
         }
       })
       .catch(() => setBusinesses([]));
@@ -63,6 +65,11 @@ export default function Home() {
           <BigButton icon="📒" onClick={() => nav(`/capture/${biz.id}/ledger_page`)}>
             {t("home.add_ledger")}
           </BigButton>
+          {presence?.some((p) => p.status === "sent") && (
+            <BigButton icon="📍" onClick={() => nav(`/capture/${biz.id}/presence`)}>
+              {t("home.presence_today")}
+            </BigButton>
+          )}
           {reconQs > 0 && (
             <BigButton icon="🤔" onClick={() => nav(`/recon/${biz.id}`)}>
               {t("home.recon_questions", { count: reconQs })}
@@ -88,6 +95,18 @@ export default function Home() {
           <BigButton variant="secondary" icon="📄" onClick={() => nav(`/import/${biz.id}`)}>
             {t("home.import_csv")}
           </BigButton>
+          {presence && presence.length === 0 && (
+            <BigButton
+              variant="secondary"
+              icon="📍"
+              onClick={async () => {
+                await api("/consents", { method: "POST", json: { purpose: "presence_location", business_id: biz.id } });
+                setPresence(await api(`/businesses/${biz.id}/presence/start`, { method: "POST" }));
+              }}
+            >
+              {t("home.start_presence")}
+            </BigButton>
+          )}
           <BigButton variant="secondary" icon="🏪" onClick={() => nav(`/capture/${biz.id}/shop_front`)}>
             {t("home.add_shop")}
           </BigButton>
