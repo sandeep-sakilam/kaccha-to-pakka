@@ -2,6 +2,10 @@
 signing-key:  ## print a new Ed25519 passport signing key for .env
 	$(BACKEND) uv run python -c "from app.core.signing import new_key_b64; print(new_key_b64())"
 
+eval:  ## run the evaluation harness (scratch DB ktp_eval) and write backend/eval/report.md
+	-sudo -u postgres psql -q -c "CREATE DATABASE ktp_eval OWNER ktp;"
+	$(BACKEND) DATABASE_URL=postgresql+psycopg://ktp:ktp@localhost:5432/ktp_eval JOBS_INLINE=true uv run python -m scripts.run_eval
+
 seed:  ## reset the local database and load the Sandbox demo businesses
 	$(BACKEND) uv run python -m scripts.seed_demo
 

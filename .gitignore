@@ -32,3 +32,7 @@ storage/
 .DS_Store
 *.tsbuildinfo
 dev-dist/
+eval/golden/*.jpg
+eval/golden/*.jpeg
+eval/golden/*.png
+eval/golden/*.wav
