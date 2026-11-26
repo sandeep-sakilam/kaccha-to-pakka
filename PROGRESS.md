@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f23-explanations`
+Current: none; next is `feat/f24-passport`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -28,7 +28,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F20 Bucketed claims, GSTIN/Udyam check, money match, signed attestation (`feat/f20-attestations`)
 - [x] F21 Presence checks: geotagged photos on random days (`feat/f21-presence`)
 - [x] F22 Trust engine pillars, caps, red-flag holds, seasonality, freshness, versioning (`feat/f22-trust-engine`)
-- [ ] F23 Explanations in the owner's language, with template fallback (`feat/f23-explanations`)
+- [x] F23 Explanations in the owner's language, with template fallback (`feat/f23-explanations`)
 - [ ] F24 Passport issuance: signed credential, QR, Hindi and English PDF (`feat/f24-passport`)
 - [ ] F25 Owner passport screen with coaching tips (`feat/f25-passport-ui`)
 - [ ] F26 Seed data and the scripted fraud-attempt scenario (`feat/f26-demo-seed`)

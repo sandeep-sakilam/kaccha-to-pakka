@@ -1,0 +1,191 @@
+"""Explanations in the owner's language. The LLM only rephrases the structured reasons; it never
+adds or drops one. Its output is checked line by line against the reason list (count and every
+number); on any mismatch, or if the LLM is down, the fixed templates are used."""
+
+import json
+import re
+from dataclasses import dataclass
+from typing import Any
+
+from app.adapters.errors import AdapterError
+from app.adapters.gateway import AIGateway
+
+T: dict[str, dict[str, str]] = {
+    "money_months": {
+        "en": "{months} months of real payments in your bank account",
+        "hi": "आपके बैंक खाते में {months} महीने के असली भुगतान",
+    },
+    "no_money_data": {"en": "No bank or UPI data yet", "hi": "अभी कोई बैंक या UPI डेटा नहीं"},
+    "pdf_only_capped": {
+        "en": "Only a PDF statement, so the band can be at most C",
+        "hi": "सिर्फ़ PDF स्टेटमेंट है, इसलिए ज़्यादा से ज़्यादा C बैंड",
+    },
+    "ledger_matches": {
+        "en": "{percent}% of your ledger matches your bank payments",
+        "hi": "आपके खाते का {percent}% बैंक भुगतान से मिलता है",
+    },
+    "no_ledger": {"en": "No ledger added yet", "hi": "अभी कोई खाता-बही नहीं जोड़ी"},
+    "ledger_copied_from_bank": {
+        "en": "A ledger copied from the bank statement adds nothing new",
+        "hi": "बैंक स्टेटमेंट से उतारा गया खाता कुछ नया नहीं जोड़ता",
+    },
+    "partners_confirmed": {
+        "en": "{count} trading partners confirmed you",
+        "hi": "{count} व्यापारी साथियों ने आपकी पुष्टि की",
+    },
+    "few_confirmations": {
+        "en": "Only {count} trading partners have confirmed so far",
+        "hi": "अभी तक सिर्फ़ {count} व्यापारी साथियों ने पुष्टि की",
+    },
+    "confirmation_discrepancy": {
+        "en": "A partner's answer did not match the payments",
+        "hi": "एक साथी का जवाब भुगतानों से मेल नहीं खाया",
+    },
+    "business_age": {
+        "en": "Your business has been running for {years} years",
+        "hi": "आपका व्यापार {years} साल से चल रहा है",
+    },
+    "presence_checks": {
+        "en": "{count} shop checks passed on random days",
+        "hi": "अनजान दिनों पर दुकान की {count} जाँच सफल रहीं",
+    },
+    "presence_missed": {
+        "en": "{count} shop checks were missed or failed",
+        "hi": "दुकान की {count} जाँच छूटीं या असफल रहीं",
+    },
+    "under_3_months": {
+        "en": "Only {months} months of data, so confidence is low",
+        "hi": "सिर्फ़ {months} महीने का डेटा है, इसलिए भरोसा कम है",
+    },
+    "money_data_old": {
+        "en": "Your latest bank data is {days} days old",
+        "hi": "आपका नया बैंक डेटा {days} दिन पुराना है",
+    },
+    "on_hold": {
+        "en": "Your passport is on hold while we check something",
+        "hi": "कुछ जाँच चल रही है, इसलिए आपका पासपोर्ट रुका हुआ है",
+    },
+    "link_bank": {"en": "Link your bank account", "hi": "अपना बैंक खाता जोड़ें"},
+    "record_payments_in_ledger": {
+        "en": "Write every payment in your ledger with the name",
+        "hi": "हर भुगतान नाम के साथ खाते में लिखें",
+    },
+    "add_ledger": {"en": "Add your ledger pages", "hi": "अपने खाते के पन्ने जोड़ें"},
+    "ask_partners": {
+        "en": "Ask {more} more suppliers or customers to confirm",
+        "hi": "{more} और सप्लायर या ग्राहकों से पुष्टि करवाएँ",
+    },
+    "shop_photo": {"en": "Take a photo of your shop front", "hi": "अपनी दुकान के सामने की फ़ोटो लें"},
+    "refresh_bank_data": {"en": "Refresh your bank data", "hi": "अपना बैंक डेटा नया करें"},
+}
+BAND_LABEL = {
+    "A": {"en": "Very strong", "hi": "बहुत मज़बूत"},
+    "B": {"en": "Strong", "hi": "मज़बूत"},
+    "C": {"en": "Fair", "hi": "ठीक"},
+    "D": {"en": "Weak", "hi": "कमज़ोर"},
+    "E": {"en": "Very weak", "hi": "बहुत कमज़ोर"},
+    "U": {"en": "Insufficient evidence", "hi": "सबूत काफ़ी नहीं"},
+}
+CONFIDENCE_LABEL = {
+    "High": {"en": "high confidence", "hi": "ज़्यादा भरोसा"},
+    "Medium": {"en": "medium confidence", "hi": "मध्यम भरोसा"},
+    "Low": {"en": "low confidence", "hi": "कम भरोसा"},
+}
+STATUS_LABEL = {
+    "on_hold": {"en": "On hold for review", "hi": "जाँच के लिए रुका"},
+    "stale": {"en": "Expired: add new data", "hi": "पुराना: नया डेटा जोड़ें"},
+    "final": {"en": "Active", "hi": "चालू"},
+}
+
+
+def template(code: str, params: dict[str, Any], lang: str) -> str:
+    t = T.get(code, {}).get(lang) or T.get(code, {}).get("en") or code
+    try:
+        return t.format(**params)
+    except (KeyError, IndexError):
+        return t
+
+
+@dataclass(frozen=True)
+class Explanation:
+    language: str
+    band_label: str
+    confidence_label: str
+    status_label: str
+    headline: str
+    positives: list[str]
+    gaps: list[str]
+    improve: list[str]
+    source: str  # llm | template
+
+
+def _numbers(text: str) -> list[str]:
+    return re.findall(r"\d+", text)
+
+
+def _llm_lines(ai: AIGateway, items: list[dict[str, Any]], lang: str) -> list[str] | None:
+    system = (
+        "Rewrite each reason as one short, warm sentence for a small shop owner in "
+        f"{'Hindi' if lang == 'hi' else 'simple English'}. Keep every number exactly. "
+        "Do not add, merge, drop or reorder reasons. Reply with a JSON list of strings, "
+        "one per reason, nothing else."
+    )
+    try:
+        out = ai.generate(system, json.dumps(items, ensure_ascii=False), lang).value
+        m = re.search(r"\[.*\]", out, re.S)
+        lines = json.loads(m.group(0)) if m else None
+    except (AdapterError, json.JSONDecodeError):
+        return None
+    if not isinstance(lines, list) or len(lines) != len(items):
+        return None
+    for line, item in zip(lines, items, strict=True):
+        if not isinstance(line, str) or not line.strip() or len(line) > 200:
+            return None
+        expected = sorted(str(v) for v in item["params"].values() if isinstance(v, int))
+        if sorted(_numbers(line)) != expected:
+            return None  # a number was changed, dropped or invented
+    return [s.strip() for s in lines]
+
+
+def explain(
+    band: str,
+    confidence: str,
+    status: str,
+    reasons: dict[str, Any],
+    lang: str,
+    ai: AIGateway | None = None,
+) -> Explanation:
+    lang = "hi" if lang == "hi" else "en"
+    groups = {k: reasons.get(k, []) for k in ("positives", "gaps", "improve")}
+    items = [{"code": r["code"], "params": r.get("params", {})} for k in groups for r in groups[k]]
+    lines = _llm_lines(ai, items, lang) if ai and items else None
+    source = "llm" if lines else "template"
+    if lines is None:
+        lines = [template(i["code"], i["params"], lang) for i in items]
+    it = iter(lines)
+    out = {k: [next(it) for _ in groups[k]] for k in groups}
+    label = BAND_LABEL.get(band, BAND_LABEL["U"])[lang]
+    pos = [template(r["code"], r.get("params", {}), lang) for r in groups["positives"][:2]]
+    if status == "on_hold":
+        headline = template("on_hold", {}, lang)
+    elif pos:
+        joiner = " और " if lang == "hi" else " and "
+        because = "क्योंकि" if lang == "hi" else "because"
+        headline = (
+            f"आपका पासपोर्ट {label} है {because} "
+            if lang == "hi"
+            else f"Your passport is {label.lower()} {because} "
+        ) + joiner.join(p[0].lower() + p[1:] if lang == "en" else p for p in pos)
+    else:
+        headline = f"आपका पासपोर्ट: {label}" if lang == "hi" else f"Your passport: {label}"
+    return Explanation(
+        lang,
+        label,
+        CONFIDENCE_LABEL.get(confidence, {}).get(lang, confidence),
+        STATUS_LABEL.get(status, {}).get(lang, status),
+        headline + ".",
+        out["positives"],
+        out["gaps"],
+        out["improve"],
+        source,
+    )

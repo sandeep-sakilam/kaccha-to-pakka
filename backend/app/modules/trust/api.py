@@ -79,3 +79,46 @@ def verify(assessment_id: str, db: DB, user: CurrentUser) -> dict[str, object]:
         "band": r.band,
         "rules_version": a.rules_version,
     }
+
+
+class ExplanationOut(BaseModel):
+    language: str
+    band: str
+    band_label: str
+    confidence: str
+    confidence_label: str
+    status: str
+    status_label: str
+    headline: str
+    positives: list[str]
+    gaps: list[str]
+    improve: list[str]
+    source: str
+
+
+@router.get("/businesses/{business_id}/explanation", response_model=ExplanationOut)
+def explanation(
+    business_id: str, db: DB, user: CurrentUser, language: str = "hi"
+) -> ExplanationOut:
+    from app.adapters.registry import get_adapters
+    from app.modules.trust.explain import explain
+
+    business_for(db, user, business_id)
+    a = service.latest(db, business_id)
+    if a is None:
+        raise NotFound("No assessment yet", "no_assessment")
+    e = explain(a.band, a.confidence, a.status, a.reasons, language, get_adapters().ai)
+    return ExplanationOut(
+        language=e.language,
+        band=a.band,
+        band_label=e.band_label,
+        confidence=a.confidence,
+        confidence_label=e.confidence_label,
+        status=a.status,
+        status_label=e.status_label,
+        headline=e.headline,
+        positives=e.positives,
+        gaps=e.gaps,
+        improve=e.improve,
+        source=e.source,
+    )
