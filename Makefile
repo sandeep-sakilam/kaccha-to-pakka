@@ -17,6 +17,10 @@ services:  ## start local Postgres and Redis (cloud session)
 	-service postgresql start
 	-service redis-server start
 
+db-setup:  ## create local role and databases (dev, test, e2e)
+	-sudo -u postgres psql -q -c "CREATE USER ktp WITH PASSWORD 'ktp' CREATEDB;"
+	-for d in ktp ktp_test ktp_e2e; do sudo -u postgres psql -q -c "CREATE DATABASE $$d OWNER ktp;"; done
+
 install:
 	$(BACKEND) uv sync
 	$(WEB) npm ci --no-audit --no-fund

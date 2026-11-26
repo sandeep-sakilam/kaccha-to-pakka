@@ -36,6 +36,7 @@
 - Every outside service (Sarvam, fallback AI, Account Aggregator, payment gateway, WhatsApp, KYC, storage) has an interface, a mock adapter and a real adapter, chosen by an environment variable. The real adapter turns on when its keys are in `.env`. Tests always use mocks and never call real APIs. Sandbox or mock data is labelled on screen as "Sandbox".
 - Never commit secrets. Every required key is listed in `.env.example` with a comment saying where to get it.
 - Keep single commands under 10 minutes; run long ones in the background.
+- `make e2e` starts the API on port 8010 against `ktp_e2e` (reset from migrations) and the web preview on 4173.
 - Money is integer paise, never floats. Timestamps stored in UTC, shown in IST.
 - Schema changes: edit `backend/app/db/models.py`, then `uv run alembic revision --autogenerate --rev-id 00NN -m "..."`; give new NOT NULL columns a `server_default` in the migration.
 - AI reads, rules decide: AI output is schema-validated data only and never changes a score directly.

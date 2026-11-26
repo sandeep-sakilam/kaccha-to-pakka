@@ -23,5 +23,6 @@ export default defineConfig({
   ],
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   server: { port: 5173, proxy: { "/api": { target: "http://localhost:8000", rewrite: (p) => p.replace(/^\/api/, "") } } },
+  preview: { proxy: { "/api": { target: "http://localhost:8010", rewrite: (p) => p.replace(/^\/api/, "") } } },
   test: { environment: "jsdom", globals: true, setupFiles: ["./src/test-setup.ts"], include: ["src/**/*.test.{ts,tsx}"] },
 });

@@ -30,6 +30,7 @@ Status of each functionality is in `PROGRESS.md`; working rules are in `CLAUDE.m
 
 ```bash
 make services      # or: docker compose up -d db redis
+make db-setup      # role ktp and databases ktp, ktp_test, ktp_e2e
 make install
 make migrate       # create tables (Alembic)
 make dev-api       # http://localhost:8000/health
@@ -80,3 +81,8 @@ One consent row per purpose (`build_passport`, `aa_fetch`, `monthly_refresh`, `s
 Installable web app (manifest + service worker via `vite-plugin-pwa`), Hindi and English with `i18next` (`web/src/i18n/*.json`), Hindi by default.
 Every screen uses `<Screen title spoken={[...]}>`, which adds a Listen button: server voice (Sarvam Bulbul via `POST /voice/tts`) when real, the phone's own speech engine in Sandbox or offline. Amounts are read in words (`rupeesInWords`).
 A yellow "Sandbox" badge shows whenever any outside service is a mock. First-load JS is about 73 KB gzipped (budget: 300 KB).
+
+## Onboarding
+
+Login (phone keypad, OTP, PIN) → consent screen read aloud → voice interview (name, what you sell, since when, where; each answer is read back for a yes or no, with icon choices and typing as fallbacks) → optional Udyam/GSTIN (format and checksum checked) → profile.
+`POST /onboarding/interpret` turns a transcript or audio into a field with deterministic rules (`business/interview.py`), never an AI guess. `make e2e` runs the full flow against a real API on the `ktp_e2e` database.

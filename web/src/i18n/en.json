@@ -1,5 +1,8 @@
 {
-  "app": { "name": "Kaccha to Pakka", "tagline": "Your Business Trust Passport" },
+  "app": {
+    "name": "Kaccha to Pakka",
+    "tagline": "Your Business Trust Passport"
+  },
   "common": {
     "listen": "Listen",
     "stop": "Stop",
@@ -28,5 +31,65 @@
     "share": "We never share without your yes.",
     "train": "We never use your data to train AI without separate permission.",
     "delete": "You can delete everything at any time."
+  },
+  "login": {
+    "title": "Log in with your phone",
+    "phone": "Your mobile number",
+    "send_otp": "Send OTP",
+    "otp": "Enter the 6-digit OTP sent to your phone",
+    "verify": "Check OTP",
+    "sandbox_otp": "Sandbox OTP: {{code}}",
+    "set_pin": "Make a 4-digit PIN",
+    "set_pin_why": "Family members often share a phone. Your PIN keeps your passport yours.",
+    "enter_pin": "Enter your 4-digit PIN",
+    "pin_hint": "Do not use 1234 or 0000.",
+    "new_device": "New phone noticed. For your safety, sharing is paused for 24 hours.",
+    "clear": "Clear",
+    "delete": "Delete"
+  },
+  "consent": {
+    "title": "Before we start",
+    "agree": "Yes, I agree",
+    "disagree": "No",
+    "no_hint": "Without your yes we cannot build a passport. You can come back any time."
+  },
+  "interview": {
+    "title": "Tell us about your business",
+    "q_name": "What is your shop's name?",
+    "q_category": "What do you sell?",
+    "q_since": "Since which year is the business running?",
+    "q_place": "Where is your shop?",
+    "speak": "Tap and speak",
+    "listening": "Listening… tap to stop",
+    "or_type": "Or type here",
+    "heard": "I heard: {{text}}",
+    "not_understood": "I did not understand. Please say it again, or tap a choice.",
+    "ids_title": "Udyam or GSTIN (optional)",
+    "ids_hint": "A business without either is still welcome.",
+    "skip": "Skip",
+    "save": "Save",
+    "women_owned": "This business is run by a woman",
+    "done": "Your business profile is ready!"
+  },
+  "categories": {
+    "kirana": "Kirana / grocery",
+    "namkeen": "Namkeen / sweets",
+    "tailor": "Tailor",
+    "vegetables": "Vegetables / fruit",
+    "dairy": "Dairy",
+    "food_stall": "Food stall",
+    "salon": "Salon",
+    "mobile_repair": "Mobile repair",
+    "hardware": "Hardware",
+    "manufacturing": "Small factory",
+    "other": "Other"
+  },
+  "home": {
+    "title": "My business",
+    "hello": "Namaste",
+    "no_business": "Let us set up your business.",
+    "setup": "Set up business",
+    "logout": "Log out",
+    "next_steps": "Next steps"
   }
 }
