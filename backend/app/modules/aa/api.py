@@ -42,7 +42,7 @@ class FetchOut(BaseModel):
 
 @router.post("/businesses/{business_id}/aa/{consent_id}/fetch", response_model=FetchOut)
 def fetch(business_id: str, consent_id: str, db: DB, user: CurrentUser) -> FetchOut:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="money")
     try:
         items = service.fetch(db, biz, consent_id, f"user:{user.id}")
     except RetryableJobError as exc:

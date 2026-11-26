@@ -69,7 +69,7 @@ class AnswerIn(BaseModel):
 
 @router.post("/businesses/{business_id}/recon/answer", response_model=StatsOut)
 def answer(business_id: str, body: AnswerIn, db: DB, user: CurrentUser) -> StatsOut:
-    business_for(db, user, business_id)
+    business_for(db, user, business_id, action="readback")
     stats = engine.answer(
         db, business_id, body.party_text, body.counterparty_name, body.same, f"user:{user.id}"
     )

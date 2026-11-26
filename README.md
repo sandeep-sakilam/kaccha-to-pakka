@@ -188,3 +188,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 ## WhatsApp bot
 
 `POST /whatsapp/webhook` (Meta Cloud API, signature checked when real; `GET` handles the verify challenge). Conversation state is kept per phone in `wa_conversations`; repeated webhook deliveries are handled once. Flow: "Hi" → language buttons → 4-digit PIN (WhatsApp already proves the number) → consent text with Yes/No → name, what you sell, since when, where (text or voice note, each read back for Yes/No) → profile. Then: send a ledger photo (extracted, then low-confidence entries read back with Yes/No buttons), "check" for pending entries, "passport" for the band, headline, tips and verify link. SMS is used when WhatsApp is down.
+
+## Sahayak (helper) mode
+
+A helper registers (`/sahayak/register`, optional women's directory). The owner adds them by phone with chosen permissions (capture, voice entry, read-back, CSV, statements, invites, passport) backed by a `sahayak_help` consent, and can remove them at once. Sahayaks see only owners who added them and only while allowed; sharing, consents and bank linking stay owner-only. Every Sahayak action is tagged: evidence carries `sahayak_user_id` and audit entries use `sahayak:{id}`. Screens: `/sahayak` (helper dashboard) and `/helpers/:businessId` (owner).

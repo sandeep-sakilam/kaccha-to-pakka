@@ -25,7 +25,7 @@ async def import_csv(
     file: Annotated[UploadFile, File()],
     idempotency_key: Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)],
 ) -> ImportOut:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="import")
     ev, created = service.import_csv(
         db, user, biz, await file.read(), file.filename or "", idempotency_key
     )

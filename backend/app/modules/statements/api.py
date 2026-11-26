@@ -29,7 +29,7 @@ async def upload_statement(
     file: Annotated[UploadFile, File()],
     idempotency_key: Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)],
 ) -> StatementOut:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="statement")
     ev, _ = service.ingest_statement(
         db, user, biz, await file.read(), file.filename or "", idempotency_key
     )

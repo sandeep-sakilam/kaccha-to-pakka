@@ -75,7 +75,7 @@ def _out(i: CounterpartyInvite) -> InviteOut:
 
 @router.post("/businesses/{business_id}/invites", response_model=InviteOut)
 def create_invite(business_id: str, body: InviteIn, db: DB, user: CurrentUser) -> InviteOut:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="invite")
     inv = selection.invite(db, user, biz, body.counterparty_id, body.phone, body.language)
     db.commit()
     return _out(inv)

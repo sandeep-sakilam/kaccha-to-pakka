@@ -63,7 +63,7 @@ def retry_extract(evidence_id: str, db: DB, user: CurrentUser) -> dict[str, str]
     ev = db.get(EvidenceItem, evidence_id)
     if ev is None:
         raise NotFound("Not found", "evidence_not_found")
-    business_for(db, user, ev.business_id)
+    business_for(db, user, ev.business_id, action="capture")
     enqueue(db, "extract_ledger", ev.id)
     db.commit()
     return {"status": ev.status}
@@ -116,7 +116,7 @@ def confirm(entry_id: str, body: ConfirmIn, db: DB, user: CurrentUser) -> Ledger
     ev = db.get(EvidenceItem, e.evidence_id) if e else None
     if e is None or ev is None:
         raise NotFound("Not found", "entry_not_found")
-    business_for(db, user, ev.business_id)
+    business_for(db, user, ev.business_id, action="readback")
     checks.confirm_entry(
         db,
         e,
@@ -226,7 +226,7 @@ def save_voice_entries(
     user: CurrentUser,
     idempotency_key: Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)],
 ) -> dict[str, object]:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="voice_entry")
     ev, created = voice_entry.save_entries(
         db,
         user,

@@ -5,7 +5,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, File, Form, Header, UploadFile
 from pydantic import BaseModel
 
-from app.core.access import business_for
+from app.core.access import actor_for, business_for
 from app.core.deps import DB, CurrentUser
 from app.core.errors import DomainError
 from app.db.models import EvidenceItem
@@ -53,7 +53,7 @@ async def upload_capture(
     accuracy_m: Annotated[float | None, Form()] = None,
     client_quality: Annotated[str, Form()] = "{}",
 ) -> EvidenceOut:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="capture")
     if captured_at.tzinfo is None:
         raise DomainError("captured_at needs a time zone", "bad_time")
     try:
@@ -80,6 +80,7 @@ async def upload_capture(
             geo=geo,
             client_quality=quality if isinstance(quality, dict) else {},
         ),
+        actor_for(user, biz),
     )
     db.commit()
     return out(ev)

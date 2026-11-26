@@ -115,6 +115,14 @@ export default function Home() {
           </BigButton>
         </>
       )}
+      {biz && (
+        <BigButton variant="secondary" icon="🧑‍🤝‍🧑" onClick={() => nav(`/helpers/${biz.id}`)}>
+          {t("home.helpers")}
+        </BigButton>
+      )}
+      <BigButton variant="ghost" onClick={() => nav("/sahayak")}>
+        {t("home.sahayak_mode")}
+      </BigButton>
       <BigButton variant="ghost" onClick={() => void signOut().then(() => nav("/"))}>
         {t("home.logout")}
       </BigButton>

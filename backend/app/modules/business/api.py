@@ -91,7 +91,7 @@ def get_business(business_id: str, db: DB, user: CurrentUser) -> BusinessOut:
 
 @router.patch("/businesses/{business_id}", response_model=BusinessOut)
 def patch_business(business_id: str, body: BusinessPatch, db: DB, user: CurrentUser) -> BusinessOut:
-    biz = business_for(db, user, business_id)
+    biz = business_for(db, user, business_id, action="profile")
     service.update(db, user, biz, body.model_dump(exclude_unset=True))
     db.commit()
     return _out(biz)
