@@ -18,6 +18,7 @@ from app.modules.imports.api import router as imports_router
 from app.modules.passport.api import router as passport_router
 from app.modules.presence.api import router as presence_router
 from app.modules.reconciliation.api import router as recon_router
+from app.modules.review.api import router as review_router
 from app.modules.sahayak.api import router as sahayak_router
 from app.modules.shares.api import router as shares_router
 from app.modules.statements.api import router as statements_router
@@ -43,6 +44,7 @@ ROUTERS = [
     shares_router,
     whatsapp_router,
     sahayak_router,
+    review_router,
 ]
 
 

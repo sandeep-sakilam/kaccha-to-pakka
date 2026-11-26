@@ -18,6 +18,10 @@ async def nightly_fraud_scan(ctx: dict[str, Any]) -> None:
     await run_job(ctx, "fraud_graph_scan")
 
 
+async def nightly_sahayak_monitor(ctx: dict[str, Any]) -> None:
+    await run_job(ctx, "sahayak_monitor")
+
+
 async def daily_aa_refresh(ctx: dict[str, Any]) -> None:
     await run_job(ctx, "aa_refresh_due")
 
@@ -34,4 +38,5 @@ class WorkerSettings:
         cron(daily_aa_refresh, hour={2}, minute={15}),
         cron(presence_tick, minute=set(range(0, 60, 10))),
         cron(nightly_fraud_scan, hour={1}, minute={5}),
+        cron(nightly_sahayak_monitor, hour={1}, minute={35}),
     ]
