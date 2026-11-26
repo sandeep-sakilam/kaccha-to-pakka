@@ -24,6 +24,9 @@ NAME_MATCH = 80.0
 def start(db: Session, inv: CounterpartyInvite) -> PennyDropRequest:
     if inv.status not in {"sent", "opened"}:
         raise DomainError("This invite can no longer be used", f"invite_{inv.status}", 409)
+    from app.modules.abuse.limits import hit
+
+    hit("penny_drop_invite", inv.id)
     try:
         req = get_adapters().payments.create_reverse_penny_drop(f"invite:{inv.id}")
     except AdapterError as exc:

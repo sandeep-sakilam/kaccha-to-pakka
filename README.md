@@ -200,3 +200,7 @@ A helper registers (`/sahayak/register`, optional women's directory). The owner 
 ## Review queue and Sahayak monitoring
 
 Disputes come from the system (tamper holds, page totals, failed confirmations, fraud-graph flags, Sahayak anomalies, random audits) and from people: an owner can contest a ledger line, a confirmation or the result (`POST /businesses/{id}/disputes`), a confirmer can contest through their invite link. Reviewers (role `reviewer`) work `/review`: every queue view, case view and decision is written to the audit log. Clearing a held statement makes it count again; upholding a false confirmation marks it `disproved` (the confirmer's standing drops everywhere); upholding a Sahayak anomaly suspends that Sahayak. Nightly monitoring flags Sahayaks for high volume, high failure rate, one device used for many businesses, or shop photos of different businesses clustered within 25 m, and opens random audits of 5% of Sahayak-created evidence.
+
+## Abuse limits and takeover freeze
+
+`abuse/limits.py` keeps fixed-window counters in Redis (in-process if Redis is down): OTP per phone (5/hour) and per network (30/hour), photos per device (200/day), Sahayak actions (300/day), invites per business (10/day), ₹1 attempts per invite (3/day), a confirmer may confirm at most 10 different businesses a month, lender views per link (60/hour). Over the limit → HTTP 429 with a spoken-friendly message. A login from a new device freezes sharing for 24 hours (no new shares, existing lender links answer 423 "paused") and the owner is told at once.
