@@ -18,6 +18,7 @@ from app.modules.imports.api import router as imports_router
 from app.modules.presence.api import router as presence_router
 from app.modules.reconciliation.api import router as recon_router
 from app.modules.statements.api import router as statements_router
+from app.modules.trust.api import router as trust_router
 from app.modules.voice.api import router as voice_router
 
 ROUTERS = [
@@ -33,6 +34,7 @@ ROUTERS = [
     recon_router,
     attest_router,
     presence_router,
+    trust_router,
 ]
 
 
