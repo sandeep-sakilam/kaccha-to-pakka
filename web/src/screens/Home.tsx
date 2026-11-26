@@ -15,12 +15,16 @@ export default function Home() {
   const [businesses, setBusinesses] = useState<Business[] | null>(null);
 
   const [toCheck, setToCheck] = useState(0);
+  const [needsVoice, setNeedsVoice] = useState<{ evidence_id: string }[]>([]);
 
   useEffect(() => {
     api<Business[]>("/businesses")
       .then(async (list) => {
         setBusinesses(list);
-        if (list[0]) setToCheck((await api<unknown[]>(`/businesses/${list[0].id}/readback`)).length);
+        if (list[0]) {
+          setToCheck((await api<unknown[]>(`/businesses/${list[0].id}/readback`)).length);
+          setNeedsVoice(await api<{ evidence_id: string }[]>(`/businesses/${list[0].id}/needs-voice`));
+        }
       })
       .catch(() => setBusinesses([]));
   }, []);
@@ -55,6 +59,14 @@ export default function Home() {
           )}
           <BigButton icon="📒" onClick={() => nav(`/capture/${biz.id}/ledger_page`)}>
             {t("home.add_ledger")}
+          </BigButton>
+          {needsVoice.length > 0 && (
+            <BigButton icon="🗣️" onClick={() => nav(`/voice-entry/${biz.id}?source=${needsVoice[0].evidence_id}`)}>
+              {t("home.needs_voice", { count: needsVoice.length })}
+            </BigButton>
+          )}
+          <BigButton variant="secondary" icon="🎤" onClick={() => nav(`/voice-entry/${biz.id}`)}>
+            {t("home.read_aloud")}
           </BigButton>
           <BigButton variant="secondary" icon="🏪" onClick={() => nav(`/capture/${biz.id}/shop_front`)}>
             {t("home.add_shop")}

@@ -1,15 +1,19 @@
+import base64
 from datetime import date
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
+from app.adapters.errors import AdapterError
+from app.adapters.registry import get_adapters
 from app.core.access import business_for
 from app.core.deps import DB, CurrentUser
-from app.core.errors import NotFound
+from app.core.errors import DomainError, NotFound
 from app.db.models import EvidenceItem, LedgerEntry
 from app.jobs import enqueue
-from app.modules.extraction import checks
+from app.modules.extraction import checks, voice_entry, voice_parse
 
 router = APIRouter(tags=["ledger"])
 
@@ -144,4 +148,111 @@ def pages(business_id: str, db: DB, user: CurrentUser) -> list[PageCheckOut]:
     return [
         PageCheckOut(evidence_id=e.id, status=e.status, checksum=e.meta.get("checksum"))
         for e in evs
+    ]
+
+
+class VoiceParseIn(BaseModel):
+    language: str = "hi"
+    transcript: str | None = Field(None, max_length=500)
+    audio_b64: str | None = Field(None, max_length=4_000_000)
+
+
+class VoiceParseOut(BaseModel):
+    transcript: str
+    amount_paise: int | None
+    party_text: str | None
+    direction: str | None
+    entry_date: date | None
+    understood: bool
+    prompt: str | None
+    stt_confidence: float
+    sandbox: bool
+
+
+@router.post("/businesses/{business_id}/voice-entries/parse", response_model=VoiceParseOut)
+def parse_voice(business_id: str, body: VoiceParseIn, db: DB, user: CurrentUser) -> VoiceParseOut:
+    business_for(db, user, business_id)
+    text, conf, sandbox = body.transcript or "", 0.9, True
+    if body.audio_b64:
+        try:
+            res = get_adapters().ai.transcribe(base64.b64decode(body.audio_b64), body.language)
+        except AdapterError as exc:
+            raise DomainError(
+                "Could not hear that. Use the big buttons instead.", "stt_down", 503
+            ) from exc
+        text, conf, sandbox = res.value.text, res.value.confidence, res.sandbox
+    p = voice_parse.parse_entry(text)
+    prompt = None
+    if p.understood:
+        probe = LedgerEntry(
+            amount_paise=p.amount_paise or 0,
+            direction=p.direction or "in",
+            party_text=p.party_text,
+            entry_date=p.entry_date,
+        )
+        prompt = checks.readback_prompt(probe, "hi" if body.language == "hi" else "en")
+    return VoiceParseOut(
+        transcript=text,
+        amount_paise=p.amount_paise,
+        party_text=p.party_text,
+        direction=p.direction,
+        entry_date=p.entry_date,
+        understood=p.understood,
+        prompt=prompt,
+        stt_confidence=conf,
+        sandbox=sandbox,
+    )
+
+
+class VoiceEntryItem(BaseModel):
+    amount_paise: int = Field(gt=0)
+    direction: str = Field(pattern="^(in|out)$")
+    party_text: str | None = Field(None, max_length=200)
+    entry_date: date | None = None
+    method: str = Field("voice", pattern="^(voice|buttons)$")
+    stt_confidence: float = Field(0.9, ge=0, le=1)
+
+
+class VoiceEntriesIn(BaseModel):
+    entries: list[VoiceEntryItem] = Field(min_length=1, max_length=200)
+    source_evidence_id: str | None = None
+
+
+@router.post("/businesses/{business_id}/voice-entries")
+def save_voice_entries(
+    business_id: str,
+    body: VoiceEntriesIn,
+    db: DB,
+    user: CurrentUser,
+    idempotency_key: Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)],
+) -> dict[str, object]:
+    biz = business_for(db, user, business_id)
+    ev, created = voice_entry.save_entries(
+        db,
+        user,
+        biz,
+        [
+            voice_entry.VoiceEntryIn(
+                e.amount_paise, e.direction, e.party_text, e.entry_date, e.method, e.stt_confidence
+            )
+            for e in body.entries
+        ],
+        idempotency_key,
+        body.source_evidence_id,
+    )
+    db.commit()
+    return {"evidence_id": ev.id, "created": created, "entries": ev.meta.get("entries")}
+
+
+@router.get("/businesses/{business_id}/needs-voice")
+def needs_voice(business_id: str, db: DB, user: CurrentUser) -> list[dict[str, str]]:
+    business_for(db, user, business_id)
+    rows = db.execute(
+        select(EvidenceItem).where(
+            EvidenceItem.business_id == business_id, EvidenceItem.status == "needs_voice"
+        )
+    ).scalars()
+    return [
+        {"evidence_id": e.id, "script": str(e.meta.get("extraction", {}).get("script"))}
+        for e in rows
     ]

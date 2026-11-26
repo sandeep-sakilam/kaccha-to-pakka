@@ -14,6 +14,7 @@ const Interview = lazy(() => import("@/screens/Interview"));
 const Home = lazy(() => import("@/screens/Home"));
 const Capture = lazy(() => import("@/screens/Capture"));
 const ReadBack = lazy(() => import("@/screens/ReadBack"));
+const VoiceEntry = lazy(() => import("@/screens/VoiceEntry"));
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { me, loading } = useAuth();
@@ -37,6 +38,7 @@ export function AppRoutes() {
           <Route path="/consent" element={<RequireAuth><Consent /></RequireAuth>} />
           <Route path="/interview" element={<RequireAuth><Interview /></RequireAuth>} />
           <Route path="/home" element={<RequireAuth><Home /></RequireAuth>} />
+          <Route path="/voice-entry/:businessId" element={<RequireAuth><VoiceEntry /></RequireAuth>} />
           <Route path="/readback/:businessId" element={<RequireAuth><ReadBack /></RequireAuth>} />
           <Route path="/capture/:businessId/:kind" element={<RequireAuth><Capture /></RequireAuth>} />
           <Route path="*" element={<Welcome />} />
