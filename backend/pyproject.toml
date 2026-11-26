@@ -24,6 +24,7 @@ dependencies = [
   "pynacl>=1.6.2",
   "weasyprint>=70.0",
   "qrcode>=8.2",
+  "networkx>=3.7",
 ]
 
 [dependency-groups]

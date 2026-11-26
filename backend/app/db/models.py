@@ -410,3 +410,14 @@ class WaConversation(TimestampMixin, Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
+
+
+class GraphFlag(TimestampMixin, Base):
+    """A fraud-graph finding about a business (payment cycle, collusion ring)."""
+
+    __tablename__ = "graph_flags"
+    id: Mapped[str] = _id()
+    business_id: Mapped[str] = mapped_column(ForeignKey("businesses.id"), index=True)
+    code: Mapped[str] = mapped_column(String(48))
+    detail: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    cleared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
