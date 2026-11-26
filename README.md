@@ -174,3 +174,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 ## Deploy
 
 `docker-compose.prod.yml` runs Caddy (automatic HTTPS, security headers), the API (migrates on start), the worker, Postgres 16, Redis 7 and a daily encrypted backup job on one Indian-region VPS. Step-by-step guide: `docs/deploy.md`.
+
+## Sharing with lenders
+
+`POST /businesses/{id}/shares` (owner only) creates a link for one named lender with a scope (`summary`, or `evidence` for summary plus evidence) and an expiry (default 30 days, max 90), backed by a `share_lender` consent. The lender opens `/l/{token}`; every view is logged and the owner is notified ("SBI Rajwada branch viewed your passport"). Partner names, UPI IDs and phone numbers are never in the lender view: partners appear as "verified supplier, trading 5+ years". Revoking stops the link (HTTP 410) and the consent at once.

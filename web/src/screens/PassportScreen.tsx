@@ -156,6 +156,9 @@ export default function PassportScreen() {
               {t("passport.download_en")}
             </BigButton>
           </div>
+          <BigButton icon="📤" onClick={() => nav(`/shares/${businessId}`)}>
+            {t("passport.share")}
+          </BigButton>
           <p className="text-sm text-gray-700">{t("passport.not_credit")}</p>
         </>
       )}
