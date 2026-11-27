@@ -1,6 +1,6 @@
 # Evaluation report
 
-Generated 2026-11-27T15:41:02+00:00 · **Sandbox models**: numbers show the harness works, not real accuracy.
+Generated 2026-11-27T20:32:57+00:00 · **Sandbox models**: numbers show the harness works, not real accuracy.
 
 ## Ledger extraction
 
@@ -14,6 +14,10 @@ Golden set: 10 pages (synthetic sandbox)
 ## Reconciliation
 
 Precision 1.0, recall 0.812 over 10 synthetic businesses (tp 195, fp 0, fn 45); 10 unclear names sent to the owner as questions.
+
+## Credit books (udhaar)
+
+Repayments found in the bank: precision 0.976, recall 1.0 over 60 synthetic customers (tp 82, fp 2, fn 0). Patterns: cash 18, on_time 16, partial 8, two_together 13, unpaid 5.
 
 ## Red-team
 

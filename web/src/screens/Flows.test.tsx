@@ -157,6 +157,33 @@ test("lender view shows scope, evidence and watermark", async () => {
   expect(screen.getByText("flag detail")).toBeInTheDocument();
 });
 
+test("lender view shows a credit book as plain facts", async () => {
+  mockApi([[/\/l\/tok/, () => ({
+    lender_org: "SBI Rajwada branch", scope: "evidence",
+    passport: { id: "p1", status: "valid", valid_until: "2027-01-01T00:00:00Z", vc: { credentialSubject: { band: "B", confidence: "High", sandbox: true } } },
+    explanation: { headline: "Your passport is strong because …", band_label: "Strong", positives: [], gaps: [] },
+    business: { name: "Sharma Kirana", category: "kirana", city: "Indore", since: 2012 },
+    evidence: {
+      monthly_totals_paise: {}, confirmations: [], presence: { done: 0, failed: 0, missed: 0 }, evidence_items: [], flags: [],
+      avg_monthly_inflow_paise: 10000000,
+      records: {
+        match_rate: 0.9, cash_entries: 4, credit_entries: 40, credit_customers: 12, repeat_credit_customers: 9,
+        credit_given_paise: 4000000, credit_repaid_bank_paise: 2800000, credit_repaid_cash_paise: 800000,
+        credit_outstanding_paise: 400000, median_days_to_repay: 33,
+      },
+    },
+  })]]);
+  at("/l/tok", "/l/:token", <LenderView />);
+  const book = await vi.waitFor(() => screen.getByTestId("credit-book"));
+  expect(book).toHaveTextContent("₹40,000 given on credit to 12 customers");
+  expect(book).toHaveTextContent("70% came back through the bank");
+  expect(book).toHaveTextContent("20% came back in cash, as the owner wrote it");
+  expect(book).toHaveTextContent("Customers usually paid after 33 days");
+  expect(book).toHaveTextContent("9 regular credit customers");
+  expect(book).toHaveTextContent("₹4,000 still unpaid (4% of a month's money in)");
+  expect(screen.getByText(/4 ledger entries are written as cash/)).toBeInTheDocument();
+});
+
 test("lender view of a revoked share", async () => {
   mockApi([[/\/l\/old/, () => new Response(JSON.stringify({ code: "share_revoked", message: "This share has revoked." }), { status: 410, headers: { "content-type": "application/json" } })]]);
   at("/l/old", "/l/:token", <LenderView />);

@@ -46,13 +46,18 @@ def ledger(
     status: str = "extracted",
 ) -> list[LedgerEntry]:
     out = []
-    for i, (d, party, paise, direction) in enumerate(rows):
+    for i, row in enumerate(rows):
+        # (date, party, paise, "in" | "out" | "credit"[, paid_by]); "credit" is goods on credit
+        d, party, paise, direction = row[:4]
+        paid_by = row[4] if len(row) > 4 else None
         e = LedgerEntry(
             evidence_id=ev.id,
             entry_date=d,
             party_text=party,
             amount_paise=paise,
-            direction=direction,
+            direction="out" if direction == "credit" else direction,
+            kind="credit_given" if direction == "credit" else "money",
+            paid_by=paid_by,
             confidence=1.0,
             field_confidence=FULL,
             page_no=i,

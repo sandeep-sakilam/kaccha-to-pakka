@@ -25,6 +25,14 @@ T: dict[str, dict[str, str]] = {
         "hi": "आपके खाते का {percent}% बैंक भुगतान से मिलता है",
     },
     "no_ledger": {"en": "No ledger added yet", "hi": "अभी कोई खाता-बही नहीं जोड़ी"},
+    "credit_repaid_bank": {
+        "en": "{percent}% of the credit you gave {customers} customers came back through the bank",
+        "hi": "{customers} ग्राहकों को दिए उधार का {percent}% बैंक से वापस आया",
+    },
+    "mostly_cash_entries": {
+        "en": "{count} ledger entries are cash, which the bank cannot show",
+        "hi": "खाते की {count} एंट्री नकद हैं, जो बैंक में नहीं दिखतीं",
+    },
     "ledger_copied_from_bank": {
         "en": "A ledger copied from the bank statement adds nothing new",
         "hi": "बैंक स्टेटमेंट से उतारा गया खाता कुछ नया नहीं जोड़ता",
@@ -79,6 +87,10 @@ T: dict[str, dict[str, str]] = {
         "hi": "आपके खाते की एंट्री की अभी पुष्टि नहीं हुई",
     },
     "add_ledger": {"en": "Add your ledger pages", "hi": "अपने खाते के पन्ने जोड़ें"},
+    "ask_customers_upi": {
+        "en": "Ask credit customers to pay you back by UPI",
+        "hi": "उधार वाले ग्राहकों से UPI से पैसे लौटाने को कहें",
+    },
     "ask_partners": {
         "en": "Ask {more} more suppliers or customers to confirm",
         "hi": "{more} और सप्लायर या ग्राहकों से पुष्टि करवाएँ",

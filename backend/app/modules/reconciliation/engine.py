@@ -5,10 +5,18 @@ dates are within ±3 days, and the names agree (across Hindi and English). When 
 agree but the names are unclear, the owner is asked once ("Is Sharma ji the same as RAKESH
 SHARMA?") and the answer is remembered. Several ledger entries may match one payment
 (many-to-one) when the same party's entries on one day add up to it.
+
+Credit books (udhaar) work per customer instead. "Credit given" entries add to the customer's
+balance; money from that customer (a bank or UPI payment from them, or a repayment written in the
+ledger) clears the oldest dues first, up to 90 days after each due. A payment that exactly
+clears whole dues ("September + October together") is a strong match; one that clears part of
+them is a weaker one; one larger than everything owed is not a repayment. Cash entries are never
+looked for in the bank.
 """
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import date
 from itertools import combinations
 
 from sqlalchemy import delete, select
@@ -19,10 +27,44 @@ from app.modules.audit.service import record
 from app.modules.reconciliation.names import normalise, similarity
 
 DATE_WINDOW_DAYS = 3
+CREDIT_WINDOW_DAYS = 90
 NAME_SURE = 80.0
 NAME_MAYBE = 45.0
 COUNTABLE_LEDGER = {"extracted", "confirmed"}
 EXCLUDED_MONEY_EVIDENCE = {"on_hold", "rejected"}
+
+
+@dataclass
+class CreditStats:
+    """A credit book, per business. Amounts in paise."""
+
+    entries: int = 0
+    customers: int = 0
+    repeat_customers: int = 0  # credit given in two or more different months
+    given_paise: int = 0
+    repaid_bank_exact_paise: int = 0  # payments that cleared whole dues
+    repaid_bank_partial_paise: int = 0  # payments that cleared part of the dues
+    repaid_cash_paise: int = 0  # repayments the owner wrote as cash
+    repaid_written_paise: int = 0  # written repayments not found in the bank (not marked cash)
+    outstanding_paise: int = 0
+    days_to_repay: list[int] = field(default_factory=list)
+
+    @property
+    def repaid_bank_paise(self) -> int:
+        return self.repaid_bank_exact_paise + self.repaid_bank_partial_paise
+
+    @property
+    def bank_repaid_rate(self) -> float:
+        """Share of credit given that came back through the bank; partial clearing counts half."""
+        if not self.given_paise:
+            return 0.0
+        backed = self.repaid_bank_exact_paise + self.repaid_bank_partial_paise / 2
+        return backed / self.given_paise
+
+    @property
+    def median_days_to_repay(self) -> int | None:
+        d = sorted(self.days_to_repay)
+        return d[len(d) // 2] if d else None
 
 
 @dataclass
@@ -34,6 +76,8 @@ class ReconStats:
     ambiguous: int = 0
     bank_txns: int = 0
     rules: dict[str, int] = field(default_factory=dict)
+    cash_entries: int = 0  # written as cash: never looked for in the bank
+    credit: CreditStats = field(default_factory=CreditStats)
 
     @property
     def match_rate(self) -> float:
@@ -146,9 +190,13 @@ def _date_score(days: int) -> float:
 
 def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStats:
     """Recompute all automatic matches. Idempotent; owner answers are kept as aliases."""
-    entries = ledger_for(db, business_id)
+    countable = ledger_for(db, business_id)
     txns = money_for(db, business_id)
-    entry_ids = [e.id for e in entries]
+    entry_ids = [e.id for e in countable]
+    credit_entries = [e for e in countable if e.kind == "credit_given"]
+    cash = [e for e in countable if e.kind != "credit_given" and e.paid_by == "cash"]
+    # Only money that could be in the bank is looked for there.
+    entries = [e for e in countable if e.kind != "credit_given" and e.paid_by != "cash"]
     all_entry_ids = [
         eid
         for (eid,) in db.execute(
@@ -162,6 +210,7 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
         ledger_entries=len(entries),
         ledger_value_paise=sum(e.amount_paise for e in entries),
         bank_txns=len(txns),
+        cash_entries=len(cash),
     )
     by_key: dict[tuple[str, int], list[BankTransaction]] = defaultdict(list)
     for t in txns:
@@ -316,6 +365,10 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
                 found = True
                 break
     stats.ambiguous = len(ambiguous_e - used_e)
+    # 4. credit books: running balance per customer, oldest dues first
+    stats.credit = _credit_book(
+        db, credit_entries, entries + cash, txns, used_e, used_t, aliases, learned, stats.rules
+    )
     db.flush()
     record(
         db,
@@ -328,9 +381,136 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
             "ambiguous": stats.ambiguous,
             "match_rate": round(stats.match_rate, 3),
             "ledger_considered": len(entry_ids),
+            "credit_entries": stats.credit.entries,
+            "credit_repaid_bank_paise": stats.credit.repaid_bank_paise,
         },
     )
     return stats
+
+
+def _credit_book(
+    db: Session,
+    dues_entries: list[LedgerEntry],
+    money_entries: list[LedgerEntry],
+    txns: list[BankTransaction],
+    used_e: set[str],
+    used_t: set[str],
+    aliases: dict[tuple[str, str], bool],
+    learned: set[tuple[str, str]],
+    rules: dict[str, int],
+) -> CreditStats:
+    """Apply each customer's repayments to their dues, oldest first. Rules only."""
+    cs = CreditStats(
+        entries=len(dues_entries), given_paise=sum(e.amount_paise for e in dues_entries)
+    )
+    by_customer: dict[str, list[LedgerEntry]] = defaultdict(list)
+    undated = 0
+    for e in dues_entries:
+        pk = normalise(e.party_text)
+        if pk and e.entry_date is not None:
+            by_customer[pk].append(e)
+        else:
+            undated += e.amount_paise  # no name or date: it can never be matched
+    written: dict[str, list[LedgerEntry]] = defaultdict(list)
+    for e in money_entries:
+        pk = normalise(e.party_text)
+        if e.direction == "in" and e.entry_date is not None and pk in by_customer:
+            written[pk].append(e)
+    cs.customers = len(by_customer)
+    cs.repeat_customers = sum(
+        1
+        for dues in by_customer.values()
+        if len({(d.entry_date.year, d.entry_date.month) for d in dues if d.entry_date}) >= 2
+    )
+    outstanding = undated
+    for pk, dues in sorted(by_customer.items()):
+        dues.sort(key=lambda d: (d.entry_date, d.id))
+        left = {d.id: d.amount_paise for d in dues}
+        first = dues[0].entry_date
+        assert first is not None
+        # (date, order, amount, via, bank txn): written repayments first on a given day
+        events: list[tuple[date, int, int, str, BankTransaction | None]] = []
+        for w in written[pk]:
+            assert w.entry_date is not None
+            via = "bank" if w.id in used_e else "cash" if w.paid_by == "cash" else "written"
+            events.append((w.entry_date, 0, w.amount_paise, via, None))
+        for bt in txns:
+            if bt.direction != "in" or bt.id in used_t or bt.txn_date < first:
+                continue
+            if any(
+                w.amount_paise == bt.amount_paise
+                and w.entry_date is not None
+                and abs((bt.txn_date - w.entry_date).days) <= DATE_WINDOW_DAYS
+                for w in written[pk]
+            ):
+                continue  # the same repayment the owner already wrote (e.g. as cash): count once
+            verdict, _ = _name_verdict(dues[0].party_text, bt, aliases)
+            if verdict == "sure" or (verdict != "no" and (pk, _cp_key(bt)) in learned):
+                events.append((bt.txn_date, 1, bt.amount_paise, "bank_txn", bt))
+        ordered = sorted(events, key=lambda x: (x[0], x[1], x[2]))
+        # Pass 1: written repayments and bank payments that clear whole dues exactly. Pass 2:
+        # part payments against what is still owed. Doing exact ones first keeps one small
+        # payment (perhaps a spot purchase) from spoiling the exact matches after it.
+        for exact_pass in (True, False):
+            for when, _, amount, via, t in ordered:
+                if t is not None and t.id in used_t:
+                    continue
+                if via != "bank_txn" and not exact_pass:
+                    continue  # written repayments were all applied in pass 1
+                eligible = [
+                    d
+                    for d in dues
+                    if left[d.id] > 0
+                    and d.entry_date is not None
+                    and 0 <= (when - d.entry_date).days <= CREDIT_WINDOW_DAYS
+                ]
+                open_total = sum(left[d.id] for d in eligible)
+                if not eligible or (via == "bank_txn" and amount > open_total):
+                    continue  # more than is owed: a purchase paid on the spot, not a repayment
+                exact = False
+                acc = 0
+                for d in eligible:
+                    acc += left[d.id]
+                    if acc >= amount:
+                        exact = acc == amount
+                        break
+                if via == "bank_txn" and exact != exact_pass:
+                    continue
+                remaining = amount
+                for d in eligible:
+                    if remaining == 0:
+                        break
+                    take = min(remaining, left[d.id])
+                    left[d.id] -= take
+                    remaining -= take
+                    if via == "bank_txn" and t is not None:
+                        rule = "credit_repaid" if exact else "credit_repaid_partial"
+                        db.add(
+                            ReconMatch(
+                                ledger_entry_id=d.id,
+                                bank_txn_id=t.id,
+                                score=0.8 if exact else 0.6,
+                                rule=rule,
+                                status="matched",
+                                amount_paise=take,
+                            )
+                        )
+                        rules[rule] = rules.get(rule, 0) + 1
+                    if via == "bank" or (via == "bank_txn" and exact):
+                        cs.repaid_bank_exact_paise += take
+                    elif via == "bank_txn":
+                        cs.repaid_bank_partial_paise += take
+                    elif via == "cash":
+                        cs.repaid_cash_paise += take
+                    else:
+                        cs.repaid_written_paise += take
+                    if left[d.id] == 0 and d.entry_date is not None:
+                        cs.days_to_repay.append((when - d.entry_date).days)
+                if t is not None:
+                    used_t.add(t.id)
+        outstanding += sum(left.values())
+    cs.outstanding_paise = outstanding
+    return cs
 
 
 @dataclass(frozen=True)

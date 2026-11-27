@@ -26,6 +26,9 @@ class ExtractedEntry(_Strict):
     amount_paise: int = Field(ge=0, le=10_000_000_000)
     direction: Literal["in", "out"]
     confidence: FieldConfidence
+    # credit_given: goods given on credit (udhaar / naam likha); no money moved that day.
+    kind: Literal["money", "credit_given"] = "money"
+    paid_by: Literal["cash", "upi", "bank"] | None = None  # only when the page says so
 
 
 class LedgerExtraction(_Strict):

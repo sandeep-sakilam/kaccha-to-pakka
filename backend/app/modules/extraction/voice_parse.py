@@ -148,6 +148,26 @@ OUT_WORDS = [
     "चुकाए",
     "udhaar diya",
 ]
+# Goods given on credit: no money moved ("Sharma ji ke naam 500 likhe", "500 ka udhaar diya").
+CREDIT_WORDS = [
+    "udhaar",
+    "udhar",
+    "उधार",
+    "naam likha",
+    "naam likhe",
+    "naam likho",
+    "नाम लिखा",
+    "नाम लिखे",
+    "khate mein",
+    "खाते में",
+    "on credit",
+    "credit diya",
+]
+PAID_BY_WORDS = {
+    "cash": ["cash", "nakad", "naqad", "नकद", "नक़द", "कैश"],
+    "upi": ["upi", "phonepe", "phone pe", "gpay", "google pay", "paytm", "यूपीआई", "online"],
+    "bank": ["bank", "बैंक", "neft", "imps", "cheque", "chek", "चेक"],
+}
 MONTHS = {
     "jan": 1,
     "january": 1,
@@ -190,7 +210,8 @@ MONTHS = {
     "दिसंबर": 12,
     "दिसम्बर": 12,
 }
-PARTY_MARKERS = r"\s+(se|ko|से|को|ne|ने|ka|ki|का|की|from|to)\s+"
+PARTY_MARKERS = r"\s+(ke naam|के नाम|se|ko|से|को|ne|ने|ka|ki|का|की|from|to)\s+"
+NAAM_LIKHA = re.compile(r"(?<!\w)(ke naam|के नाम)(?!\w).*(?<!\w)(likh|लिख)", re.I)
 
 
 @dataclass(frozen=True)
@@ -199,6 +220,8 @@ class ParsedEntry:
     party_text: str | None
     direction: str | None
     entry_date: date | None
+    kind: str = "money"
+    paid_by: str | None = None
 
     @property
     def understood(self) -> bool:
@@ -276,6 +299,24 @@ def parse_direction(text: str) -> str | None:
     return None
 
 
+def _has(t: str, words: list[str]) -> bool:
+    return any(re.search(rf"(?<!\w){re.escape(w)}(?!\w)", t) for w in words)
+
+
+def parse_kind(text: str) -> str:
+    """credit_given when the owner says the goods went on credit; repayments are money."""
+    t = f" {text.lower()} "
+    # "udhaar ke 500 wapas mile" is a repayment: money received wins over the credit word.
+    credit = _has(t, CREDIT_WORDS) or bool(NAAM_LIKHA.search(t))
+    return "credit_given" if credit and not _has(t, IN_WORDS) else "money"
+
+
+def parse_paid_by(text: str) -> str | None:
+    t = f" {text.lower()} "
+    found = [k for k, words in PAID_BY_WORDS.items() if _has(t, words)]
+    return found[0] if len(found) == 1 else None
+
+
 def parse_date(text: str, today: date) -> date | None:
     t = text.lower()
     if re.search(r"(?<!\w)(aaj|आज|today)(?!\w)", t):
@@ -312,6 +353,16 @@ def parse_entry(text: str, today: date | None = None) -> ParsedEntry:
     rest_no_date = re.sub(
         r"\d{1,2}\s*(tarikh|तारीख)?\s*(" + "|".join(MONTHS) + r")\b", " ", rest, flags=re.I
     )
+    kind = parse_kind(text)
+    if kind == "credit_given":
+        return ParsedEntry(
+            parse_amount(rest_no_date), party, "out", parse_date(text, today), kind, None
+        )
     return ParsedEntry(
-        parse_amount(rest_no_date), party, parse_direction(text), parse_date(text, today)
+        parse_amount(rest_no_date),
+        party,
+        parse_direction(text),
+        parse_date(text, today),
+        kind,
+        parse_paid_by(text),
     )

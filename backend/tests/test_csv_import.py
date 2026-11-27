@@ -13,19 +13,29 @@ FIX = Path(__file__).parent / "fixtures"
 def test_khatabook() -> None:
     src, rows = parse_export((FIX / "khatabook.csv").read_bytes())
     assert src == "khatabook"
-    assert [(r.entry_date, r.party_text, r.amount_paise, r.direction) for r in rows] == [
-        (date(2026, 10, 12), "Rakesh Sharma", 400000, "in"),
-        (date(2026, 10, 13), "Gupta Traders", 250000, "out"),
-        (date(2026, 10, 14), "Rakesh Sharma", 50000, "in"),
-        (date(2026, 10, 14), "Rakesh Sharma", 100000, "out"),
+    # A customer statement is a credit book: "You gave" is credit given.
+    assert [(r.entry_date, r.party_text, r.amount_paise, r.direction, r.kind) for r in rows] == [
+        (date(2026, 10, 12), "Rakesh Sharma", 400000, "in", "money"),
+        (date(2026, 10, 13), "Gupta Traders", 250000, "out", "credit_given"),
+        (date(2026, 10, 14), "Rakesh Sharma", 50000, "in", "money"),
+        (date(2026, 10, 14), "Rakesh Sharma", 100000, "out", "credit_given"),
+    ]
+
+
+def test_khatabook_supplier_statement() -> None:
+    """Goods bought on credit moved no money; the later payment did."""
+    src, rows = parse_export((FIX / "khatabook_supplier.csv").read_bytes())
+    assert src == "khatabook"
+    assert [(r.party_text, r.amount_paise, r.direction, r.kind) for r in rows] == [
+        ("Gupta Traders", 1200000, "out", "money")
     ]
 
 
 def test_okcredit_and_vyapar() -> None:
     src, rows = parse_export((FIX / "okcredit.csv").read_bytes())
-    assert src == "okcredit" and [(r.amount_paise, r.direction) for r in rows] == [
-        (400000, "in"),
-        (25050, "out"),
+    assert src == "okcredit" and [(r.amount_paise, r.direction, r.kind) for r in rows] == [
+        (400000, "in", "money"),
+        (25050, "out", "credit_given"),
     ]
     src, rows = parse_export((FIX / "vyapar.csv").read_bytes())
     assert src == "vyapar" and [(r.amount_paise, r.direction) for r in rows] == [

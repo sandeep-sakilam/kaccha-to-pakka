@@ -172,6 +172,105 @@ def stt_wer() -> dict[str, Any]:
     return {"items": len(scores), "wer": round(sum(scores) / len(scores), 3) if scores else None}
 
 
+def credit_book_eval(db: Session, businesses: int = 10, seed: int = 11) -> dict[str, Any]:
+    """Synthetic credit books (udhaar). Each customer gets monthly credit and pays back in one of
+    the ways real customers do: on time, two months together and late, part payment, in cash
+    (written, never in the bank) or not at all. Decoys: a larger spot purchase paid by UPI by the
+    same customer, and an unrelated payer sending the exact amount. Ground truth is known, so
+    precision and recall of repayments found in the bank are exact."""
+    rng = random.Random(seed)  # noqa: S311
+    pr = PrecisionRecall()
+    patterns: Counter[str] = Counter()
+    customers = [
+        ("Sharma ji", "RAKESH SHARMA"),
+        ("गुप्ता जी", "RAJESH GUPTA"),
+        ("Meena ben", "MEENA PATEL"),
+        ("Jain sa", "ANIL JAIN"),
+        ("Verma ji", "SURESH VERMA"),
+        ("Khan bhai", "IMRAN KHAN"),
+    ]
+    for n in range(businesses):
+        biz = b.business(db, f"Credit Eval {n}")
+        bank = b.evidence(db, biz, "aa_fetch", "aa:mock")
+        led = b.evidence(db, biz, "ledger_page", "camera", "extracted")
+        ledger_rows: list[tuple[Any, ...]] = []
+        money_rows: list[tuple[Any, ...]] = []
+        truth: set[str] = set()  # VPAs of real repayments
+        start = TODAY - timedelta(days=150)
+        for c, (party, bank_name) in enumerate(customers):
+            pattern = rng.choice(["on_time", "two_together", "partial", "cash", "unpaid"])
+            patterns[pattern] += 1
+            dues = []
+            for month in range(3):
+                day = start + timedelta(days=30 * month + rng.randint(0, 5))
+                amt = rng.randint(3, 20) * 10_000
+                dues.append((day, amt))
+                ledger_rows.append((day, party, amt, "credit"))
+            vpa = f"cust{n}x{c}"
+            if pattern == "on_time":
+                for k, (day, amt) in enumerate(dues):
+                    money_rows.append(
+                        (day + timedelta(days=30), amt, "in", f"{vpa}r{k}@ybl", bank_name)
+                    )
+                    truth.add(f"{vpa}r{k}@ybl")
+            elif pattern == "two_together":
+                (d1, a1), (_, a2), (d3, a3) = dues
+                money_rows.append(
+                    (d1 + timedelta(days=62), a1 + a2, "in", f"{vpa}r0@ybl", bank_name)
+                )
+                money_rows.append((d3 + timedelta(days=40), a3, "in", f"{vpa}r1@ybl", bank_name))
+                truth |= {f"{vpa}r0@ybl", f"{vpa}r1@ybl"}
+            elif pattern == "partial":
+                d1, a1 = dues[0]
+                money_rows.append(
+                    (d1 + timedelta(days=25), a1 // 2, "in", f"{vpa}r0@ybl", bank_name)
+                )
+                truth.add(f"{vpa}r0@ybl")
+            elif pattern == "cash":
+                for day, amt in dues:
+                    ledger_rows.append((day + timedelta(days=28), party, amt, "in", "cash"))
+            # decoy: a spot purchase by UPI, larger than everything the customer owes
+            big = sum(a for _, a in dues) + 50_000
+            money_rows.append((start + timedelta(days=70), big, "in", f"{vpa}spot@ybl", bank_name))
+            # decoy: an unrelated payer sends the exact amount of a due
+            money_rows.append(
+                (dues[1][0] + timedelta(days=20), dues[1][1], "in", f"{vpa}x@okaxis", "MOHAN DAS")
+            )
+            # hard decoy, every third customer: a small spot purchase by UPI while still owing.
+            # The rules cannot tell it from a part payment, so it shows up as a false positive.
+            if c % 3 == 0:
+                money_rows.append(
+                    (dues[0][0] + timedelta(days=3), 5_000, "in", f"{vpa}small@ybl", bank_name)
+                )
+        b.money(db, bank, money_rows)
+        entries = b.ledger(db, led, ledger_rows)
+        reconcile(db, biz.id)
+        vpa_of = {t.id: t.counterparty_vpa for t in bank_txns(db, bank.id)}
+        found = {
+            str(vpa_of[m.bank_txn_id])
+            for m in db.execute(
+                select(ReconMatch).where(
+                    ReconMatch.ledger_entry_id.in_([e.id for e in entries]),
+                    ReconMatch.rule.in_(["credit_repaid", "credit_repaid_partial"]),
+                )
+            ).scalars()
+        }
+        pr.tp += len(found & truth)
+        pr.fp += len(found - truth)
+        pr.fn += len(truth - found)
+    return {
+        "businesses": businesses,
+        "customers": businesses * len(customers),
+        "patterns": dict(sorted(patterns.items())),
+        "precision": round(pr.precision, 3),
+        "recall": round(pr.recall, 3),
+        "tp": pr.tp,
+        "fp": pr.fp,
+        "fn": pr.fn,
+        "note": "repayments found in the bank; cash repayments are counted as written, not found",
+    }
+
+
 def run(db: Session) -> dict[str, Any]:
     golden = extraction_eval.load_golden()
     real = bool(golden)
@@ -186,6 +285,7 @@ def run(db: Session) -> dict[str, Any]:
         "golden_set": {"pages": len(pages), "real_pages": real},
         "extraction": extraction,
         "reconciliation": reconciliation_eval(db),
+        "credit_book": credit_book_eval(db),
         "red_team": {
             "cases": len(red),
             "caught": sum(r.caught for r in red),
@@ -239,6 +339,15 @@ def to_markdown(r: dict[str, Any]) -> str:
         f"{rc['recall']} over {rc['businesses']} synthetic businesses "
         f"(tp {rc['tp']}, fp {rc['fp']}, fn {rc['fn']}); {rc.get('owner_questions', 0)} "
         "unclear names sent to the owner as questions.",
+        "",
+        "## Credit books (udhaar)",
+        "",
+        f"Repayments found in the bank: precision {r['credit_book']['precision']}, recall "
+        f"{r['credit_book']['recall']} over {r['credit_book']['customers']} synthetic customers "
+        f"(tp {r['credit_book']['tp']}, fp {r['credit_book']['fp']}, fn "
+        f"{r['credit_book']['fn']}). Patterns: "
+        + ", ".join(f"{k} {v}" for k, v in r["credit_book"]["patterns"].items())
+        + ".",
         "",
         "## Red-team",
         "",

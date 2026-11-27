@@ -25,6 +25,8 @@ class VoiceEntryIn:
     entry_date: date | None
     method: str  # voice or buttons
     stt_confidence: float
+    kind: str = "money"  # money | credit_given
+    paid_by: str | None = None  # cash | upi | bank
 
 
 def save_entries(
@@ -77,7 +79,9 @@ def save_entries(
                 entry_date=e.entry_date,
                 party_text=e.party_text,
                 amount_paise=e.amount_paise,
-                direction=e.direction,
+                direction="out" if e.kind == "credit_given" else e.direction,
+                kind=e.kind,
+                paid_by=e.paid_by if e.kind == "money" else None,
                 confidence=conf,
                 field_confidence={"date": conf, "party": conf, "amount": 1.0, "direction": 1.0},
                 confirmed_by_owner=True,

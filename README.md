@@ -94,7 +94,7 @@ The API (`POST /businesses/{id}/captures`) repeats the cheap checks, refuses pho
 
 ## Ledger extraction and jobs
 
-A ledger or bill capture queues `extract_ledger` (Arq worker; in-process when `JOBS_INLINE=true` or in tests). The AI gateway returns a schema-checked page; each entry keeps per-field confidence, and entries below 0.8 are marked `needs_readback`. Trader scripts or unreadable pages are marked `needs_voice`.
+A ledger or bill capture queues `extract_ledger` (Arq worker; in-process when `JOBS_INLINE=true` or in tests). The AI gateway returns a schema-checked page; each entry keeps per-field confidence, and entries below 0.8 are marked `needs_readback`. Trader scripts or unreadable pages are marked `needs_voice`. Each entry also says whether money moved (`kind`: money, or credit_given for goods on credit) and, when written, how it was paid (`paid_by`); the read-back says it in words ("Sharma ji को पाँच सौ रुपये का सामान उधार दिया: सही?"), and the owner can change both when correcting an entry. Spoken entries understand "udhaar diya" and "ke naam likhe" as credit, "nakad" as cash and "PhonePe/GPay/UPI" as UPI; "udhaar ke 500 wapas mile" is a repayment.
 The raw photo is deleted after extraction unless the owner gave `keep_originals` consent. If every AI provider is down the job is retried with backoff, then lands in `job_failures` (dead letter); the owner is told on WhatsApp (SMS if WhatsApp is down) and again when a retry succeeds.
 
 ## Page checksum and read-back
@@ -108,7 +108,7 @@ For pages in Mahajani or Sarrafi script, or handwriting the AI can't read, the o
 
 ## Ledger-app CSV import
 
-`POST /businesses/{id}/imports/csv` reads Khatabook ("You Gave / You Got"), OkCredit ("Type, Amount") and Vyapar ("Type, Received/Paid") exports, detected from the header row (title rows above it are skipped). Unknown layouts are refused with a reason; the same file twice is refused; entries are stored with confidence 1.0 and need no read-back.
+`POST /businesses/{id}/imports/csv` reads Khatabook ("You Gave / You Got"), OkCredit ("Type, Amount") and Vyapar ("Type, Received/Paid") exports, detected from the header row (title rows above it are skipped). Unknown layouts are refused with a reason; the same file twice is refused; entries are stored with confidence 1.0 and need no read-back. Khatabook and OkCredit are credit books: in a customer statement "You Gave" (OkCredit "Credit") is credit given and "You Got" is money received; in a Khatabook supplier statement (title or "Supplier Name" column) "You Gave" is money paid and "You Got" (goods bought on credit, no money moved) is left out.
 
 ## Statement PDFs
 
@@ -125,6 +125,8 @@ Every statement PDF runs `statements/tamper.py`: editing-tool producers (iLovePD
 ## Reconciliation
 
 `reconciliation/engine.py` matches counted ledger entries (high-confidence or owner-confirmed) to money data (excluding statements on hold): same direction, exact amount, dates within ±3 days, and names that agree across scripts (`names.py` transliterates Devanagari, drops honorifics like "ji" and words like "traders", and uses rapidfuzz token-set similarity). A nameless entry matches only when it is the single candidate both ways (weaker rule). Unclear names become owner questions ("Is Pappu the same as PRADEEP KUMAR?"), remembered as aliases. A party's entries on nearby days can add up to one payment (many-to-one). The match rate by value feeds the Records pillar. Since F49 it also strips Marwari honorifics ("Jain sa") and words like "cloth house", learns aliases from the owner's own history (the same ledger name meeting the same payer on 3+ unique exact-amount matches, never against the owner's answer), and matches one ledger entry paid in two instalments by the same payer. On the synthetic evaluation set recall went from 0.613 to 0.812 with precision 1.0.
+
+Credit books (F58). Many shops record only udhaar: goods given on credit, and the customer's later repayments. A ledger entry has a `kind`: `money` (cash actually received or paid) or `credit_given` (goods on credit; no money moved, so it is never looked for in the bank). Money entries may say how they were paid (`paid_by`: cash, UPI or bank); entries written as cash are not looked for in the bank either. Credit is matched per customer as a running balance: a bank or UPI payment from that customer (sure name or learned alias only), or a repayment written in the ledger, clears the oldest dues first, up to 90 days after each due. Payments that clear whole dues exactly ("September and October together") are applied first and are strong matches; part payments are applied after them and count half; a payment larger than everything owed is a spot purchase, not a repayment. When a written repayment and a bank payment from the same customer have the same amount within 3 days, they are counted once. On the synthetic credit-book set (60 customers paying on time, late with two months together, in part, in cash or not at all, with spot-purchase and unrelated-payer decoys) repayments are found with precision 0.976 and recall 1.0; the two false positives are small UPI purchases by customers who still owed money, which no rule can tell from a part payment.
 
 ## Counterparty invites
 
@@ -149,7 +151,7 @@ The first shop-front photo with good GPS sets the shop's home location. With `pr
 | Pillar | Built from |
 | --- | --- |
 | Money (40%) | AA or PDF transactions, last 12 months: active months, weekly regularity, volume, seasonality (same month last year when there are 13+ months), freshness; round-trips are netted out |
-| Records (20%) | match rate by value of independent ledgers against money; a ledger that mirrors the bank statement counts once (as money) |
+| Records (20%) | match rate by value of independent ledgers against money (credit given and cash entries left out); share of credit given that came back through the bank (part payments count half); the two are weighted by their number of entries. A ledger that mirrors the bank statement counts once (as money); a ledger with more cash entries than checkable ones is capped at 40 |
 | Network (25%) | confirmed attestations by weight (3 full = 100); discrepancies subtract |
 | Presence (15%) | business age, shop-front photo, random presence checks passed, in-person visit |
 

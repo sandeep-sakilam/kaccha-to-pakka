@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { entryFields, EntryKindPicker, type EntryChoice, type PaidBy } from "@/components/EntryKind";
 import { Keypad } from "@/components/Keypad";
 import { Screen } from "@/components/Screen";
 import { BigButton, Card } from "@/components/ui";
@@ -14,11 +15,22 @@ type Parsed = {
   party_text: string | null;
   direction: "in" | "out" | null;
   entry_date: string | null;
+  kind: "money" | "credit_given";
+  paid_by: PaidBy;
   understood: boolean;
   prompt: string | null;
   stt_confidence: number;
 };
-type Entry = { amount_paise: number; direction: "in" | "out"; party_text: string | null; entry_date: string | null; method: "voice" | "buttons"; stt_confidence: number };
+type Entry = {
+  amount_paise: number;
+  direction: "in" | "out";
+  kind: "money" | "credit_given";
+  paid_by: PaidBy;
+  party_text: string | null;
+  entry_date: string | null;
+  method: "voice" | "buttons";
+  stt_confidence: number;
+};
 
 export default function VoiceEntry() {
   const { t, i18n } = useTranslation();
@@ -32,7 +44,8 @@ export default function VoiceEntry() {
   const [typed, setTyped] = useState("");
   const [amount, setAmount] = useState("");
   const [party, setParty] = useState("");
-  const [direction, setDirection] = useState<"in" | "out">("in");
+  const [choice, setChoice] = useState<EntryChoice>("in");
+  const [paidBy, setPaidBy] = useState<PaidBy>(null);
   const [listening, setListening] = useState(false);
   const [done, setDone] = useState(false);
   const buttonsMode = misses >= 2;
@@ -69,7 +82,16 @@ export default function VoiceEntry() {
     if (!parsed?.amount_paise || !parsed.direction) return;
     setEntries((e) => [
       ...e,
-      { amount_paise: parsed.amount_paise!, direction: parsed.direction!, party_text: parsed.party_text, entry_date: parsed.entry_date, method: "voice", stt_confidence: parsed.stt_confidence },
+      {
+        amount_paise: parsed.amount_paise!,
+        direction: parsed.direction!,
+        kind: parsed.kind ?? "money",
+        paid_by: parsed.paid_by ?? null,
+        party_text: parsed.party_text,
+        entry_date: parsed.entry_date,
+        method: "voice",
+        stt_confidence: parsed.stt_confidence,
+      },
     ]);
     setParsed(null);
     setTyped("");
@@ -78,7 +100,7 @@ export default function VoiceEntry() {
   function addButtons() {
     setEntries((e) => [
       ...e,
-      { amount_paise: Number(amount) * 100, direction, party_text: party || null, entry_date: null, method: "buttons", stt_confidence: 1 },
+      { amount_paise: Number(amount) * 100, ...entryFields(choice, paidBy), party_text: party || null, entry_date: null, method: "buttons", stt_confidence: 1 },
     ]);
     setAmount("");
     setParty("");
@@ -148,13 +170,7 @@ export default function VoiceEntry() {
             {amount && <span className="block text-base">{rupeesInWords(Number(amount) * 100, i18n.language)}</span>}
           </p>
           <Keypad value={amount} onChange={setAmount} max={9} />
-          <div className="grid grid-cols-2 gap-2">
-            {(["in", "out"] as const).map((d) => (
-              <BigButton key={d} variant={direction === d ? "primary" : "secondary"} aria-pressed={direction === d} onClick={() => setDirection(d)}>
-                {t(d === "in" ? "readback.received" : "readback.paid")}
-              </BigButton>
-            ))}
-          </div>
+          <EntryKindPicker choice={choice} onChoice={setChoice} paidBy={paidBy} onPaidBy={setPaidBy} />
           <input aria-label={t("voice_entry.party")} placeholder={t("voice_entry.party")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg" value={party} onChange={(e) => setParty(e.target.value)} />
           <BigButton disabled={!amount} onClick={addButtons}>
             {t("voice_entry.add")}

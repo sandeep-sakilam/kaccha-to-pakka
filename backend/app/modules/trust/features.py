@@ -178,7 +178,11 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
                 (ReconMatch.ledger_entry_id == LedgerEntry.id) & (ReconMatch.status == "matched"),
             )
             .outerjoin(BankTransaction, ReconMatch.bank_txn_id == BankTransaction.id)
-            .where(LedgerEntry.evidence_id == e.id, LedgerEntry.status.in_(COUNTABLE_LEDGER))
+            .where(
+                LedgerEntry.evidence_id == e.id,
+                LedgerEntry.status.in_(COUNTABLE_LEDGER),
+                LedgerEntry.kind == "money",
+            )
         ).all()
         if len(rows) < MIRROR_MIN_ENTRIES:
             continue
@@ -192,6 +196,9 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
                     [e.id for e in ledger_ev if e.id not in mirrored] or [""]
                 ),
                 LedgerEntry.status.in_(COUNTABLE_LEDGER),
+                # Only money the bank could show: credit given moved no money; cash is not banked.
+                LedgerEntry.kind == "money",
+                (LedgerEntry.paid_by.is_(None)) | (LedgerEntry.paid_by != "cash"),
             )
         ).scalars()
     )
@@ -206,8 +213,9 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     }
     ind_value = sum(le.amount_paise for le in independent)
     matched_value = sum(le.amount_paise for le in independent if le.id in matched_ids)
+    credit = stats.credit
     records = RecordsFeatures(
-        counted_entries=stats.ledger_entries,
+        counted_entries=stats.ledger_entries + stats.cash_entries + credit.entries,
         independent_entries=len(independent),
         match_rate=round(matched_value / ind_value, 4) if ind_value else 0,
         mirrored_ledgers=len(mirrored),
@@ -220,6 +228,16 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
                 )
             ).all()
         ),
+        cash_entries=stats.cash_entries,
+        credit_entries=credit.entries,
+        credit_customers=credit.customers,
+        repeat_credit_customers=credit.repeat_customers,
+        credit_given_paise=credit.given_paise,
+        credit_repaid_bank_paise=credit.repaid_bank_paise,
+        credit_repaid_cash_paise=credit.repaid_cash_paise,
+        credit_outstanding_paise=credit.outstanding_paise,
+        credit_bank_repaid_rate=round(credit.bank_repaid_rate, 4),
+        median_days_to_repay=credit.median_days_to_repay,
     )
 
     # ---- network

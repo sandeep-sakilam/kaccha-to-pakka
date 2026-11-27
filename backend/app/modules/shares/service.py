@@ -228,6 +228,7 @@ def evidence_summary(db: Session, biz: Business, a: Assessment) -> dict[str, Any
         "money_source": features.get("money", {}).get("source"),
         "monthly_totals_paise": dict(sorted(monthly.items())),
         "records": features.get("records", {}),
+        "avg_monthly_inflow_paise": features.get("money", {}).get("avg_monthly_inflow_paise"),
         "confirmations": confirmations,
         "presence": {
             "done": sum(r.status == "done" for r in reqs),

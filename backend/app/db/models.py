@@ -133,6 +133,8 @@ class LedgerEntry(TimestampMixin, Base):
     __table_args__ = (
         CheckConstraint("amount_paise >= 0", name="amount_nonneg"),
         CheckConstraint("direction in ('in','out')", name="direction"),
+        CheckConstraint("kind in ('money','credit_given')", name="kind"),
+        CheckConstraint("paid_by is null or paid_by in ('cash','upi','bank')", name="paid_by"),
     )
     id: Mapped[str] = _id()
     evidence_id: Mapped[str] = mapped_column(ForeignKey("evidence_items.id"), index=True)
@@ -145,6 +147,10 @@ class LedgerEntry(TimestampMixin, Base):
     confirmed_by_owner: Mapped[bool | None] = mapped_column(Boolean)
     page_no: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(24), default="extracted")
+    # money: cash actually received or paid. credit_given: goods given on credit (udhaar), no
+    # money moved; it is cleared later by the customer's repayments.
+    kind: Mapped[str] = mapped_column(String(16), default="money")
+    paid_by: Mapped[str | None] = mapped_column(String(8))  # cash | upi | bank, when written
 
 
 class BankTransaction(TimestampMixin, Base):
@@ -189,6 +195,7 @@ class ReconMatch(TimestampMixin, Base):
     score: Mapped[float] = mapped_column(Float)
     rule: Mapped[str] = mapped_column(String(48))
     status: Mapped[str] = mapped_column(String(24), default="matched")
+    amount_paise: Mapped[int | None] = mapped_column(BigInteger)  # part of a credit repayment
 
 
 class Attestation(TimestampMixin, Base):
