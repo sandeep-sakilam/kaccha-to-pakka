@@ -6,6 +6,7 @@ from arq import cron
 from arq.connections import RedisSettings
 
 from app import job_registry  # noqa: F401  (register jobs)
+from app.adapters.monitoring import init_error_reporting
 from app.core import startup
 from app.core.config import get_settings
 from app.jobs import MAX_TRIES, run_job
@@ -23,6 +24,10 @@ async def nightly_sahayak_monitor(ctx: dict[str, Any]) -> None:
     await run_job(ctx, "sahayak_monitor")
 
 
+async def hourly_fraud_rate_check(ctx: dict[str, Any]) -> None:
+    await run_job(ctx, "fraud_rate_check")
+
+
 async def daily_aa_refresh(ctx: dict[str, Any]) -> None:
     await run_job(ctx, "aa_refresh_due")
 
@@ -32,6 +37,7 @@ async def ping(ctx: dict[str, Any]) -> str:
 
 
 startup.check(get_settings())
+init_error_reporting(get_settings())
 
 
 class WorkerSettings:
@@ -43,4 +49,5 @@ class WorkerSettings:
         cron(presence_tick, minute=set(range(0, 60, 10))),
         cron(nightly_fraud_scan, hour={1}, minute={5}),
         cron(nightly_sahayak_monitor, hour={1}, minute={35}),
+        cron(hourly_fraud_rate_check, minute={20}),
     ]
