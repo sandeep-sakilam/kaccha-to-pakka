@@ -24,7 +24,7 @@ Status of each functionality is in `PROGRESS.md`; working rules are in `CLAUDE.m
 - `backend/`: Python 3.12 FastAPI modular monolith (`app/modules/*`), Arq worker (`app/worker.py`), adapters for outside services (`app/adapters/*`).
 - `web/`: React + Vite + TypeScript installable web app (owner, Sahayak and lender views).
 - `docker-compose.yml`: API, worker, Postgres 16, Redis 7, web.
-- `Makefile`: `make check` is the local quality gate (ruff, mypy, pytest, eslint, tsc, vitest); `make e2e` runs Playwright.
+- `Makefile`: `make check` is the local quality gate (ruff, mypy, pytest, eslint, tsc, vitest with at least 60% line coverage, first-load size budget); `make e2e` runs Playwright.
 
 ## Run locally
 
