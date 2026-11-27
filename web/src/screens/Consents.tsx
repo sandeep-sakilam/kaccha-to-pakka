@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { Dots, Keypad } from "@/components/Keypad";
 import { Screen } from "@/components/Screen";
 import { BigButton, Card } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { parseConsentCommand } from "@/lib/consentVoice";
 import { istDate } from "@/lib/format";
 import { listenOnce } from "@/lib/listen";
@@ -17,6 +20,22 @@ export default function Consents() {
   const [message, setMessage] = useState<string | null>(null);
   const [typed, setTyped] = useState("");
   const [listening, setListening] = useState(false);
+  const [erasing, setErasing] = useState(false);
+  const [pin, setPin] = useState("");
+  const { signOut } = useAuth();
+  const nav = useNavigate();
+
+  async function erase() {
+    try {
+      await api("/auth/erase", { method: "POST", json: { pin, confirm: "DELETE" } });
+      void speak([t("consents.erased")], i18n.language);
+      await signOut();
+      nav("/");
+    } catch (e) {
+      setPin("");
+      setMessage(e instanceof ApiError ? e.message : t("common.error"));
+    }
+  }
 
   const load = useCallback(async () => setRows(await api<ConsentRow[]>(`/consents?language=${i18n.language}`)), [i18n.language]);
   useEffect(() => {
@@ -113,6 +132,29 @@ export default function Consents() {
           </li>
         ))}
       </ol>
+      {!erasing ? (
+        <BigButton
+          variant="ghost"
+          onClick={() => {
+            setErasing(true);
+            void speak([t("consents.erase_warning")], i18n.language);
+          }}
+        >
+          {t("consents.erase")}
+        </BigButton>
+      ) : (
+        <Card className="flex flex-col gap-3">
+          <p role="alert">{t("consents.erase_warning")}</p>
+          <Dots value={pin} length={4} label="PIN" />
+          <Keypad value={pin} onChange={setPin} max={4} />
+          <BigButton variant="danger" disabled={pin.length !== 4} onClick={() => void erase()}>
+            {t("consents.erase_yes")}
+          </BigButton>
+          <BigButton variant="secondary" onClick={() => setErasing(false)}>
+            {t("common.no")}
+          </BigButton>
+        </Card>
+      )}
     </Screen>
   );
 }

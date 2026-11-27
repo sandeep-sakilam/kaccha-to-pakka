@@ -378,6 +378,10 @@
     "withdrew": "Withdrawn: {{what}}",
     "which": "Which one? Say or tap its number:",
     "none": "Nothing to withdraw.",
-    "not_understood": "Say \"withdraw consent\" and what it is for, for example \"withdraw consent bank\"."
+    "not_understood": "Say \"withdraw consent\" and what it is for, for example \"withdraw consent bank\".",
+    "erase": "Delete my account",
+    "erase_warning": "This deletes your account, your photos and records, and stops every share. Lenders will see your passport is cancelled. It cannot be undone. Enter your PIN to confirm.",
+    "erase_yes": "Delete everything",
+    "erased": "Your account is deleted."
   }
 }

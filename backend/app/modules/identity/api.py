@@ -148,3 +148,20 @@ def set_identity(body: IdentityIn, db: DB, user: CurrentUser) -> IdentityOut:
     r = do_set(db, user, body.full_name, body.pan or None)
     db.commit()
     return IdentityOut(name=r.name, kyc_status=r.kyc_status, message=r.message, sandbox=r.sandbox)
+
+
+class EraseIn(BaseModel):
+    pin: str
+    confirm: str
+
+
+@router.post("/erase")
+def erase(body: EraseIn, db: DB, user: CurrentUser) -> dict[str, object]:
+    """Right to erase: delete the account and everything personal (PIN and DELETE required)."""
+    from dataclasses import asdict
+
+    from app.modules.erase.service import erase_account
+
+    report = erase_account(db, user, body.pin, body.confirm)
+    db.commit()
+    return {"erased": True, **asdict(report)}
