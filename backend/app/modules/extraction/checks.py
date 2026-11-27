@@ -106,6 +106,11 @@ def readback_prompt(e: LedgerEntry, lang: str) -> str:
     party = e.party_text or ("किसी" if lang == "hi" else "someone")
     amount = rupees_words(e.amount_paise, lang)
     when = date_words(e.entry_date, lang) if e.entry_date else None
+    if e.kind == "credit_taken":
+        if lang == "hi":
+            return f"{party} से {amount} का सामान {when + ' को ' if when else ''}उधार लिया: सही?"
+        on = f" on {when}" if when else ""
+        return f"Bought {amount} of goods on credit from {party}{on}: right?"
     if e.kind == "credit_given":
         if lang == "hi":
             return f"{party} को {amount} का सामान {when + ' को ' if when else ''}उधार दिया: सही?"
@@ -141,8 +146,8 @@ def confirm_entry(
             if value is not None and getattr(e, field) != value:
                 changed[field] = value
                 setattr(e, field, value)
-        if e.kind == "credit_given":  # goods on credit: no money moved, so no payment method
-            e.direction, e.paid_by = "out", None
+        if e.kind in {"credit_given", "credit_taken"}:  # no money moved: no payment method
+            e.direction, e.paid_by = ("out" if e.kind == "credit_given" else "in"), None
         e.confirmed_by_owner = True
     else:
         e.confirmed_by_owner = False

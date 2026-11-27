@@ -79,7 +79,7 @@ def save_entries(
                 entry_date=e.entry_date,
                 party_text=e.party_text,
                 amount_paise=e.amount_paise,
-                direction="out" if e.kind == "credit_given" else e.direction,
+                direction={"credit_given": "out", "credit_taken": "in"}.get(e.kind, e.direction),
                 kind=e.kind,
                 paid_by=e.paid_by if e.kind == "money" else None,
                 confidence=conf,

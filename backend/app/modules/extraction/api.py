@@ -112,7 +112,7 @@ class ConfirmIn(BaseModel):
     party_text: str | None = Field(None, max_length=200)
     entry_date: date | None = None
     direction: str | None = Field(None, pattern="^(in|out)$")
-    kind: str | None = Field(None, pattern="^(money|credit_given)$")
+    kind: str | None = Field(None, pattern="^(money|credit_given|credit_taken)$")
     paid_by: str | None = Field(None, pattern="^(cash|upi|bank)$")
 
 
@@ -230,7 +230,7 @@ class VoiceEntryItem(BaseModel):
     entry_date: date | None = None
     method: str = Field("voice", pattern="^(voice|buttons)$")
     stt_confidence: float = Field(0.9, ge=0, le=1)
-    kind: str = Field("money", pattern="^(money|credit_given)$")
+    kind: str = Field("money", pattern="^(money|credit_given|credit_taken)$")
     paid_by: str | None = Field(None, pattern="^(cash|upi|bank)$")
 
 

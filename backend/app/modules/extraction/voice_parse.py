@@ -163,6 +163,37 @@ CREDIT_WORDS = [
     "on credit",
     "credit diya",
 ]
+# With a credit word: the shop bought goods on credit ("Gupta ji se 2000 ka maal udhaar liya").
+BOUGHT_WORDS = [
+    "liya",
+    "liye",
+    "li",
+    "लिया",
+    "लिए",
+    "ली",
+    "aaya",
+    "aaye",
+    "आया",
+    "आए",
+    "kharida",
+    "खरीदा",
+]
+# With a credit word: money moved to settle earlier credit, so it is a payment, not credit.
+REPAID_WORDS = [
+    "wapas",
+    "वापस",
+    "mile",
+    "mila",
+    "mili",
+    "मिले",
+    "मिला",
+    "jama",
+    "जमा",
+    "chukaye",
+    "chukaya",
+    "चुकाए",
+    "चुकाया",
+]
 PAID_BY_WORDS = {
     "cash": ["cash", "nakad", "naqad", "नकद", "नक़द", "कैश"],
     "upi": ["upi", "phonepe", "phone pe", "gpay", "google pay", "paytm", "यूपीआई", "online"],
@@ -308,7 +339,9 @@ def parse_kind(text: str) -> str:
     t = f" {text.lower()} "
     # "udhaar ke 500 wapas mile" is a repayment: money received wins over the credit word.
     credit = _has(t, CREDIT_WORDS) or bool(NAAM_LIKHA.search(t))
-    return "credit_given" if credit and not _has(t, IN_WORDS) else "money"
+    if not credit or _has(t, REPAID_WORDS):
+        return "money"  # "udhaar ke 500 wapas mile" / "Gupta ji ko udhaar ke 2000 chukaye"
+    return "credit_taken" if _has(t, BOUGHT_WORDS) else "credit_given"
 
 
 def parse_paid_by(text: str) -> str | None:
@@ -354,9 +387,10 @@ def parse_entry(text: str, today: date | None = None) -> ParsedEntry:
         r"\d{1,2}\s*(tarikh|तारीख)?\s*(" + "|".join(MONTHS) + r")\b", " ", rest, flags=re.I
     )
     kind = parse_kind(text)
-    if kind == "credit_given":
+    if kind in {"credit_given", "credit_taken"}:
+        direction = "out" if kind == "credit_given" else "in"
         return ParsedEntry(
-            parse_amount(rest_no_date), party, "out", parse_date(text, today), kind, None
+            parse_amount(rest_no_date), party, direction, parse_date(text, today), kind, None
         )
     return ParsedEntry(
         parse_amount(rest_no_date),

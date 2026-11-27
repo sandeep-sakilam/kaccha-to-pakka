@@ -21,6 +21,8 @@ from app.modules.consent import service as consent
 from app.modules.notify import notify
 
 READBACK_THRESHOLD = 0.8
+# Goods went out to a customer on credit, or came in from a supplier on credit.
+CREDIT_DIRECTION = {"credit_given": "out", "credit_taken": "in"}
 VOICE_SCRIPTS = {"mahajani", "sarrafi", "unreadable"}
 MIN_PAGE_CONFIDENCE = 0.4
 
@@ -73,7 +75,7 @@ def apply_extraction(
                 entry_date=e.entry_date,
                 party_text=e.party_text,
                 amount_paise=e.amount_paise,
-                direction="out" if e.kind == "credit_given" else e.direction,
+                direction=CREDIT_DIRECTION.get(e.kind, e.direction),
                 kind=e.kind,
                 paid_by=e.paid_by if e.kind == "money" else None,
                 confidence=min(conf.values()),

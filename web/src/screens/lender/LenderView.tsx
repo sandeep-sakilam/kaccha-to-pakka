@@ -28,6 +28,13 @@ type View = {
       credit_outstanding_paise?: number;
       median_days_to_repay?: number | null;
       owner_confirmed_share?: number;
+      supplier_credit_entries?: number;
+      supplier_credit_suppliers?: number;
+      supplier_credit_taken_paise?: number;
+      supplier_paid_bank_paise?: number;
+      supplier_paid_cash_paise?: number;
+      supplier_outstanding_paise?: number;
+      median_days_to_pay_suppliers?: number | null;
       daily_sales_months_checked?: number;
       daily_sales_months_agree?: number;
     };
@@ -171,6 +178,7 @@ export default function LenderView() {
               )}
             </Card>
             {(ev.records.credit_entries ?? 0) > 0 && <CreditBook r={ev.records} monthly={ev.avg_monthly_inflow_paise ?? 0} />}
+            {(ev.records.supplier_credit_entries ?? 0) > 0 && <SupplierBook r={ev.records} />}
             <Card>
               <h3 className="font-semibold">{t("lender.confirmations")}</h3>
               <ul>
@@ -239,3 +247,23 @@ function CreditBook({ r, monthly }: { r: NonNullable<View["evidence"]>["records"
     </Card>
   );
 }
+
+/** Goods bought on credit and how they were paid for: plain facts for the lender. */
+function SupplierBook({ r }: { r: NonNullable<View["evidence"]>["records"] }) {
+  const { t } = useTranslation();
+  const taken = r.supplier_credit_taken_paise ?? 0;
+  const pct = (p: number) => (taken ? Math.round((p / taken) * 100) : 0);
+  return (
+    <Card>
+      <h3 className="font-semibold">{t("lender.supplier_title")}</h3>
+      <ul className="text-sm" data-testid="supplier-book">
+        <li>{t("lender.supplier_taken", { amount: rupees(taken), suppliers: r.supplier_credit_suppliers ?? 0 })}</li>
+        <li>{t("lender.supplier_bank", { percent: pct(r.supplier_paid_bank_paise ?? 0) })}</li>
+        <li>{t("lender.supplier_cash", { percent: pct(r.supplier_paid_cash_paise ?? 0) })}</li>
+        {r.median_days_to_pay_suppliers != null && <li>{t("lender.supplier_days", { days: r.median_days_to_pay_suppliers })}</li>}
+        <li>{t("lender.supplier_unpaid", { amount: rupees(r.supplier_outstanding_paise ?? 0) })}</li>
+      </ul>
+    </Card>
+  );
+}
+

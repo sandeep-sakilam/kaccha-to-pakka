@@ -176,6 +176,9 @@ test("lender view shows a credit book as plain facts", async () => {
         credit_given_paise: 4000000, credit_repaid_bank_paise: 2800000, credit_repaid_cash_paise: 800000,
         credit_outstanding_paise: 400000, median_days_to_repay: 33, owner_confirmed_share: 0.25,
         daily_sales_months_checked: 3, daily_sales_months_agree: 2,
+        supplier_credit_entries: 12, supplier_credit_suppliers: 3, supplier_credit_taken_paise: 9000000,
+        supplier_paid_bank_paise: 8100000, supplier_paid_cash_paise: 0, supplier_outstanding_paise: 900000,
+        median_days_to_pay_suppliers: 21,
       },
     },
   })]]);
@@ -189,6 +192,10 @@ test("lender view shows a credit book as plain facts", async () => {
   expect(book).toHaveTextContent("₹4,000 still unpaid (4% of a month's money in)");
   expect(screen.getByText(/4 ledger entries are written as cash/)).toBeInTheDocument();
   expect(screen.getByText(/25% of the matched value links names to payers because the owner said so/)).toBeInTheDocument();
+  const sup = screen.getByTestId("supplier-book");
+  expect(sup).toHaveTextContent("₹90,000 of goods bought on credit from 3 suppliers");
+  expect(sup).toHaveTextContent("90% paid for through the bank");
+  expect(sup).toHaveTextContent("Suppliers were usually paid after 21 days");
   expect(screen.getByTestId("address-proofs")).toHaveTextContent("Shop name and address match on: electricity bill, shop licence");
   expect(screen.getByTestId("business-age")).toHaveTextContent("Owner says 17 years; 17 years shown by the start date on the Udyam registration");
   expect(screen.getByTestId("registration")).toHaveTextContent("Udyam registration confirmed in the government register");

@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f64-supplier-credit`
+Current: none; next is `feat/f65-woman-helper`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -72,3 +72,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F61 Udyam / GSTIN checked against the government register: name match, hold on a borrowed number, presence points (`feat/f61-registration-check`)
 - [x] F62 Verified business age: register dates and bank history prove age; claimed age counts at half (`feat/f62-verified-business-age`)
 - [x] F63 Address proof: utility bill or shop licence by live camera, read by AI, judged by rules (name, place, date) (`feat/f63-address-proof`)
+- [x] F64 Supplier credit: goods bought on credit, cleared by payments to the supplier oldest-first; days to pay suppliers for lenders (`feat/f64-supplier-credit`)
