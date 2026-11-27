@@ -181,6 +181,11 @@ def lender_view(db: Session, s: Share) -> dict[str, Any]:
             "since": biz.started_on.year if biz.started_on else None,
         },
     }
+    # The band over time (no reasons or evidence): shown with every scope.
+    out["history"] = [
+        {"issued_at": h["issued_at"], "band": h["band"], "status": h["status"]}
+        for h in passports.history(db, biz.id)
+    ]
     if s.scope == "evidence":
         out["evidence"] = evidence_summary(db, biz, a)
     return out

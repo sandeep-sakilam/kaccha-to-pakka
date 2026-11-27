@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { BandHistory, type HistoryItem } from "@/components/BandHistory";
 import { Screen } from "@/components/Screen";
 import { BigButton, Card, SandboxBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -55,6 +56,7 @@ export default function PassportScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
   const load = useCallback(async () => {
     try {
@@ -62,6 +64,7 @@ export default function PassportScreen() {
       setEx(await api<Explanation>(`/businesses/${businessId}/explanation?language=${i18n.language}`));
       const a = await api<Assessment>(`/businesses/${businessId}/assessments/latest`);
       setCodes(a.reasons.improve.map((r) => r.code));
+      setHistory(await api<HistoryItem[]>(`/businesses/${businessId}/passport/history`).catch(() => []));
     } catch (e) {
       if (!(e instanceof ApiError && e.status === 404)) setError(t("common.error"));
     } finally {
@@ -129,6 +132,7 @@ export default function PassportScreen() {
           <p className="text-lg" data-testid="headline">
             {ex.headline}
           </p>
+          <BandHistory items={history} />
           {ex.positives.length > 0 && (
             <section>
               <h2 className="font-semibold">{t("passport.why")}</h2>
