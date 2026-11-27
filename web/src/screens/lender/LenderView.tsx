@@ -31,6 +31,7 @@ type View = {
       daily_sales_months_checked?: number;
       daily_sales_months_agree?: number;
     };
+    registration?: { status: string; source: string | null; registered_on: string | null };
     cash_deposit_paise?: number;
     cash_deposit_months?: number;
     avg_monthly_inflow_paise?: number;
@@ -115,6 +116,17 @@ export default function LenderView() {
                 </tbody>
               </table>
             </Card>
+            {ev.registration && ev.registration.status !== "none" && (
+              <Card>
+                <h3 className="font-semibold">{t("lender.registration_title")}</h3>
+                <p className="text-sm" data-testid="registration">
+                  {t(`lender.registration_${ev.registration.status}`, {
+                    source: ev.registration.source === "gstin" ? "GST" : "Udyam",
+                    date: ev.registration.registered_on ? istDate(ev.registration.registered_on, i18n.language) : "?",
+                  })}
+                </p>
+              </Card>
+            )}
             {(ev.cash_deposit_months ?? 0) > 0 && (
               <Card>
                 <h3 className="font-semibold">{t("lender.cash_title")}</h3>

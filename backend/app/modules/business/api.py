@@ -54,6 +54,10 @@ class BusinessOut(BaseModel):
     gstin: str | None
     women_owned: bool
     is_sandbox: bool
+    registration_status: str = "none"
+    registration_source: str | None = None
+    registration_name: str | None = None
+    registered_on: date | None = None
 
 
 def _out(b: Business) -> BusinessOut:
@@ -69,6 +73,10 @@ def _out(b: Business) -> BusinessOut:
         gstin=b.gstin,
         women_owned=b.women_owned,
         is_sandbox=b.is_sandbox,
+        registration_status=b.registration_status or "none",
+        registration_source=b.registration_source,
+        registration_name=b.registration_name,
+        registered_on=b.registered_on,
     )
 
 
@@ -93,6 +101,17 @@ def get_business(business_id: str, db: DB, user: CurrentUser) -> BusinessOut:
 def patch_business(business_id: str, body: BusinessPatch, db: DB, user: CurrentUser) -> BusinessOut:
     biz = business_for(db, user, business_id, action="profile")
     service.update(db, user, biz, body.model_dump(exclude_unset=True))
+    db.commit()
+    return _out(biz)
+
+
+@router.post("/businesses/{business_id}/registration/check", response_model=BusinessOut)
+def check_registration(business_id: str, db: DB, user: CurrentUser) -> BusinessOut:
+    """Ask the register again (e.g. after the provider was down)."""
+    from app.modules.business import registration
+
+    biz = business_for(db, user, business_id, action="profile")
+    registration.check(db, biz, f"user:{user.id}")
     db.commit()
     return _out(biz)
 

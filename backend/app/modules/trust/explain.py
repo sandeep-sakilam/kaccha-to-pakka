@@ -31,6 +31,18 @@ T: dict[str, dict[str, str]] = {
         "en": "In {months} months your told sales were far above the bank",
         "hi": "{months} महीनों में बताई बिक्री बैंक से बहुत ज़्यादा थी",
     },
+    "registration_verified": {
+        "en": "Your {source} registration is confirmed by the government register",
+        "hi": "आपका {source} पंजीकरण सरकारी रजिस्टर से पक्का हुआ",
+    },
+    "registration_not_active": {
+        "en": "Your {source} number is not active in the government register",
+        "hi": "आपका {source} नंबर सरकारी रजिस्टर में चालू नहीं है",
+    },
+    "add_registration": {
+        "en": "Add your Udyam or GST number (free Udyam registration takes minutes)",
+        "hi": "अपना उद्यम या GST नंबर जोड़ें (मुफ़्त उद्यम पंजीकरण कुछ मिनट में होता है)",
+    },
     "no_money_data": {"en": "No bank or UPI data yet", "hi": "अभी कोई बैंक या UPI डेटा नहीं"},
     "pdf_only_capped": {
         "en": "Only a PDF statement, so the band can be at most C",

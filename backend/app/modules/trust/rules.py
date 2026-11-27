@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r5"  # r5: cash deposits at half weight; daily sales told by the owner
+RULES_VERSION = "2026.11-r6"  # r6: Udyam / GSTIN checked against the register
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -72,6 +72,8 @@ class PresenceFeatures:
     checks_failed: int = 0
     checks_missed: int = 0
     in_person_visits: int = 0
+    registration: str = "none"  # none | verified | name_mismatch | cancelled | not_found | failed
+    registration_source: str | None = None  # udyam | gstin
 
 
 @dataclass
@@ -234,6 +236,9 @@ def network_pillar(n: NetworkFeatures) -> float:
     return round(_clamp(100 * good / 3 - 15 * discrepancies), 1)
 
 
+REGISTRATION_POINTS = 10.0
+
+
 def presence_pillar(p: PresenceFeatures) -> float:
     age = p.business_age_years
     score = 0.0 if age is None else 30 if age >= 5 else 22 if age >= 3 else 15 if age >= 1 else 5
@@ -242,6 +247,7 @@ def presence_pillar(p: PresenceFeatures) -> float:
     if answered:
         score += 40 * p.checks_done / answered
     score += 15 if p.in_person_visits else 0
+    score += REGISTRATION_POINTS if p.registration == "verified" else 0
     return round(_clamp(score), 1)
 
 
@@ -400,6 +406,13 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
         pos.append((p["presence"] - 5, Reason("presence_checks", {"count": pr.checks_done})))
     if not pr.has_shop_front:
         imp.append((40, Reason("shop_photo")))
+    source = {"udyam": "Udyam", "gstin": "GST"}.get(pr.registration_source or "", "")
+    if pr.registration == "verified":
+        pos.append((p["presence"] - 8, Reason("registration_verified", {"source": source})))
+    elif pr.registration in {"not_found", "cancelled"}:
+        gaps.append((36, Reason("registration_not_active", {"source": source})))
+    elif pr.registration == "none":
+        imp.append((25, Reason("add_registration")))
     if pr.checks_missed + pr.checks_failed:
         gaps.append((35, Reason("presence_missed", {"count": pr.checks_missed + pr.checks_failed})))
     if m.months_of_data and m.months_of_data < 3:

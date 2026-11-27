@@ -231,6 +231,11 @@ def evidence_summary(db: Session, biz: Business, a: Assessment) -> dict[str, Any
         "avg_monthly_inflow_paise": features.get("money", {}).get("avg_monthly_inflow_paise"),
         "cash_deposit_paise": features.get("money", {}).get("cash_deposit_paise", 0),
         "cash_deposit_months": features.get("money", {}).get("cash_deposit_months", 0),
+        "registration": {
+            "status": biz.registration_status,
+            "source": biz.registration_source,
+            "registered_on": biz.registered_on.isoformat() if biz.registered_on else None,
+        },
         "confirmations": confirmations,
         "presence": {
             "done": sum(r.status == "done" for r in reqs),

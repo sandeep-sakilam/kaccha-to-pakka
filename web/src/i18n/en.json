@@ -332,7 +332,13 @@
     "owner_confirmed": "{{percent}}% of the matched value links names to payers because the owner said so",
     "cash_title": "Cash sales deposited",
     "cash_deposits": "{{amount}} paid in as cash in {{months}} of the last 12 months (counted at half weight: the source of cash is not known)",
-    "daily_sales": "The owner's daily sales totals agreed with the bank in {{agree}} of {{checked}} months checked"
+    "daily_sales": "The owner's daily sales totals agreed with the bank in {{agree}} of {{checked}} months checked",
+    "registration_title": "Government registration",
+    "registration_verified": "{{source}} registration confirmed in the government register, registered on {{date}}",
+    "registration_name_mismatch": "The {{source}} number is registered to a different business",
+    "registration_cancelled": "The {{source}} registration is cancelled",
+    "registration_not_found": "The {{source}} number was not found in the government register",
+    "registration_failed": "The {{source}} number could not be checked yet"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",
