@@ -15,7 +15,7 @@
 2. Implement the functionality with its tests on that branch. Nothing else goes on it.
 3. Run the local quality gate (`make check`), then open a PR to `main` describing what changed and how it was tested.
    `gh pr` commands are blocked in cloud sessions. Open every PR with `bash scripts/open_pr.sh "<title>" <body-file>`, which calls `gh api repos/{owner}/{repo}/pulls -f title=... -F body=@file` with an explicit body. Never use a tool that adds its own footer to PR text.
-   After creating a PR, read it back (`bash scripts/preflight.sh --pr N`, done by `open_pr.sh` and again by `merge.sh`); if the title or body mentions the coding assistant, PATCH it before merging.
+   After creating a PR, read it back (`bash scripts/preflight.sh --pr N`, done by `open_pr.sh` and again by `merge.sh`); if the title or body mentions the coding assistant, PATCH it before merging. The cloud session's GitHub proxy appends such a footer on PR create and on `gh api` PATCH; the GitHub update-pull-request tool writes the body exactly, so use it for the PATCH and then re-run the read-back.
 4. Merge locally, never with GitHub's merge button: `git checkout main && git merge --no-ff <branch>`, then `git push origin main`. Delete the local branch. (Remote branch deletion is refused by the proxy; Sandeep cleans those up.)
 5. Only then start the next functionality. At most one open feature branch at any moment.
 
