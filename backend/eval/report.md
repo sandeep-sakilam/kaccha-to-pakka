@@ -1,6 +1,6 @@
 # Evaluation report
 
-Generated 2026-11-26T20:12:49+00:00 · **Sandbox models**: numbers show the harness works, not real accuracy.
+Generated 2026-11-27T15:41:02+00:00 · **Sandbox models**: numbers show the harness works, not real accuracy.
 
 ## Ledger extraction
 
@@ -13,7 +13,7 @@ Golden set: 10 pages (synthetic sandbox)
 
 ## Reconciliation
 
-Precision 1.0, recall 0.613 over 10 synthetic businesses (tp 147, fp 0, fn 93); 20 unclear names sent to the owner as questions.
+Precision 1.0, recall 0.812 over 10 synthetic businesses (tp 195, fp 0, fn 45); 10 unclear names sent to the owner as questions.
 
 ## Red-team
 

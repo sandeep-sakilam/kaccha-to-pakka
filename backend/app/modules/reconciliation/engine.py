@@ -93,6 +93,53 @@ def _name_verdict(
     return "no", sim
 
 
+LEARN_MIN_PAIRS = 3
+
+
+def _cp_key(t: BankTransaction) -> str:
+    return (t.counterparty_vpa or normalise(_cp_name(t))).lower()
+
+
+def learn_aliases(
+    entries: list[LedgerEntry],
+    by_key: dict[tuple[str, int], list[BankTransaction]],
+    owner_answers: dict[tuple[str, str], bool],
+) -> set[tuple[str, str]]:
+    """(party_key, counterparty_key) pairs seen together on >= 3 unique exact-amount matches,
+    always with the same payer and never contradicted by the owner."""
+    ledger_by_key: dict[tuple[str, int], list[LedgerEntry]] = defaultdict(list)
+    for e in entries:
+        if e.entry_date is not None:
+            ledger_by_key[(e.direction, e.amount_paise)].append(e)
+    seen: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for e in entries:
+        pk = normalise(e.party_text)
+        if not pk or e.entry_date is None:
+            continue
+        cands = [
+            t
+            for t in by_key.get((e.direction, e.amount_paise), [])
+            if abs((t.txn_date - e.entry_date).days) <= DATE_WINDOW_DAYS
+        ]
+        if len(cands) != 1:
+            continue
+        t = cands[0]
+        back = [
+            x
+            for x in ledger_by_key[(t.direction, t.amount_paise)]
+            if x.entry_date and abs((t.txn_date - x.entry_date).days) <= DATE_WINDOW_DAYS
+        ]
+        if len(back) == 1:
+            seen[pk][_cp_key(t)] += 1
+    out = set()
+    for pk, per_cp in seen.items():
+        if len(per_cp) == 1:
+            ck, n = next(iter(per_cp.items()))
+            if n >= LEARN_MIN_PAIRS and owner_answers.get((pk, ck)) is not False:
+                out.add((pk, ck))
+    return out
+
+
 def _date_score(days: int) -> float:
     return 1.0 - days / (DATE_WINDOW_DAYS + 1)
 
@@ -120,6 +167,11 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
     for t in txns:
         by_key[(t.direction, t.amount_paise)].append(t)
 
+    # 0. aliases learned from the owner's own history: when the same ledger name keeps meeting
+    # the same payer on exact amounts and dates, with no other candidate either way, it is the
+    # same party ("Pappu" is PRADEEP KUMAR). Exact amounts rarely coincide three times.
+    learned = learn_aliases(entries, by_key, aliases)
+
     # 1. one-to-one candidates
     cands: list[tuple[float, str, LedgerEntry, BankTransaction]] = []
     for e in entries:
@@ -130,6 +182,13 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
             if days > DATE_WINDOW_DAYS:
                 continue
             verdict, sim = _name_verdict(e.party_text, t, aliases)
+            owner_said = (normalise(e.party_text), normalise(_cp_name(t))) in aliases
+            if (
+                verdict in {"no", "maybe"}
+                and not owner_said
+                and (normalise(e.party_text), _cp_key(t)) in learned
+            ):
+                verdict, sim = "learned", 100.0
             if verdict == "no":
                 continue
             score = round(0.6 + 0.25 * _date_score(days) + 0.15 * sim / 100, 3)
@@ -160,6 +219,8 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
                 continue
             rule = "amount_date_only"
             score = round(score - 0.15, 3)
+        elif verdict == "learned":
+            rule = "learned_alias"
         else:
             rule = "amount_date_name"
         db.add(
@@ -210,6 +271,50 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
                     used_t.add(t.id)
                     stats.rules["many_to_one"] = stats.rules.get("many_to_one", 0) + 1
                     break
+    # 3. one-to-many (partial payments): one ledger entry paid in two instalments by the same
+    # payer inside the window ("Sharma ji 10,000" = 6,000 + 4,000 by UPI).
+    by_cp: dict[tuple[str, str], list[BankTransaction]] = defaultdict(list)
+    for t in txns:
+        if t.id not in used_t:
+            by_cp[(t.direction, _cp_key(t))].append(t)
+    for e in entries:
+        if e.id in used_e or e.id in ambiguous_e or e.entry_date is None:
+            continue
+        found = False
+        for (direction, ck), pool in by_cp.items():
+            if direction != e.direction or found:
+                continue
+            near = [
+                t
+                for t in pool
+                if t.id not in used_t and abs((t.txn_date - e.entry_date).days) <= DATE_WINDOW_DAYS
+            ]
+            for a, b in combinations(near, 2):
+                if a.amount_paise + b.amount_paise != e.amount_paise:
+                    continue
+                verdict, _ = _name_verdict(e.party_text, a, aliases)
+                owner_said = (normalise(e.party_text), normalise(_cp_name(a))) in aliases
+                if verdict != "sure" and (
+                    owner_said or (normalise(e.party_text), ck) not in learned
+                ):
+                    continue
+                for t in (a, b):
+                    db.add(
+                        ReconMatch(
+                            ledger_entry_id=e.id,
+                            bank_txn_id=t.id,
+                            score=0.7,
+                            rule="one_to_many",
+                            status="matched",
+                        )
+                    )
+                    used_t.add(t.id)
+                used_e.add(e.id)
+                stats.matched_entries += 1
+                stats.matched_value_paise += e.amount_paise
+                stats.rules["one_to_many"] = stats.rules.get("one_to_many", 0) + 1
+                found = True
+                break
     stats.ambiguous = len(ambiguous_e - used_e)
     db.flush()
     record(

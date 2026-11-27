@@ -65,6 +65,8 @@ VOWELS = {
     "औ": "au",
 }
 MATRAS = {
+    "ॉ": "o",
+    "ॅ": "e",
     "ा": "aa",
     "ि": "i",
     "ी": "ee",
@@ -83,6 +85,11 @@ VIRAMA = "्"
 NUKTA = "़"
 
 HONORIFICS = {
+    "sa",  # Marwari "saa"/"sahab": "Jain sa"
+    "saa",
+    "saab",
+    "sab",
+    "sahib",
     "ji",
     "jee",
     "bhai",
@@ -114,6 +121,15 @@ HONORIFICS = {
     "ms.",
 }
 BUSINESS_WORDS = {
+    "cloth",
+    "house",
+    "bhandar",
+    "kendra",
+    "emporium",
+    "mill",
+    "mills",
+    "industries",
+    "udyog",
     "traders",
     "trader",
     "trading",

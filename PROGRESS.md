@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f49-recon-recall`
+Current: none; next is `feat/f50-frontend-coverage`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -57,3 +57,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F46 Identity defence: full name and PAN in onboarding, KYC-verified name, holder-name mismatch fires in the product (`feat/f46-identity-defence`)
 - [x] F47 Real AI check: placeholder (proxy-injected) keys and a real-AI smoke script; results in `backend/eval/real_ai_smoke.md` (`feat/f47-real-ai-smoke`)
 - [x] F48 Right to erase: delete account, revoke all shares, delete files and records, anonymise the rest (`feat/f48-right-to-erase`)
+- [x] F49 Reconciliation recall 0.613 → 0.812 on the synthetic set (precision 1.0): honorifics, learned aliases, partial payments (`feat/f49-recon-recall`)
