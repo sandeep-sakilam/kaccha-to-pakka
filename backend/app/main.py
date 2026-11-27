@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from app import job_registry  # noqa: F401  (register jobs)
+from app.adapters.monitoring import init_error_reporting
 from app.adapters.registry import get_adapters
 from app.core import startup
 from app.core.config import get_settings
@@ -16,6 +17,7 @@ from app.modules.evidence.api import router as evidence_router
 from app.modules.extraction.api import router as ledger_router
 from app.modules.identity.api import router as auth_router
 from app.modules.imports.api import router as imports_router
+from app.modules.ops.api import router as ops_router
 from app.modules.passport.api import router as passport_router
 from app.modules.presence.api import router as presence_router
 from app.modules.reconciliation.api import router as recon_router
@@ -46,12 +48,14 @@ ROUTERS = [
     whatsapp_router,
     sahayak_router,
     review_router,
+    ops_router,
 ]
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
     startup.check(settings)
+    init_error_reporting(settings)
     app = FastAPI(title="Kaccha to Pakka API", version="0.1.0")
     install_handlers(app)
     for router in ROUTERS:

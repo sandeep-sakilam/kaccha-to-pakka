@@ -67,6 +67,10 @@ class Settings(BaseSettings):
     s3_region: str = "ap-south-1"
     local_storage_dir: str = "./var/storage"
 
+    sentry_dsn: str = ""
+    metrics_token: str = ""
+    fraud_alert_min_assessments: int = 20
+
 
 @lru_cache
 def get_settings() -> Settings:

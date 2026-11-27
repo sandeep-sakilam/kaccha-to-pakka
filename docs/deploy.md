@@ -144,5 +144,8 @@ cd /opt/ktp && git pull && docker compose -f docker-compose.prod.yml --env-file 
 ## 11. Monitoring
 
 - `GET /api/health` (liveness) and `GET /api/ready` (database and Redis).
+- `GET /api/metrics` with `Authorization: Bearer $METRICS_TOKEN` (Prometheus): queue depth, open dead-letter jobs, assessments and fraud-flag rate in the last 24 hours. Point Grafana or any Prometheus scraper at it.
+- Errors go to Sentry when `SENTRY_DSN` is set (phones, UPI IDs and names are scrubbed first).
+- Every hour the worker compares the last-24h fraud-flag rate with the previous 7 days; a jump (at least double and 10 points higher, with 20+ assessments) sends a Sentry alert and notifies every reviewer.
 - Logs: `docker compose -f docker-compose.prod.yml logs -f api worker`.
 - The `job_failures` table is the dead-letter queue; check it daily.

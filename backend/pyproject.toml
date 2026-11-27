@@ -25,6 +25,7 @@ dependencies = [
   "weasyprint>=70.0",
   "qrcode>=8.2",
   "networkx>=3.7",
+  "sentry-sdk>=3.0.1",
 ]
 
 [dependency-groups]
