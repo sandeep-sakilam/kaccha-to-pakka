@@ -136,6 +136,14 @@ class MockAI:
 # ---------------------------------------------------------------- helpers
 
 
+def _why(exc: Exception) -> str:
+    """Short, exact reason for an HTTP failure, including the provider's own message."""
+    if isinstance(exc, httpx.HTTPStatusError):
+        body = " ".join(exc.response.text.split())[:240]
+        return f"HTTP {exc.response.status_code} from {exc.request.url.host}: {body}"
+    return f"{type(exc).__name__}: {exc}"
+
+
 def _parse_json_block(text: str) -> Any:
     match = re.search(r"\{.*\}", text, re.S)
     if not match:
@@ -186,7 +194,7 @@ class SarvamAI:
             res.raise_for_status()
             return res.json()
         except (httpx.HTTPError, ValueError) as exc:
-            raise AdapterError(f"sarvam {path}: {exc}") from exc
+            raise AdapterError(f"sarvam {path}: {_why(exc)}") from exc
 
     def _chat(self, model: str, messages: list[dict[str, Any]]) -> str:
         data = self._post(
@@ -283,7 +291,7 @@ class GeminiAI:
             res.raise_for_status()
             return str(res.json()["candidates"][0]["content"]["parts"][0]["text"])
         except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
-            raise AdapterError(f"gemini: {exc}") from exc
+            raise AdapterError(f"gemini: {_why(exc)}") from exc
 
     def extract_ledger(self, image: bytes, mime: str) -> LedgerExtraction:
         text = self._generate(
@@ -348,7 +356,7 @@ class AnthropicAI:
             res.raise_for_status()
             return str(res.json()["content"][0]["text"])
         except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
-            raise AdapterError(f"anthropic: {exc}") from exc
+            raise AdapterError(f"anthropic: {_why(exc)}") from exc
 
     def extract_ledger(self, image: bytes, mime: str) -> LedgerExtraction:
         text = self._messages(
