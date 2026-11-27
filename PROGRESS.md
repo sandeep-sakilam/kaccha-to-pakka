@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f67-demo-seed`
+Current: none; F58-F67 complete
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -75,3 +75,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F64 Supplier credit: goods bought on credit, cleared by payments to the supplier oldest-first; days to pay suppliers for lenders (`feat/f64-supplier-credit`)
 - [x] F65 Women helpers only: woman-owned businesses accept only women helpers unless the owner changes it (`feat/f65-woman-helper`)
 - [x] F66 Passport history: the band over time for the owner and the lender (`feat/f66-passport-history`)
+- [x] F67 Demo seed and script show F58-F66 (credit books, cash, registration, proven age, address proof, history, women helpers) (`feat/f67-demo-seed`)

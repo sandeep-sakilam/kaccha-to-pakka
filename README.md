@@ -144,6 +144,8 @@ Women helpers only (F65). The Sahayak directory could already be filtered to wom
 
 Passport history (F66). Assessments are immutable, so every passport issued can be shown exactly as it was. `GET /businesses/{id}/passport/history` lists up to the last 12, oldest first (issued at, band, confidence, status, rules version). The owner's passport screen and the lender's view show the band over time ("12 Sep D → 14 Oct C → 27 Nov B") once there are two or more; the lender gets only dates, bands and status, whatever the share's scope.
 
+Demo seed (F67). `make seed` now also shows F58-F66: Sharma Kirana has a verified Udyam registration (17 years proven by its commencement date), an accepted electricity bill, weekly cash deposits, supplier credit paid by UPI and a passport history C → B; Meena Namkeen has an udhaar khata with three credit customers (on time, two months together, part paid), 75 days of spoken daily sales that agree with the bank, and "only women helpers" on. Bands stay B, B, C and Raju's fraud scene is unchanged. `docs/demo-script.md` lists optional scenes for them.
+
 ## Counterparty invites
 
 `GET /businesses/{id}/counterparties/top` lists the top 5 counterparties by value over the last 6 months of money data (statements on hold excluded), with masked UPI ID, bank payee name and supplier/customer role. The owner cannot add or swap names; they only give a phone number per partner (`POST /businesses/{id}/invites`). The invite goes out on WhatsApp (SMS fallback) in the confirmer's language with a `/confirm/{token}` link. The owner's own number is refused, and one number routed for several partners is flagged. The public invite view shows only the claim being confirmed.

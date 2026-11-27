@@ -11,10 +11,11 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app.adapters.kyc import SANDBOX_REGISTER, RegistrationResult
 from app.adapters.payments import MockPaymentGateway
-from app.adapters.sandbox_images import ledger_png
+from app.adapters.sandbox_images import document_png, ledger_png
 from app.db.base import utcnow
-from app.db.models import Business, EvidenceItem, PresenceRequest, User
+from app.db.models import Business, DailySale, EvidenceItem, PresenceRequest, User
 from app.modules.attestations import claims, penny_drop, selection
 from app.modules.audit.service import record
 from app.modules.consent import service as consent
@@ -64,6 +65,17 @@ class DemoBusiness:
     ledger_pages: int = 3
     presence_done: int = 3
     notes: list[str] = field(default_factory=list)
+    # F58-F66 evidence (all optional)
+    udyam: str | None = None  # registered in the Sandbox register below
+    udyam_registered: date | None = None
+    udyam_commenced: date | None = None
+    address_proof: str | None = None  # electricity_bill | shop_licence
+    cash_deposit_every_days: int = 0  # weekly cash paid in at the branch
+    credit_customers: list[tuple[str, str, str, str]] = field(default_factory=list)
+    # (ledger name, UPI ID, bank name, pattern: on_time | two_together | partial)
+    supplier_credit: bool = False  # the first supplier's goods are bought on credit
+    daily_sales_days: int = 0  # days of spoken daily totals, ending yesterday
+    earlier_passport_days: int = 0  # issue a first passport this many days ago (history)
 
 
 BUSINESSES = [
@@ -102,6 +114,13 @@ BUSINESSES = [
         ],
         confirm=3,
         notes=["Strong: bank linked, ledger matches, 3 suppliers confirmed"],
+        udyam="UDYAM-MP-23-0045123",
+        udyam_registered=date(2021, 3, 2),
+        udyam_commenced=date(2009, 4, 1),
+        address_proof="electricity_bill",
+        cash_deposit_every_days=7,
+        supplier_credit=True,
+        earlier_passport_days=45,
     ),
     DemoBusiness(
         "namkeen",
@@ -144,6 +163,12 @@ BUSINESSES = [
         confirm=2,
         ledger_pages=2,
         notes=["Diwali-seasonal: compared with last Diwali, not a flat average"],
+        credit_customers=[
+            ("Verma ji", "verma.provision@okaxis", "SURESH VERMA", "on_time"),
+            ("Joshi Sweets", "joshi.sweets@ybl", "ANIL JOSHI", "two_together"),
+            ("Patel ben", "patel.store@okicici", "HETAL PATEL", "partial"),
+        ],
+        daily_sales_days=75,
     ),
     DemoBusiness(
         "tailor",
@@ -279,6 +304,190 @@ def _money_rows(d: DemoBusiness, rng: random.Random, today: date) -> list[MoneyT
     return rows
 
 
+def _register_udyam(d: DemoBusiness) -> None:
+    if d.udyam:
+        SANDBOX_REGISTER[d.udyam] = RegistrationResult(
+            True,
+            "active",
+            d.owner_name.upper(),
+            d.name.upper(),
+            d.udyam_registered,
+            d.udyam_commenced,
+            "found (sandbox)",
+        )
+
+
+def _cash_deposits(d: DemoBusiness, rng: random.Random, today: date) -> list[MoneyTxn]:
+    """Cash sales paid in at the branch: no payer UPI ID, a BY CASH narration."""
+    if not d.cash_deposit_every_days:
+        return []
+    out = []
+    day = today - timedelta(days=30 * d.months)
+    n = 0
+    while day <= today - timedelta(days=2):
+        n += 1
+        out.append(
+            MoneyTxn(
+                day,
+                rng.randint(30, 60) * 10_000,
+                "in",
+                None,
+                None,
+                f"7{n:011d}",
+                None,
+                "BY CASH DEP RAJWADA BR",
+                None,
+            )
+        )
+        day += timedelta(days=d.cash_deposit_every_days)
+    return out
+
+
+def _credit_book(
+    d: DemoBusiness, rng: random.Random, today: date
+) -> tuple[list[dict[str, Any]], list[MoneyTxn]]:
+    """Three months of credit given to each credit customer, and how each pays it back."""
+    entries: list[dict[str, Any]] = []
+    money: list[MoneyTxn] = []
+    conf = {"date": 0.92, "party": 0.9, "amount": 0.95, "direction": 0.97}
+    for k, (party, vpa, bank_name, pattern) in enumerate(d.credit_customers):
+        dues = []
+        for m in range(3):
+            day = today - timedelta(days=100 - 30 * m - k)
+            amt = rng.randint(3, 9) * 100_000
+            dues.append((day, amt))
+            entries.append(
+                {
+                    "entry_date": str(day),
+                    "party_text": party,
+                    "amount_paise": amt,
+                    "direction": "out",
+                    "kind": "credit_given",
+                    "confidence": conf,
+                }
+            )
+
+        def pay(
+            day: date, amt: int, i: int, vpa: str = vpa, bank_name: str = bank_name, k: int = k
+        ) -> None:
+            money.append(
+                MoneyTxn(day, amt, "in", vpa, bank_name, f"8{k}{i:010d}", None, f"UPI/{vpa}", None)
+            )
+
+        if pattern == "on_time":
+            for i, (day, amt) in enumerate(dues):
+                if day + timedelta(days=28) < today:
+                    pay(day + timedelta(days=28), amt, i)
+        elif pattern == "two_together":
+            pay(dues[1][0] + timedelta(days=33), dues[0][1] + dues[1][1], 0)
+        else:  # partial
+            pay(dues[0][0] + timedelta(days=20), dues[0][1] // 2, 0)
+    return entries, money
+
+
+def _credit_page(db: Session, u: User, biz: Business, d: DemoBusiness, entries: list[Any]) -> None:
+    ingest_capture(
+        db,
+        u,
+        biz,
+        CaptureIn(
+            kind="ledger_page",
+            mime="image/png",
+            data=ledger_png(
+                {"entries": entries, "script": "devanagari", "page_confidence": 0.9},
+                title=f"{biz.name} - Udhaar khata",
+                noise=f"{d.key}-udhaar" * 8,
+            ),
+            captured_at=utcnow(),
+            idempotency_key=f"demo-{d.key}-udhaar",
+            device_id=f"demo-{d.key}",
+            geo=None,
+            client_quality={"blur": 400},
+        ),
+        actor="seed",
+    )
+
+
+def _supplier_credit(d: DemoBusiness, rows: list[MoneyTxn]) -> list[dict[str, Any]]:
+    """The first supplier sends goods on credit; each weekly payment clears the oldest bill."""
+    if not d.supplier_credit:
+        return []
+    p = d.partners[0]
+    paid = sorted((r for r in rows if r.counterparty_vpa == p.vpa), key=lambda r: r.txn_date)[-6:]
+    short = p.name.split()[0].title() + " ji"
+    conf = {"date": 0.92, "party": 0.9, "amount": 0.95, "direction": 0.97}
+    return [
+        {
+            "entry_date": str(r.txn_date - timedelta(days=10)),
+            "party_text": short,
+            "amount_paise": r.amount_paise,
+            "direction": "in",
+            "kind": "credit_taken",
+            "confidence": conf,
+        }
+        for r in paid
+    ]
+
+
+def _address_proof(db: Session, u: User, biz: Business, d: DemoBusiness, today: date) -> None:
+    if not d.address_proof:
+        return
+    doc = {
+        "doc_type": d.address_proof,
+        "holder_name": d.name.upper(),
+        "address": f"12 Main Road, {d.area.title()}, Indore",
+        "issue_date": str(today - timedelta(days=18)),
+        "valid_until": None,
+        "number": "N" + d.phone[-6:],
+        "confidence": 0.93,
+    }
+    ingest_capture(
+        db,
+        u,
+        biz,
+        CaptureIn(
+            kind="address_proof",
+            mime="image/png",
+            data=document_png(doc, title=f"MPPKVVCL bill - {biz.name}"),
+            captured_at=utcnow(),
+            idempotency_key=f"demo-{d.key}-address-proof",
+            device_id=f"demo-{d.key}",
+            geo=None,
+            client_quality={"blur": 400},
+        ),
+        actor="seed",
+    )
+
+
+def _daily_sales(
+    db: Session, biz: Business, d: DemoBusiness, rows: list[MoneyTxn], today: date
+) -> None:
+    """The owner's spoken totals: what the bank saw each day plus about half again in cash."""
+    if not d.daily_sales_days:
+        return
+    rng = random.Random(f"{d.key}-sales")  # noqa: S311
+    per_month: dict[tuple[int, int], int] = {}
+    for r in rows:
+        if r.direction == "in":
+            key = (r.txn_date.year, r.txn_date.month)
+            per_month[key] = per_month.get(key, 0) + r.amount_paise
+    for i in range(1, d.daily_sales_days + 1):
+        day = today - timedelta(days=i)
+        bank = per_month.get((day.year, day.month), 0)
+        if not bank:
+            continue
+        per_day = bank / 30
+        db.add(
+            DailySale(
+                business_id=biz.id,
+                sale_date=day,
+                amount_paise=int(per_day * rng.uniform(1.3, 1.7)) // 100 * 100,
+                method="voice",
+            )
+        )
+    db.flush()
+
+
 def _ledger_pages(
     db: Session, u: User, biz: Business, d: DemoBusiness, rows: list[MoneyTxn], rng: random.Random
 ) -> None:
@@ -411,6 +620,7 @@ def _confirmations(db: Session, u: User, biz: Business, d: DemoBusiness) -> None
 def seed_business(db: Session, d: DemoBusiness, today: date | None = None) -> Business:
     today = today or date.today()
     rng = random.Random(d.key)  # noqa: S311  (deterministic demo data)
+    _register_udyam(d)
     u = _user(db, d)
     for purpose in ("build_passport",):
         consent.grant(db, u, purpose)
@@ -424,14 +634,23 @@ def seed_business(db: Session, d: DemoBusiness, today: date | None = None) -> Bu
         city="Indore",
         sells=d.category,
         women_owned=d.women_owned,
+        women_helpers_only=d.women_owned,
+        udyam=d.udyam,
         is_sandbox=True,
         geo_home={"lat": lat, "lng": lng, "source": "seed"},
     )
     db.add(biz)
     db.flush()
+    if d.udyam:
+        from app.modules.business import registration
+
+        registration.check(db, biz, "seed")
     for purpose in ("aa_fetch", "monthly_refresh", "presence_location"):
         consent.grant(db, u, purpose, biz.id, {"sandbox": True})
     rows = _money_rows(d, rng, today)
+    rows += _cash_deposits(d, rng, today)
+    credit_entries, repayments = _credit_book(d, rng, today)
+    rows += repayments
     if d.money == "aa":
         ev = EvidenceItem(
             business_id=biz.id,
@@ -468,8 +687,18 @@ def seed_business(db: Session, d: DemoBusiness, today: date | None = None) -> Bu
         )
         ingest_statement(db, u, biz, pdf, "upi-statement.pdf", f"demo-{d.key}-upi-pdf")
     _shop(db, u, biz, d)
+    _address_proof(db, u, biz, d, today)
+    if d.earlier_passport_days:
+        # A first passport before the ledger and the partners' confirmations, so the passport
+        # history shows how the band rose as evidence was added.
+        first = issue(db, biz, "seed")
+        first.created_at = utcnow() - timedelta(days=d.earlier_passport_days)
+        db.flush()
     if d.ledger_pages:
         _ledger_pages(db, u, biz, d, rows, rng)
+    if credit_entries or d.supplier_credit:
+        _credit_page(db, u, biz, d, credit_entries + _supplier_credit(d, rows))
+    _daily_sales(db, biz, d, rows, today)
     _confirmations(db, u, biz, d)
     record(db, "seed", "demo.seeded", f"business:{biz.id}", {"key": d.key})
     return biz
