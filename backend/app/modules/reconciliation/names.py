@@ -212,9 +212,16 @@ def normalise(name: str | None) -> str:
     return " ".join(_fold(w) for w in words)
 
 
+TOKEN_AGREES = 80
+NO_SHARED_WORD_MAX = 40.0
+
+
 def similarity(a: str | None, b: str | None) -> float:
-    """0..100. Token-set ratio so 'Sharma' vs 'Rakesh Sharma' scores high."""
+    """0..100. Token-set ratio so 'Sharma' vs 'Rakesh Sharma' scores high. Names with no word in
+    common score at most 40: 'Sharma ji' and 'PRIYA VERMA' only rhyme."""
     na, nb = normalise(a), normalise(b)
     if not na or not nb:
         return 0.0
-    return float(max(fuzz.token_set_ratio(na, nb), fuzz.partial_ratio(na, nb) - 10))
+    score = float(max(fuzz.token_set_ratio(na, nb), fuzz.partial_ratio(na, nb) - 10))
+    shared = any(fuzz.ratio(x, y) >= TOKEN_AGREES for x in na.split() for y in nb.split())
+    return score if shared else min(score, NO_SHARED_WORD_MAX)

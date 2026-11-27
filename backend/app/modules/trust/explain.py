@@ -29,6 +29,10 @@ T: dict[str, dict[str, str]] = {
         "en": "{percent}% of the credit you gave {customers} customers came back through the bank",
         "hi": "{customers} ग्राहकों को दिए उधार का {percent}% बैंक से वापस आया",
     },
+    "matches_rest_on_owner": {
+        "en": "{percent}% of your matched ledger rests on your own answers about names",
+        "hi": "आपके मिलान किए खाते का {percent}% नामों पर आपके अपने जवाबों पर टिका है",
+    },
     "mostly_cash_entries": {
         "en": "{count} ledger entries are cash, which the bank cannot show",
         "hi": "खाते की {count} एंट्री नकद हैं, जो बैंक में नहीं दिखतीं",
@@ -87,6 +91,10 @@ T: dict[str, dict[str, str]] = {
         "hi": "आपके खाते की एंट्री की अभी पुष्टि नहीं हुई",
     },
     "add_ledger": {"en": "Add your ledger pages", "hi": "अपने खाते के पन्ने जोड़ें"},
+    "write_full_names": {
+        "en": "Write customers' full names in your ledger",
+        "hi": "खाते में ग्राहकों के पूरे नाम लिखें",
+    },
     "ask_customers_upi": {
         "en": "Ask credit customers to pay you back by UPI",
         "hi": "उधार वाले ग्राहकों से UPI से पैसे लौटाने को कहें",

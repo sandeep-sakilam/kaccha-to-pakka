@@ -44,6 +44,7 @@ class QuestionOut(BaseModel):
     party_text: str
     counterparty_name: str
     prompt: str
+    bank_txn_id: str
 
 
 @router.get("/businesses/{business_id}/recon/questions", response_model=list[QuestionOut])
@@ -56,6 +57,7 @@ def list_questions(
             party_text=q.party_text,
             counterparty_name=q.counterparty_name,
             prompt=q.prompt_hi if language == "hi" else q.prompt_en,
+            bank_txn_id=q.bank_txn_id,
         )
         for q in engine.questions(db, business_id)
     ]
@@ -65,13 +67,20 @@ class AnswerIn(BaseModel):
     party_text: str
     counterparty_name: str
     same: bool
+    bank_txn_id: str | None = None
 
 
 @router.post("/businesses/{business_id}/recon/answer", response_model=StatsOut)
 def answer(business_id: str, body: AnswerIn, db: DB, user: CurrentUser) -> StatsOut:
     business_for(db, user, business_id, action="readback")
     stats = engine.answer(
-        db, business_id, body.party_text, body.counterparty_name, body.same, f"user:{user.id}"
+        db,
+        business_id,
+        body.party_text,
+        body.counterparty_name,
+        body.same,
+        f"user:{user.id}",
+        body.bank_txn_id,
     )
     db.commit()
     return _out(stats)

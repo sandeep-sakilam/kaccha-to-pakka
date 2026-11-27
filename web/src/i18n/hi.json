@@ -327,7 +327,8 @@
     "credit_days": "ग्राहकों ने आम तौर पर {{days}} दिन बाद चुकाया",
     "credit_regular": "{{count}} नियमित उधार ग्राहक (दो या ज़्यादा महीनों में उधार)",
     "credit_unpaid": "{{amount}} अभी बाकी",
-    "credit_vs_sales": "एक महीने की आमदनी का {{percent}}%"
+    "credit_vs_sales": "एक महीने की आमदनी का {{percent}}%",
+    "owner_confirmed": "मिलान का {{percent}}% इसलिए जुड़ा क्योंकि मालिक ने नाम की पुष्टि की"
   },
   "sahayak": {
     "title": "सहायक मोड",
