@@ -56,6 +56,20 @@ def current(business_id: str, db: DB, user: CurrentUser) -> PassportOut:
     return _out(p)
 
 
+class HistoryItem(BaseModel):
+    issued_at: datetime
+    band: str
+    confidence: str
+    status: str
+    rules_version: str
+
+
+@router.get("/businesses/{business_id}/passport/history", response_model=list[HistoryItem])
+def passport_history(business_id: str, db: DB, user: CurrentUser) -> list[HistoryItem]:
+    business_for(db, user, business_id)
+    return [HistoryItem(**h) for h in service.history(db, business_id)]
+
+
 @router.post("/businesses/{business_id}/passport/revoke", response_model=PassportOut)
 def revoke(business_id: str, db: DB, user: CurrentUser) -> PassportOut:
     """The owner withdraws the current passport. Lenders and QR checks then see "revoked"."""

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
+import { BandHistory, type HistoryItem } from "@/components/BandHistory";
 import { Screen } from "@/components/Screen";
 import { Card, SandboxBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -12,6 +13,7 @@ type View = {
   passport: { id: string; status: string; valid_until: string; vc: { credentialSubject: { band: string; confidence: string; sandbox: boolean } } };
   explanation: { headline: string; band_label: string; positives: string[]; gaps: string[] };
   business: { name: string; category: string; city: string | null; since: number | null };
+  history?: HistoryItem[];
   evidence?: {
     monthly_totals_paise: Record<string, { in: number; out: number }>;
     confirmations: { label: string; status: string }[];
@@ -101,6 +103,7 @@ export default function LenderView() {
           </div>
         </Card>
         <p>{view.explanation.headline}</p>
+        <BandHistory items={view.history ?? []} />
         <ul className="list-inside list-disc">
           {[...view.explanation.positives, ...view.explanation.gaps].map((l) => (
             <li key={l}>{l}</li>

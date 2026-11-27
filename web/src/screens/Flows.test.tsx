@@ -159,6 +159,11 @@ test("lender view shows scope, evidence and watermark", async () => {
 
 test("lender view shows a credit book as plain facts", async () => {
   mockApi([[/\/l\/tok/, () => ({
+    history: [
+      { issued_at: "2026-09-12T06:00:00Z", band: "D", status: "final" },
+      { issued_at: "2026-10-14T06:00:00Z", band: "C", status: "final" },
+      { issued_at: "2026-11-27T06:00:00Z", band: "B", status: "final" },
+    ],
     lender_org: "SBI Rajwada branch", scope: "evidence",
     passport: { id: "p1", status: "valid", valid_until: "2027-01-01T00:00:00Z", vc: { credentialSubject: { band: "B", confidence: "High", sandbox: true } } },
     explanation: { headline: "Your passport is strong because …", band_label: "Strong", positives: [], gaps: [] },
@@ -184,6 +189,7 @@ test("lender view shows a credit book as plain facts", async () => {
   })]]);
   at("/l/tok", "/l/:token", <LenderView />);
   const book = await vi.waitFor(() => screen.getByTestId("credit-book"));
+  expect(screen.getByTestId("band-history")).toHaveTextContent(/12 Sept?\s*D.*14 Oct\s*C.*27 Nov\s*B/);
   expect(book).toHaveTextContent("₹40,000 given on credit to 12 customers");
   expect(book).toHaveTextContent("70% came back through the bank");
   expect(book).toHaveTextContent("20% came back in cash, as the owner wrote it");

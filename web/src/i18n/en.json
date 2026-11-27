@@ -276,7 +276,8 @@
     "revoke": "Withdraw my passport",
     "revoke_confirm": "Withdraw your passport? Lenders who scan it or open a share link will see it is cancelled. You can make a new one later.",
     "revoke_yes": "Yes, withdraw it",
-    "revoked": "Your passport is withdrawn. Lenders will see it is cancelled."
+    "revoked": "Your passport is withdrawn. Lenders will see it is cancelled.",
+    "history": "Your passport over time"
   },
   "shares": {
     "title": "Share with a lender",

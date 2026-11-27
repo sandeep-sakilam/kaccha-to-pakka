@@ -142,6 +142,8 @@ Supplier credit (F64). Goods bought on credit from a supplier are entries of kin
 
 Women helpers only (F65). The Sahayak directory could already be filtered to women helpers (F31), but nothing stopped another helper being added to a woman-owned business. A business now has `women_helpers_only`, on by default for women-owned businesses (and switched on for existing ones by migration 0017). While it is on, only helpers registered as women can be added (others are refused with `women_helpers_only`), and the directory shows women helpers. Only the owner can change it; a helper cannot.
 
+Passport history (F66). Assessments are immutable, so every passport issued can be shown exactly as it was. `GET /businesses/{id}/passport/history` lists up to the last 12, oldest first (issued at, band, confidence, status, rules version). The owner's passport screen and the lender's view show the band over time ("12 Sep D → 14 Oct C → 27 Nov B") once there are two or more; the lender gets only dates, bands and status, whatever the share's scope.
+
 ## Counterparty invites
 
 `GET /businesses/{id}/counterparties/top` lists the top 5 counterparties by value over the last 6 months of money data (statements on hold excluded), with masked UPI ID, bank payee name and supplier/customer role. The owner cannot add or swap names; they only give a phone number per partner (`POST /businesses/{id}/invites`). The invite goes out on WhatsApp (SMS fallback) in the confirmer's language with a `/confirm/{token}` link. The owner's own number is refused, and one number routed for several partners is flagged. The public invite view shows only the claim being confirmed.

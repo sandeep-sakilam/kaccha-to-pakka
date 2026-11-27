@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f66-passport-history`
+Current: none; next is `feat/f67-demo-seed`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -74,3 +74,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F63 Address proof: utility bill or shop licence by live camera, read by AI, judged by rules (name, place, date) (`feat/f63-address-proof`)
 - [x] F64 Supplier credit: goods bought on credit, cleared by payments to the supplier oldest-first; days to pay suppliers for lenders (`feat/f64-supplier-credit`)
 - [x] F65 Women helpers only: woman-owned businesses accept only women helpers unless the owner changes it (`feat/f65-woman-helper`)
+- [x] F66 Passport history: the band over time for the owner and the lender (`feat/f66-passport-history`)

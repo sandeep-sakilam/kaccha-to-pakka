@@ -103,3 +103,30 @@ def explanation_for(db: Session, p: Passport, lang: str) -> dict[str, Any]:
 def revoke(db: Session, p: Passport, actor: str) -> None:
     p.status = "revoked"
     record(db, actor, "passport.revoked", f"business:{p.business_id}", {"passport_id": p.id})
+
+
+HISTORY_LIMIT = 12
+
+
+def history(db: Session, business_id: str) -> list[dict[str, Any]]:
+    """Every passport issued to the business, oldest first, with the band it carried. Assessments
+    are immutable, so this is exactly what the owner (and any lender) saw at the time."""
+    from app.db.models import Assessment
+
+    rows = db.execute(
+        select(Passport, Assessment)
+        .join(Assessment, Passport.assessment_id == Assessment.id)
+        .where(Passport.business_id == business_id)
+        .order_by(Passport.created_at.desc())
+        .limit(HISTORY_LIMIT)
+    ).all()
+    return [
+        {
+            "issued_at": p.created_at.isoformat(),
+            "band": a.band,
+            "confidence": a.confidence,
+            "status": a.status,
+            "rules_version": a.rules_version,
+        }
+        for p, a in reversed(rows)
+    ]
