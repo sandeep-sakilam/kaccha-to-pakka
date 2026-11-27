@@ -24,6 +24,9 @@ from app.modules.notify import notify
 
 WINDOW = timedelta(hours=24)
 MAX_DISTANCE_M = 150.0
+# UPI merchant addresses are coarse; only clearly different places count.
+MERCHANT_NEAR_M = 500.0
+MERCHANT_FAR_M = 5000.0
 MAX_ACCURACY_M = 100.0
 CHECKS_PER_CYCLE = 4
 CYCLE_DAYS = 28
@@ -128,6 +131,8 @@ def evaluate(biz: Business, ev: EvidenceItem) -> PresenceResult:
             reasons.append("far_from_shop")
     if ev.status == "duplicate":
         reasons.append("same_photo_again")
+    if biz.merchant_geo and geo.get("lat") and haversine_m(biz.merchant_geo, geo) > MERCHANT_NEAR_M:
+        reasons.append("far_from_merchant_location")
     return PresenceResult(not reasons, reasons, distance)
 
 

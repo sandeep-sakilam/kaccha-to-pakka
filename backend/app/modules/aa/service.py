@@ -112,6 +112,14 @@ def fetch(db: Session, biz: Business, consent_id: str, actor: str) -> list[Evide
         )
         ev.meta = {**ev.meta, "txns": stored, "duplicates_skipped": skipped}
         items.append(ev)
+        if acc.merchant_geo and acc.merchant_geo.get("lat") is not None:
+            biz.merchant_geo = {
+                "lat": float(acc.merchant_geo["lat"]),
+                "lng": float(acc.merchant_geo["lng"]),
+                "source": "aa",
+                "evidence_id": ev.id,
+            }
+            record(db, actor, "presence.merchant_location", f"business:{biz.id}", {"source": "aa"})
     c.scope = {**c.scope, "last_fetch_at": utcnow().isoformat()}
     record(
         db,

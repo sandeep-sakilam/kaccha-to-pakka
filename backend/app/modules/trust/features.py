@@ -291,6 +291,29 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         flags.append({"code": gf.code, "severity": "hold", "detail": detail})
     network = NetworkFeatures(confirmations=confirmations, rejected_confirmations=len(rejected))
 
+    # ---- shop location vs UPI merchant location (where a provider supplies it)
+    if biz.geo_home and biz.merchant_geo:
+        from app.modules.presence.service import MERCHANT_FAR_M, MERCHANT_NEAR_M, haversine_m
+
+        apart = haversine_m(biz.geo_home, biz.merchant_geo)
+        if apart > MERCHANT_FAR_M:
+            flags.append(
+                {
+                    "code": "shop_far_from_merchant_location",
+                    "severity": "hold",
+                    "detail": f"shop photos are {apart / 1000:.1f} km from the UPI "
+                    "merchant location",
+                }
+            )
+        elif apart > MERCHANT_NEAR_M:
+            flags.append(
+                {
+                    "code": "shop_near_but_not_at_merchant_location",
+                    "severity": "warn",
+                    "detail": f"shop photos are {apart:.0f} m from the UPI merchant location",
+                }
+            )
+
     # ---- presence
     reqs = list(
         db.execute(select(PresenceRequest).where(PresenceRequest.business_id == biz.id)).scalars()

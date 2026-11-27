@@ -31,6 +31,9 @@ class AAAccount:
     holder_name: str
     bank: str
     transactions: list[AATransaction]
+    # UPI merchant location ({"lat", "lng"}) when the provider supplies it (current accounts
+    # with a merchant QR); None otherwise.
+    merchant_geo: dict[str, float] | None = None
 
 
 @dataclass(frozen=True)

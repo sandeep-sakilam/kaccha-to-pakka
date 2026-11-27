@@ -70,6 +70,8 @@ class Business(TimestampMixin, Base):
     udyam: Mapped[str | None] = mapped_column(String(32))
     gstin: Mapped[str | None] = mapped_column(String(15))
     geo_home: Mapped[dict[str, Any] | None] = mapped_column(Json)
+    # Where the UPI merchant account says the shop is, when a provider supplies it.
+    merchant_geo: Mapped[dict[str, Any] | None] = mapped_column(Json)
     address: Mapped[str | None] = mapped_column(Text)
     city: Mapped[str | None] = mapped_column(String(100))
     sells: Mapped[str | None] = mapped_column(Text)
