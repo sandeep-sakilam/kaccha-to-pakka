@@ -74,7 +74,7 @@ When SMS is Sandbox the OTP is returned as `sandbox_code` so the demo can run wi
 ## Consent
 
 One consent row per purpose (`build_passport`, `aa_fetch`, `monthly_refresh`, `share_lender`, `keep_originals`, `presence_location`, optional `model_training`), each with a scope and expiry.
-`consent.service.require()` guards every step that needs permission; `/consents/revoke-purpose` withdraws in one call. `/consents/notice` returns the consent screen text (what we collect, why, who sees it, how to delete) in Hindi or English for read-aloud.
+`consent.service.require()` guards every step that needs permission; `/consents/revoke-purpose` withdraws in one call. In the app, "My permissions" (`/consents`) lists every consent with why, dates and status; each is withdrawn with one tap or by saying "consent wapas lo" / "withdraw consent" (with what it is for, or its number). Withdrawing stops what it allowed at once: the lender link, the helper's access, or the bank link and its monthly refresh. `/consents/notice` returns the consent screen text (what we collect, why, who sees it, how to delete) in Hindi or English for read-aloud.
 
 ## Web app
 

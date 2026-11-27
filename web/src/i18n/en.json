@@ -108,7 +108,8 @@
     "passport": "My Trust Passport",
     "helpers": "My helpers (Sahayak)",
     "sahayak_mode": "I help other owners",
-    "disputes": "Disagree with something?"
+    "disputes": "Disagree with something?",
+    "consents": "My permissions"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -360,5 +361,20 @@
     "res_upheld": "You were right: we corrected it.",
     "cp_link": "Something wrong? Tell us",
     "cp_intro": "If this business is not really your trading partner, or the details are wrong, tell us. We will check."
+  },
+  "consents": {
+    "title": "My permissions",
+    "intro": "Everything you allowed, and why. Tap Withdraw, or say \"withdraw consent\" and what it is for (for example \"withdraw consent bank\").",
+    "active": "Active",
+    "withdrawn": "Withdrawn",
+    "expired": "Expired",
+    "since": "Given {{date}}",
+    "until": "until {{date}}",
+    "withdraw": "Withdraw",
+    "voice": "Say \"withdraw consent\"",
+    "withdrew": "Withdrawn: {{what}}",
+    "which": "Which one? Say or tap its number:",
+    "none": "Nothing to withdraw.",
+    "not_understood": "Say \"withdraw consent\" and what it is for, for example \"withdraw consent bank\"."
   }
 }
