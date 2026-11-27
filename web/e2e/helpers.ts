@@ -19,6 +19,9 @@ export async function onboard(page: Page, name = "Test Kirana") {
   await typeDigits(page, "4826");
   await page.getByRole("button", { name: "Next" }).click();
   await page.getByRole("button", { name: "Yes, I agree" }).click();
+  await page.getByLabel("Or type here").fill("Ramesh Kumar Sharma");
+  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByRole("button", { name: "Yes", exact: true }).click();
   await page.getByLabel("Or type here").fill(name);
   await page.getByRole("button", { name: "Next" }).click();
   await page.getByRole("button", { name: "Yes", exact: true }).click();

@@ -127,3 +127,24 @@ def me(user: CurrentUser) -> Me:
         roles=list(user.roles or []),
         kyc_status=user.kyc_status,
     )
+
+
+class IdentityIn(BaseModel):
+    full_name: str = Field(min_length=3, max_length=200)
+    pan: str | None = Field(None, max_length=10)
+
+
+class IdentityOut(BaseModel):
+    name: str
+    kyc_status: str
+    message: str
+    sandbox: bool
+
+
+@router.post("/identity", response_model=IdentityOut)
+def set_identity(body: IdentityIn, db: DB, user: CurrentUser) -> IdentityOut:
+    from app.modules.identity.kyc import set_identity as do_set
+
+    r = do_set(db, user, body.full_name, body.pan or None)
+    db.commit()
+    return IdentityOut(name=r.name, kyc_status=r.kyc_status, message=r.message, sandbox=r.sandbox)

@@ -70,7 +70,10 @@
     "skip": "Skip",
     "save": "Save",
     "women_owned": "This business is run by a woman",
-    "done": "Your business profile is ready!"
+    "done": "Your business profile is ready!",
+    "q_full_name": "What is your full name, as on your bank account?",
+    "pan": "PAN (optional, verifies your name)",
+    "pan_why": "We check that the bank account is in your name, so nobody can make a passport on someone else's account."
   },
   "categories": {
     "kirana": "Kirana / grocery",

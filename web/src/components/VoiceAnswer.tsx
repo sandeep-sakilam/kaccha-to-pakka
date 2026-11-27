@@ -13,7 +13,7 @@ export function VoiceAnswer({
   question,
   onConfirmed,
 }: {
-  question: "name" | "category" | "since" | "place";
+  question: "full_name" | "name" | "category" | "since" | "place";
   onConfirmed: (value: string | number | null) => void;
 }) {
   const { t, i18n } = useTranslation();

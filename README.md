@@ -212,3 +212,7 @@ Disputes come from the system (tamper holds, page totals, failed confirmations, 
 ## Accessibility and performance
 
 WCAG 2.2 AA checks (axe-core) and a slow-3G / 4× CPU Moto G4 run are part of `make e2e`; the first-load budget (300 KB gzipped, currently ~120 KB) is part of `make check`. Details in `docs/accessibility.md`.
+
+## Identity
+
+Onboarding asks for the owner's full name "as on the bank account" and, optionally, the PAN. `POST /auth/identity` calls the KYC adapter (Sandbox mock by default): a matching PAN stores the **registered** name (`kyc_status = verified`); a PAN of another name stores the registered name and holds the passport (`kyc_name_mismatch`); without a PAN the name is `self_declared`. The trust engine compares the Account Aggregator account-holder name with this name; a mismatch (`holder_name_mismatch`) puts the passport on hold, so nobody can build a passport on someone else's bank account.
