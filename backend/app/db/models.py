@@ -40,8 +40,11 @@ class User(TimestampMixin, Base):
     """One person; may own or help several businesses."""
 
     __tablename__ = "users"
+    # Several people can share one phone number: one profile each, each with its own PIN.
+    __table_args__ = (UniqueConstraint("phone", "profile_name", name="phone_profile"),)
     id: Mapped[str] = _id()
-    phone: Mapped[str] = mapped_column(String(16), unique=True, index=True)
+    phone: Mapped[str] = mapped_column(String(16), index=True)
+    profile_name: Mapped[str] = mapped_column(String(60), default="main", server_default="main")
     pin_hash: Mapped[str | None] = mapped_column(String(255))
     name: Mapped[str | None] = mapped_column(String(200))
     language: Mapped[str] = mapped_column(String(8), default="hi")

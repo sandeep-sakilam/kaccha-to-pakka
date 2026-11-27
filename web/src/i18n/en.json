@@ -46,7 +46,11 @@
     "pin_hint": "Do not use 1234 or 0000.",
     "new_device": "New phone noticed. For your safety, sharing is paused for 24 hours.",
     "clear": "Clear",
-    "delete": "Delete"
+    "delete": "Delete",
+    "new_profile": "Someone else on this phone? Make your own profile",
+    "profile_name": "Your name (for this profile)",
+    "new_profile_pin": "Make your own 4-digit PIN (not the same as others on this phone)",
+    "create_profile": "Make my profile"
   },
   "consent": {
     "title": "Before we start",

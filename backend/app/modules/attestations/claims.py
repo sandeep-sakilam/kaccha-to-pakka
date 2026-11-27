@@ -131,7 +131,9 @@ def _confirmer_business(
         biz = db.get(Business, cp.business_id)
         if biz is not None:
             return biz
-    user = db.execute(select(User).where(User.phone == inv.phone)).scalar_one_or_none()
+    from app.modules.identity.service import primary_user
+
+    user = primary_user(db, inv.phone)
     if user is None:
         user = User(phone=inv.phone, language=inv.language, roles=["confirmer"], device_ids=[])
         db.add(user)

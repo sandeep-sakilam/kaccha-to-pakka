@@ -50,7 +50,9 @@ def add(
     perms = sorted(set(permissions or DEFAULT_SAHAYAK_ACTIONS))
     if not set(perms) <= SAHAYAK_ACTIONS:
         raise DomainError("Unknown permission", "bad_permission")
-    helper = db.execute(select(User).where(User.phone == phone)).scalar_one_or_none()
+    from app.modules.identity.service import primary_user
+
+    helper = primary_user(db, phone)
     if helper is None or "sahayak" not in (helper.roles or []):
         raise DomainError("This number is not registered as a Sahayak yet", "not_sahayak", 404)
     if helper.status != "active":

@@ -68,7 +68,7 @@ Entries are hash-chained (`sha256(prev_hash || canonical record)`), a Postgres t
 ## Login
 
 Phone OTP (`/auth/otp/request`, `/auth/otp/verify`) proves the phone and binds the device; a 4-digit PIN per profile (`/auth/pin/set`, `/auth/pin/verify`) opens it, because family members often share a phone.
-On a bound device the PIN alone logs in (`/auth/login`). Weak PINs are refused, 5 wrong PINs lock the profile for 30 minutes, and a login from a new device is flagged for the takeover freeze.
+On a bound device the PIN alone logs in (`/auth/login`). Weak PINs are refused, 5 wrong PINs lock the profile for 30 minutes, and a login from a new device is flagged for the takeover freeze. Several people can share one phone number: after the OTP, "Someone else on this phone? Make your own profile" creates a separate profile with its own PIN (`POST /auth/profile/new`); PINs on one number must differ, and at each login the PIN decides whose profile opens.
 When SMS is Sandbox the OTP is returned as `sandbox_code` so the demo can run without real messages.
 
 ## Consent
