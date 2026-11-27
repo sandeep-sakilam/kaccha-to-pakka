@@ -254,6 +254,32 @@ test("owner adds a helper with chosen permissions", async () => {
   expect(posted(calls, /l1\/revoke/)).toHaveLength(1);
 });
 
+test("a woman-owned business starts with only women helpers, and the owner can change it", async () => {
+  let rule = true;
+  const directoryCalls: string[] = [];
+  const calls = mockApi([
+    [/PATCH .*\/businesses\/b1$/, (c) => {
+      rule = (c.body as { women_helpers_only: boolean }).women_helpers_only;
+      return { id: "b1", women_helpers_only: rule };
+    }],
+    [/GET .*\/businesses\/b1$/, () => ({ id: "b1", women_helpers_only: rule })],
+    [/GET .*\/sahayaks$/, () => []],
+    [/directory/, (c) => {
+      directoryCalls.push(c.url);
+      return [];
+    }],
+  ]);
+  at("/helpers/b1", "/helpers/:businessId", <Helpers />);
+  const rule1 = await vi.waitFor(() => {
+    const box = screen.getByLabelText("Only women helpers may help my business") as HTMLInputElement;
+    if (!box.checked) throw new Error("not yet");
+    return box;
+  });
+  await vi.waitFor(() => expect(directoryCalls.some((u) => u.includes("women_only=true"))).toBe(true));
+  await act(async () => fireEvent.click(rule1));
+  expect(calls.filter((c) => c.method === "PATCH")[0].body).toEqual({ women_helpers_only: false });
+});
+
 test("sahayak registers", async () => {
   const calls = mockApi([[/sahayak\/register/, () => ({ roles: ["sahayak"] })]]);
   at("/sahayak", "/sahayak", <SahayakHome />);

@@ -76,6 +76,8 @@ class Business(TimestampMixin, Base):
     city: Mapped[str | None] = mapped_column(String(100))
     sells: Mapped[str | None] = mapped_column(Text)
     women_owned: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Only helpers registered as women may be added (on by default for women-owned businesses).
+    women_helpers_only: Mapped[bool] = mapped_column(Boolean, default=False)
     is_sandbox: Mapped[bool] = mapped_column(Boolean, default=False)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # What the government register says about the Udyam / GSTIN number (checked, not claimed).

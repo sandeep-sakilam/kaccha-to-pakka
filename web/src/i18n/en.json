@@ -387,7 +387,8 @@
     "perm_statement": "Add statements",
     "perm_invite": "Invite partners",
     "perm_passport": "Make passport",
-    "remove": "Remove"
+    "remove": "Remove",
+    "women_helpers_only": "Only women helpers may help my business"
   },
   "review": {
     "title": "Review queue",
