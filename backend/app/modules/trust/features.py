@@ -70,6 +70,39 @@ def round_trips(txns: list[BankTransaction]) -> tuple[int, int, set[str]]:
     return pairs, netted, used
 
 
+COMMENCEMENT_ON_RECORD_DAYS = 180
+
+
+def proven_start(
+    biz: Business,
+    txns: list[BankTransaction],
+    money_ev: dict[str, EvidenceItem],
+    today: date,
+) -> tuple[date | None, str]:
+    """The earliest date the business is shown to exist by something other than the owner's word
+    today: the government register (registration date; the commencement date declared on a Udyam
+    registration made at least 6 months ago, so not made up for this passport), or the first
+    payment in bank data that came straight from the bank (Account Aggregator)."""
+    found: list[tuple[date, str]] = []
+    if biz.registration_status == "verified":
+        if biz.registered_on:
+            found.append((biz.registered_on, "registration"))
+        if (
+            biz.registration_started_on
+            and biz.registered_on
+            and (today - biz.registered_on).days >= COMMENCEMENT_ON_RECORD_DAYS
+        ):
+            found.append((biz.registration_started_on, "commencement"))
+    aa_ids = {i for i, e in money_ev.items() if e.type == "aa_fetch"}
+    bank_dates = [t.txn_date for t in txns if t.evidence_id in aa_ids]
+    if bank_dates:
+        found.append((min(bank_dates), "bank"))
+    found = [(d, s) for d, s in found if d <= today]
+    if not found:
+        return None, "none"
+    return min(found)
+
+
 def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     today = today or date.today()
     flags: list[dict[str, str]] = []
@@ -377,8 +410,12 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     age = None
     if biz.started_on:
         age = round((today - biz.started_on).days / 365.25, 1)
+    proven_since, age_proof = proven_start(biz, txns, good_money, today)
+    proven_age = round((today - proven_since).days / 365.25, 1) if proven_since else None
     presence = PresenceFeatures(
         business_age_years=age,
+        proven_age_years=proven_age,
+        age_proof=age_proof,
         has_shop_front=any(e.type == "shop_front" and e.status != "duplicate" for e in evidence),
         checks_done=sum(1 for r in reqs if r.status == "done"),
         checks_failed=sum(1 for r in reqs if r.status == "failed"),

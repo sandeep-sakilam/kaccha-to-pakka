@@ -85,6 +85,10 @@ T: dict[str, dict[str, str]] = {
         "en": "Your business has been running for {years} years",
         "hi": "आपका व्यापार {years} साल से चल रहा है",
     },
+    "age_not_proven": {
+        "en": "You said {claimed} years in business; papers and bank data show {proven}",
+        "hi": "आपने {claimed} साल का व्यापार बताया; कागज़ और बैंक डेटा {proven} दिखाते हैं",
+    },
     "presence_checks": {
         "en": "{count} shop checks passed on random days",
         "hi": "अनजान दिनों पर दुकान की {count} जाँच सफल रहीं",

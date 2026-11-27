@@ -338,7 +338,13 @@
     "registration_name_mismatch": "The {{source}} number is registered to a different business",
     "registration_cancelled": "The {{source}} registration is cancelled",
     "registration_not_found": "The {{source}} number was not found in the government register",
-    "registration_failed": "The {{source}} number could not be checked yet"
+    "registration_failed": "The {{source}} number could not be checked yet",
+    "age_title": "Business age",
+    "age_line": "Owner says {{claimed}} years; {{proven}} years shown by {{proof}}",
+    "age_proof_registration": "the government register",
+    "age_proof_commencement": "the start date on the Udyam registration",
+    "age_proof_bank": "bank data",
+    "age_proof_none": "nothing yet"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",
