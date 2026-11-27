@@ -182,7 +182,7 @@ def erase_account(db: Session, user: User, pin: str, confirm: str) -> EraseRepor
         )
         biz.name, biz.address, biz.city, biz.sells = "Erased business", None, None, None
         biz.udyam = biz.gstin = None
-        biz.geo_home = None
+        biz.geo_home = biz.merchant_geo = None
         biz.deleted_at = now
         record(db, f"user:{user.id}", "business.erased", f"business:{biz.id}", {})
 

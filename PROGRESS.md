@@ -63,3 +63,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F52 Integer-only voice amount parsing with exact fractions, plus sawa/saadhe/paune (`feat/f52-integer-voice-amounts`)
 - [x] F53 `.env.example` cleanup: Twilio removed, optional settings with defaults, kept in sync by a test (`feat/f53-env-example`)
 - [x] F54 Several profiles on one shared phone number, each with its own PIN (`feat/f54-shared-phone-profiles`)
+- [x] F55 GPS check against the UPI merchant location where available (`feat/f55-merchant-location`)
