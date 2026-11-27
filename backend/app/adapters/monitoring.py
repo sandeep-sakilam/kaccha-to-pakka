@@ -67,7 +67,7 @@ class LogReporter:
 class SentryReporter:
     name = "sentry"
 
-    def __init__(self, s: Settings) -> None:
+    def __init__(self, s: Settings, transport: Any = None) -> None:
         import sentry_sdk
 
         def before_send(event: Any, hint: Any) -> Any:
@@ -75,7 +75,11 @@ class SentryReporter:
 
         # sentry-sdk 3 sends no default PII; before_send scrubs phones, UPI IDs and names too.
         sentry_sdk.init(
-            dsn=s.sentry_dsn, environment=s.app_env, traces_sample_rate=0.0, before_send=before_send
+            dsn=s.sentry_dsn,
+            environment=s.app_env,
+            traces_sample_rate=0.0,
+            before_send=before_send,
+            transport=transport,
         )
         self._sdk = sentry_sdk
 
@@ -91,9 +95,13 @@ class SentryReporter:
 _reporter: ErrorReporter = LogReporter()
 
 
-def init_error_reporting(s: Settings) -> ErrorReporter:
+def init_error_reporting(s: Settings, transport: Any = None) -> ErrorReporter:
+    """Tests never reach Sentry: under APP_ENV=test a real network transport is refused."""
     global _reporter
-    _reporter = SentryReporter(s) if s.sentry_dsn else LogReporter()
+    if s.sentry_dsn and (s.app_env != "test" or transport is not None):
+        _reporter = SentryReporter(s, transport)
+    else:
+        _reporter = LogReporter()
     return _reporter
 
 
