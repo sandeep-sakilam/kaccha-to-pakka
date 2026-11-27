@@ -144,7 +144,7 @@ The first shop-front photo with good GPS sets the shop's home location. With `pr
 
 ## Trust engine
 
-`trust/features.py` gathers a feature snapshot; `trust/rules.py` (`RULES_VERSION = 2026.11-r1`) turns it into a band A–E (or **U**: unverified / insufficient evidence), a confidence level and reasons. No AI is involved.
+`trust/features.py` gathers a feature snapshot; `trust/rules.py` (`RULES_VERSION = 2026.11-r2`) turns it into a band A–E (or **U**: unverified / insufficient evidence), a confidence level and reasons. No AI is involved.
 
 | Pillar | Built from |
 | --- | --- |

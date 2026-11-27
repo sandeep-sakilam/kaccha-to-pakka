@@ -70,6 +70,14 @@ T: dict[str, dict[str, str]] = {
         "en": "Write every payment in your ledger with the name",
         "hi": "हर भुगतान नाम के साथ खाते में लिखें",
     },
+    "confirm_ledger_entries": {
+        "en": "Confirm your ledger entries",
+        "hi": "अपने खाते की एंट्री की पुष्टि करें",
+    },
+    "ledger_unconfirmed": {
+        "en": "Your ledger entries are not confirmed yet",
+        "hi": "आपके खाते की एंट्री की अभी पुष्टि नहीं हुई",
+    },
     "add_ledger": {"en": "Add your ledger pages", "hi": "अपने खाते के पन्ने जोड़ें"},
     "ask_partners": {
         "en": "Ask {more} more suppliers or customers to confirm",
