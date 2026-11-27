@@ -57,6 +57,13 @@ def add(
         raise DomainError("This number is not registered as a Sahayak yet", "not_sahayak", 404)
     if helper.status != "active":
         raise DomainError("This Sahayak is suspended", "sahayak_suspended", 403)
+    if biz.women_helpers_only and helper.gender != "female":
+        raise DomainError(
+            "Your business accepts only women helpers. Pick one from the list, or change this "
+            "setting.",
+            "women_helpers_only",
+            403,
+        )
     existing = db.execute(
         select(SahayakLink).where(
             SahayakLink.business_id == biz.id,

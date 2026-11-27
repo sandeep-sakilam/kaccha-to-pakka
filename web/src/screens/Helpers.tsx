@@ -16,13 +16,27 @@ export default function Helpers() {
   const [phone, setPhone] = useState("");
   const [perms, setPerms] = useState<string[]>(["capture", "voice_entry", "readback"]);
   const [womenOnly, setWomenOnly] = useState(false);
+  // The business setting: only women helpers may be added (on by default for women-owned).
+  const [onlyWomen, setOnlyWomen] = useState(false);
   const [directory, setDirectory] = useState<{ name: string; phone_last4: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => setLinks(await api<Link[]>(`/businesses/${businessId}/sahayaks`)), [businessId]);
   useEffect(() => {
     void load();
-  }, [load]);
+    void api<{ women_helpers_only?: boolean }>(`/businesses/${businessId}`)
+      .then((b) => {
+        setOnlyWomen(!!b.women_helpers_only);
+        if (b.women_helpers_only) setWomenOnly(true);
+      })
+      .catch(() => undefined);
+  }, [load, businessId]);
+
+  async function setRule(on: boolean) {
+    const b = await api<{ women_helpers_only: boolean }>(`/businesses/${businessId}`, { method: "PATCH", json: { women_helpers_only: on } });
+    setOnlyWomen(b.women_helpers_only);
+    if (b.women_helpers_only) setWomenOnly(true);
+  }
   useEffect(() => {
     void api<{ name: string; phone_last4: string }[]>(`/sahayak/directory?women_only=${womenOnly}`).then(setDirectory);
   }, [womenOnly]);
@@ -53,8 +67,12 @@ export default function Helpers() {
             </button>
           </Card>
         ))}
+      <label className="flex min-h-12 items-center gap-3 font-semibold">
+        <input type="checkbox" className="h-6 w-6" checked={onlyWomen} onChange={(e) => void setRule(e.target.checked)} />
+        {t("sahayak.women_helpers_only")}
+      </label>
       <label className="flex min-h-12 items-center gap-3">
-        <input type="checkbox" className="h-6 w-6" checked={womenOnly} onChange={(e) => setWomenOnly(e.target.checked)} />
+        <input type="checkbox" className="h-6 w-6" checked={womenOnly} disabled={onlyWomen} onChange={(e) => setWomenOnly(e.target.checked)} />
         {t("sahayak.women_only")}
       </label>
       <ul className="text-sm">{directory.map((d) => <li key={d.phone_last4 + d.name}>{d.name} (…{d.phone_last4})</li>)}</ul>

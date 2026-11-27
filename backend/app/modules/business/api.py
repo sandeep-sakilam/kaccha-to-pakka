@@ -40,6 +40,7 @@ class BusinessPatch(BaseModel):
     gstin: str | None = None
     geo_home: dict[str, Any] | None = None
     women_owned: bool | None = None
+    women_helpers_only: bool | None = None
 
 
 class BusinessOut(BaseModel):
@@ -53,6 +54,7 @@ class BusinessOut(BaseModel):
     udyam: str | None
     gstin: str | None
     women_owned: bool
+    women_helpers_only: bool = False
     is_sandbox: bool
     registration_status: str = "none"
     registration_source: str | None = None
@@ -72,6 +74,7 @@ def _out(b: Business) -> BusinessOut:
         udyam=b.udyam,
         gstin=b.gstin,
         women_owned=b.women_owned,
+        women_helpers_only=bool(b.women_helpers_only),
         is_sandbox=b.is_sandbox,
         registration_status=b.registration_status or "none",
         registration_source=b.registration_source,

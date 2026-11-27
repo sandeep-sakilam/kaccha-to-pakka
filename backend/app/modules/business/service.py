@@ -72,6 +72,7 @@ def _claim_partner_profile(
     biz.gstin = (p.gstin or "").upper() or biz.gstin
     biz.geo_home = p.geo_home
     biz.women_owned = p.women_owned
+    biz.women_helpers_only = p.women_owned
     db.flush()
     record(
         db,
@@ -122,6 +123,7 @@ def _new_business(db: Session, user: User, p: ProfileIn) -> Business:
         gstin=(p.gstin or "").upper() or None,
         geo_home=p.geo_home,
         women_owned=p.women_owned,
+        women_helpers_only=p.women_owned,
     )
     db.add(biz)
     db.flush()
@@ -138,6 +140,7 @@ UPDATABLE = {
     "gstin",
     "geo_home",
     "women_owned",
+    "women_helpers_only",
 }
 
 
