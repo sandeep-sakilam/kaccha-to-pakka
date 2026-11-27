@@ -116,6 +116,9 @@ export default function Home() {
           <BigButton variant="secondary" icon="🏪" onClick={() => nav(`/capture/${biz.id}/shop_front`)}>
             {t("home.add_shop")}
           </BigButton>
+          <BigButton variant="secondary" icon="💡" onClick={() => nav(`/capture/${biz.id}/address_proof`)}>
+            {t("home.address_proof")}
+          </BigButton>
         </>
       )}
       {biz && (

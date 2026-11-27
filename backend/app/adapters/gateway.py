@@ -9,7 +9,7 @@ import logging
 from dataclasses import dataclass, field
 
 from app.adapters.ai import AIProvider
-from app.adapters.ai_schemas import AIResult, LedgerExtraction, Transcript
+from app.adapters.ai_schemas import AIResult, DocumentExtraction, LedgerExtraction, Transcript
 from app.adapters.errors import AdapterError
 
 log = logging.getLogger(__name__)
@@ -57,6 +57,34 @@ class AIGateway:
             if best is None or value.page_confidence > best.value.page_confidence:
                 best = result
             if value.page_confidence >= UNSURE_PAGE_CONFIDENCE:
+                break
+        if best is None:
+            raise AdapterError("; ".join(errors) or "no AI provider")
+        return best
+
+    def extract_document(
+        self, image: bytes, mime: str = "image/jpeg"
+    ) -> AIResult[DocumentExtraction]:
+        """Primary first; the fallback is asked when the primary fails or is unsure."""
+        best: AIResult[DocumentExtraction] | None = None
+        errors: list[str] = []
+        for provider in self._providers():
+            self.calls.append(f"{provider.name}.extract_document")
+            try:
+                value = provider.extract_document(image, mime)
+            except AdapterError as exc:
+                log.warning("extract_document failed on %s: %s", provider.name, exc)
+                errors.append(f"{provider.name}: {exc}")
+                continue
+            result = AIResult[DocumentExtraction](
+                value=value,
+                provider=provider.name,
+                model=provider.model_for("vision"),
+                sandbox=provider.sandbox,
+            )
+            if best is None or value.confidence > best.value.confidence:
+                best = result
+            if value.confidence >= UNSURE_PAGE_CONFIDENCE:
                 break
         if best is None:
             raise AdapterError("; ".join(errors) or "no AI provider")

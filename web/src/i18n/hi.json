@@ -118,7 +118,8 @@
     "sahayak_mode": "मैं दूसरे मालिकों की मदद करता/करती हूँ",
     "disputes": "किसी बात से असहमत?",
     "consents": "मेरी अनुमतियाँ",
-    "daily_sales": "आज की बिक्री बताएँ"
+    "daily_sales": "आज की बिक्री बताएँ",
+    "address_proof": "बिजली बिल या दुकान का लाइसेंस"
   },
   "capture": {
     "title_ledger_page": "खाते के पन्ने की फ़ोटो",
@@ -142,7 +143,9 @@
     "sent": "फ़ोटो भेज दी!",
     "pending": "{{count}} फ़ोटो भेजनी बाकी",
     "rejected": "यह फ़ोटो नहीं ली गई: {{reason}}",
-    "done": "हो गया"
+    "done": "हो गया",
+    "title_address_proof": "बिल या दुकान का लाइसेंस",
+    "hint_address_proof": "दुकान या आपके नाम का हाल का बिजली, पानी या फ़ोन बिल, या दुकान का लाइसेंस फ़ोटो करें।"
   },
   "readback": {
     "title": "ये एंट्री जाँचिए",
@@ -344,7 +347,16 @@
     "age_proof_registration": "सरकारी रजिस्टर",
     "age_proof_commencement": "उद्यम पंजीकरण की शुरुआत की तारीख",
     "age_proof_bank": "बैंक डेटा",
-    "age_proof_none": "अभी किसी चीज़"
+    "age_proof_none": "अभी किसी चीज़",
+    "address_title": "पते का सबूत",
+    "address_line": "दुकान का नाम और पता इन पर मेल खाता है: {{docs}}",
+    "doc_electricity_bill": "बिजली बिल",
+    "doc_water_bill": "पानी का बिल",
+    "doc_gas_bill": "गैस बिल",
+    "doc_phone_bill": "फ़ोन बिल",
+    "doc_shop_licence": "दुकान लाइसेंस",
+    "doc_fssai_licence": "FSSAI लाइसेंस",
+    "doc_trade_licence": "ट्रेड लाइसेंस"
   },
   "sahayak": {
     "title": "सहायक मोड",

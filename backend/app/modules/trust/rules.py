@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r7"  # r7: business age counts fully only as far as it is proven
+RULES_VERSION = "2026.11-r8"  # r8: address proof (utility bill or shop licence)
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -75,6 +75,9 @@ class PresenceFeatures:
     # Proven by the government register or the bank history; business_age_years is claimed.
     proven_age_years: float | None = None
     age_proof: str = "none"  # registration | commencement | bank | none
+    address_proofs: int = 0  # accepted bills / licences, last 12 months
+    address_proof_types: list[str] = field(default_factory=list)
+    address_proofs_rejected: int = 0
     registration: str = "none"  # none | verified | name_mismatch | cancelled | not_found | failed
     registration_source: str | None = None  # udyam | gstin
 
@@ -240,6 +243,7 @@ def network_pillar(n: NetworkFeatures) -> float:
 
 
 REGISTRATION_POINTS = 10.0
+ADDRESS_PROOF_POINTS = 10.0
 
 
 def age_points(age: float | None) -> float:
@@ -255,6 +259,7 @@ def presence_pillar(p: PresenceFeatures) -> float:
         score += 40 * p.checks_done / answered
     score += 15 if p.in_person_visits else 0
     score += REGISTRATION_POINTS if p.registration == "verified" else 0
+    score += ADDRESS_PROOF_POINTS if p.address_proofs else 0
     return round(_clamp(score), 1)
 
 
@@ -424,6 +429,10 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
         pos.append((p["presence"] - 5, Reason("presence_checks", {"count": pr.checks_done})))
     if not pr.has_shop_front:
         imp.append((40, Reason("shop_photo")))
+    if pr.address_proofs:
+        pos.append((p["presence"] - 9, Reason("address_proof", {"count": pr.address_proofs})))
+    else:
+        imp.append((30 if pr.address_proofs_rejected else 22, Reason("add_address_proof")))
     source = {"udyam": "Udyam", "gstin": "GST"}.get(pr.registration_source or "", "")
     if pr.registration == "verified":
         pos.append((p["presence"] - 8, Reason("registration_verified", {"source": source})))

@@ -20,7 +20,7 @@ from app.modules.audit.service import record
 from app.modules.consent import service as consent
 from app.modules.evidence.quality import check_image
 
-CAPTURE_KINDS = {"ledger_page", "shop_front", "presence", "bill"}
+CAPTURE_KINDS = {"ledger_page", "shop_front", "presence", "bill", "address_proof"}
 MAX_BYTES = 6 * 1024 * 1024
 MAX_QUEUE_AGE = timedelta(days=7)  # offline captures older than this are refused
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
@@ -110,6 +110,10 @@ def ingest_capture(
         from app.jobs import enqueue
 
         enqueue(db, "extract_ledger", ev.id)
+    if c.kind == "address_proof" and ev.status == "received":
+        from app.jobs import enqueue
+
+        enqueue(db, "extract_document", ev.id)
     if c.kind in {"shop_front", "presence"}:
         from app.modules.presence.service import on_capture
 

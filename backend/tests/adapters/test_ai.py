@@ -150,3 +150,48 @@ def test_placeholder_key_uses_real_adapter_and_sends_header() -> None:
     with pytest.raises(AdapterError, match=r"HTTP 401 from api\.sarvam\.ai: .*Invalid API key"):
         ai.generate("s", "p", "en")
     assert seen["key"] == "proxy"  # the proxy replaces it with the real key in flight
+
+
+DOC = {
+    "doc_type": "electricity_bill",
+    "holder_name": "VERMA PROVISION STORE",
+    "address": "14 Palasia Square, Indore",
+    "issue_date": "2026-11-01",
+    "valid_until": None,
+    "number": "N1234567",
+    "confidence": 0.9,
+}
+
+
+def test_documents_through_every_real_adapter_and_the_gateway() -> None:
+    from app.adapters.ai_schemas import DocumentExtraction
+    from app.adapters.sandbox_images import document_png
+
+    def sarvam(req: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": "```json\n" + json.dumps(DOC) + "\n```"}}]},
+        )
+
+    def gem(req: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, json={"candidates": [{"content": {"parts": [{"text": json.dumps(DOC)}]}}]}
+        )
+
+    def ant(req: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"content": [{"text": json.dumps(DOC)}]})
+
+    s = SarvamAI(_settings(), _client(httpx.MockTransport(sarvam), "https://api.sarvam.ai"))
+    g = GeminiAI(_settings(), _client(httpx.MockTransport(gem), "https://g"))
+    a = AnthropicAI(_settings(), _client(httpx.MockTransport(ant), "https://a"))
+    for provider in (s, g, a):
+        assert (
+            provider.extract_document(b"img", "image/jpeg").holder_name == "VERMA PROVISION STORE"
+        )
+    # Extra fields (a prompt hidden on the paper) fail the schema.
+    with pytest.raises(ValueError):
+        DocumentExtraction.model_validate({**DOC, "verified": True})
+    gw = AIGateway(primary=MockAI(fail=True), fallback=MockAI())
+    res = gw.extract_document(document_png(DOC), "image/png")
+    assert res.value.doc_type == "electricity_bill"
+    assert gw.calls == ["mock.extract_document", "mock.extract_document"]

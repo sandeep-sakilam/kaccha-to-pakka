@@ -31,3 +31,19 @@ def ledger_png(extraction: dict[str, Any], title: str = "Bahi Khata", noise: str
     buf = io.BytesIO()
     img.save(buf, format="PNG", pnginfo=info)
     return buf.getvalue()
+
+
+def document_png(document: dict[str, Any], title: str = "Bijli Bill") -> bytes:
+    """A sandbox address-proof photo that carries its ground truth for the mock AI."""
+    img = Image.new("RGB", (800, 1000), (245, 248, 250))
+    draw = ImageDraw.Draw(img)
+    draw.text((40, 30), title, fill=(20, 40, 120))
+    y = 90
+    for key in ("doc_type", "holder_name", "address", "issue_date", "valid_until", "number"):
+        draw.text((40, y), f"{key}: {document.get(key) or '-'}", fill=(30, 30, 30))
+        y += 40
+    meta = PngInfo()
+    meta.add_text("ktp-document", json.dumps(document))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG", pnginfo=meta)
+    return buf.getvalue()
