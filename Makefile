@@ -53,7 +53,7 @@ check-backend:
 check-web:
 	$(WEB) npx eslint .
 	$(WEB) npx tsc -b --noEmit
-	$(WEB) npx vitest run
+	$(WEB) npx vitest run --coverage
 	$(WEB) npx vite build --logLevel error && node scripts/budget.mjs
 
 e2e:
