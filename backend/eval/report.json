@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-26T20:12:49+00:00",
+  "generated_at": "2026-11-27T15:41:02+00:00",
   "sandbox": true,
   "golden_set": {
     "pages": 10,
@@ -34,11 +34,11 @@
   "reconciliation": {
     "businesses": 10,
     "precision": 1.0,
-    "recall": 0.613,
-    "tp": 147,
+    "recall": 0.812,
+    "tp": 195,
     "fp": 0,
-    "fn": 93,
-    "owner_questions": 20,
+    "fn": 45,
+    "owner_questions": 10,
     "note": "unmatched pairs with unclear names become owner questions, not guesses"
   },
   "red_team": {

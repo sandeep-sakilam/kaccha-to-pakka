@@ -27,7 +27,7 @@ def test_red_team_catches_every_attack(db: Session) -> None:
 
 def test_reconciliation_precision_recall(db: Session) -> None:
     r = reconciliation_eval(db, businesses=3)
-    assert r["precision"] >= 0.9 and r["recall"] >= 0.4, r
+    assert r["precision"] >= 0.95 and r["recall"] >= 0.75, r
     assert r["owner_questions"] > 0
 
 
