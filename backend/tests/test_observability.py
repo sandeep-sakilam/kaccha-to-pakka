@@ -1,6 +1,9 @@
 from datetime import timedelta
+from typing import Any
 
+import sentry_sdk
 from fastapi.testclient import TestClient
+from sentry_sdk.transport import Transport
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -45,10 +48,29 @@ def test_error_reporting_off_without_dsn_and_scrubs() -> None:
     }
 
 
-def test_sentry_reporter_with_dsn() -> None:
-    r = monitoring.init_error_reporting(Settings(sentry_dsn="https://k@o1.ingest.sentry.io/1"))
+class RecordingTransport(Transport):
+    """Keeps envelopes in memory: nothing leaves the test process."""
+
+    def __init__(self, options: Any = None) -> None:
+        super().__init__(options)
+        self.envelopes: list[Any] = []
+
+    def capture_envelope(self, envelope: Any) -> None:
+        self.envelopes.append(envelope)
+
+
+def test_sentry_reporter_with_dsn_sends_scrubbed_events_to_its_transport() -> None:
+    dsn = "https://k@o1.ingest.sentry.io/1"
+    # Under APP_ENV=test a DSN alone never creates a network client.
+    assert monitoring.init_error_reporting(Settings(app_env="test", sentry_dsn=dsn)).name == "off"
+    transport = RecordingTransport()
+    r = monitoring.init_error_reporting(Settings(app_env="test", sentry_dsn=dsn), transport)
     assert r.name == "sentry"
-    r.capture_message("test", "warning", {"phone": "+919812345678"})  # no network in tests
+    r.capture_message("OTP to +919812345678 failed", "warning", {"phone": "+919812345678"})
+    sentry_sdk.flush()
+    text = str([item.payload.get_bytes() for env in transport.envelopes for item in env.items])
+    assert "OTP to [phone] failed" in text and "9812345678" not in text
+    sentry_sdk.init()  # close the client
     monitoring.init_error_reporting(Settings(sentry_dsn=""))
 
 
