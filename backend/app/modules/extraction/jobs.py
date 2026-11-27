@@ -7,3 +7,10 @@ from app.modules.extraction.service import extract_evidence
 @job("extract_ledger")
 def extract_ledger_job(db: Session, evidence_id: str) -> None:
     extract_evidence(db, evidence_id)
+
+
+@job("extract_document")
+def extract_document_job(db: Session, evidence_id: str) -> None:
+    from app.modules.extraction.documents import extract_document
+
+    extract_document(db, evidence_id)

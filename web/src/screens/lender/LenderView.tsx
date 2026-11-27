@@ -33,6 +33,7 @@ type View = {
     };
     registration?: { status: string; source: string | null; registered_on: string | null };
     age?: { claimed_years: number | null; proven_years: number | null; proof: string };
+    address_proofs?: string[];
     cash_deposit_paise?: number;
     cash_deposit_months?: number;
     avg_monthly_inflow_paise?: number;
@@ -126,6 +127,14 @@ export default function LenderView() {
                     proven: ev.age.proven_years != null ? Math.floor(ev.age.proven_years) : 0,
                     proof: t(`lender.age_proof_${ev.age.proof}`),
                   })}
+                </p>
+              </Card>
+            )}
+            {(ev.address_proofs ?? []).length > 0 && (
+              <Card>
+                <h3 className="font-semibold">{t("lender.address_title")}</h3>
+                <p className="text-sm" data-testid="address-proofs">
+                  {t("lender.address_line", { docs: (ev.address_proofs ?? []).map((d) => t(`lender.doc_${d}`)).join(", ") })}
                 </p>
               </Card>
             )}

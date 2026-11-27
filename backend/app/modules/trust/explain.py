@@ -89,6 +89,14 @@ T: dict[str, dict[str, str]] = {
         "en": "You said {claimed} years in business; papers and bank data show {proven}",
         "hi": "आपने {claimed} साल का व्यापार बताया; कागज़ और बैंक डेटा {proven} दिखाते हैं",
     },
+    "address_proof": {
+        "en": "{count} bill or licence shows your shop's name and address",
+        "hi": "{count} बिल या लाइसेंस पर आपकी दुकान का नाम और पता है",
+    },
+    "add_address_proof": {
+        "en": "Photograph a recent electricity bill or your shop licence",
+        "hi": "हाल का बिजली बिल या दुकान का लाइसेंस फ़ोटो करें",
+    },
     "presence_checks": {
         "en": "{count} shop checks passed on random days",
         "hi": "अनजान दिनों पर दुकान की {count} जाँच सफल रहीं",

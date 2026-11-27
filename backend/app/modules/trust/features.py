@@ -71,6 +71,8 @@ def round_trips(txns: list[BankTransaction]) -> tuple[int, int, set[str]]:
 
 
 COMMENCEMENT_ON_RECORD_DAYS = 180
+LICENCE_TYPES = {"shop_licence", "fssai_licence", "trade_licence"}
+LICENCE_DATE_CONFIDENCE = 0.8
 
 
 def proven_start(
@@ -78,11 +80,13 @@ def proven_start(
     txns: list[BankTransaction],
     money_ev: dict[str, EvidenceItem],
     today: date,
+    licence_dates: list[date] | None = None,
 ) -> tuple[date | None, str]:
     """The earliest date the business is shown to exist by something other than the owner's word
     today: the government register (registration date; the commencement date declared on a Udyam
-    registration made at least 6 months ago, so not made up for this passport), or the first
-    payment in bank data that came straight from the bank (Account Aggregator)."""
+    registration made at least 6 months ago, so not made up for this passport), the issue date
+    on an accepted shop licence, or the first payment in bank data that came straight from the
+    bank (Account Aggregator)."""
     found: list[tuple[date, str]] = []
     if biz.registration_status == "verified":
         if biz.registered_on:
@@ -93,6 +97,8 @@ def proven_start(
             and (today - biz.registered_on).days >= COMMENCEMENT_ON_RECORD_DAYS
         ):
             found.append((biz.registration_started_on, "commencement"))
+    # The issue date on an accepted shop licence (a government document in the shop's name).
+    found += [(d, "licence") for d in licence_dates or []]
     aa_ids = {i for i, e in money_ev.items() if e.type == "aa_fetch"}
     bank_dates = [t.txn_date for t in txns if t.evidence_id in aa_ids]
     if bank_dates:
@@ -410,12 +416,30 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     age = None
     if biz.started_on:
         age = round((today - biz.started_on).days / 365.25, 1)
-    proven_since, age_proof = proven_start(biz, txns, good_money, today)
+    proofs = [
+        e
+        for e in evidence
+        if e.type == "address_proof"
+        and "document" in e.meta
+        and e.created_at.date() >= today - timedelta(days=365)
+    ]
+    accepted = [e for e in proofs if e.meta["document"].get("accepted")]
+    licence_dates = [
+        date.fromisoformat(e.meta["document"]["issue_date"])
+        for e in accepted
+        if e.meta["document"].get("doc_type") in LICENCE_TYPES
+        and e.meta["document"].get("issue_date")
+        and float(e.meta["document"].get("confidence", 0)) >= LICENCE_DATE_CONFIDENCE
+    ]
+    proven_since, age_proof = proven_start(biz, txns, good_money, today, licence_dates)
     proven_age = round((today - proven_since).days / 365.25, 1) if proven_since else None
     presence = PresenceFeatures(
         business_age_years=age,
         proven_age_years=proven_age,
         age_proof=age_proof,
+        address_proofs=len(accepted),
+        address_proof_types=sorted({str(e.meta["document"]["doc_type"]) for e in accepted}),
+        address_proofs_rejected=len(proofs) - len(accepted),
         has_shop_front=any(e.type == "shop_front" and e.status != "duplicate" for e in evidence),
         checks_done=sum(1 for r in reqs if r.status == "done"),
         checks_failed=sum(1 for r in reqs if r.status == "failed"),

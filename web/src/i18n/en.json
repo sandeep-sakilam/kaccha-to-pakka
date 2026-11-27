@@ -118,7 +118,8 @@
     "sahayak_mode": "I help other owners",
     "disputes": "Disagree with something?",
     "consents": "My permissions",
-    "daily_sales": "Tell today's sales"
+    "daily_sales": "Tell today's sales",
+    "address_proof": "Electricity bill or shop licence"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -142,7 +143,9 @@
     "sent": "Photo sent!",
     "pending": "{{count}} photo(s) waiting to send",
     "rejected": "This photo was not accepted: {{reason}}",
-    "done": "Done"
+    "done": "Done",
+    "title_address_proof": "Bill or shop licence",
+    "hint_address_proof": "Photograph a recent electricity, water or phone bill, or your shop licence, in the shop's or your name."
   },
   "readback": {
     "title": "Check these entries",
@@ -344,7 +347,16 @@
     "age_proof_registration": "the government register",
     "age_proof_commencement": "the start date on the Udyam registration",
     "age_proof_bank": "bank data",
-    "age_proof_none": "nothing yet"
+    "age_proof_none": "nothing yet",
+    "address_title": "Address proof",
+    "address_line": "Shop name and address match on: {{docs}}",
+    "doc_electricity_bill": "electricity bill",
+    "doc_water_bill": "water bill",
+    "doc_gas_bill": "gas bill",
+    "doc_phone_bill": "phone bill",
+    "doc_shop_licence": "shop licence",
+    "doc_fssai_licence": "FSSAI licence",
+    "doc_trade_licence": "trade licence"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",

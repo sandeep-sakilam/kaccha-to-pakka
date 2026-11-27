@@ -39,6 +39,30 @@ class LedgerExtraction(_Strict):
     page_confidence: float = Field(ge=0, le=1)
 
 
+DocType = Literal[
+    "electricity_bill",
+    "water_bill",
+    "gas_bill",
+    "phone_bill",
+    "shop_licence",
+    "fssai_licence",
+    "trade_licence",
+    "other",
+]
+
+
+class DocumentExtraction(_Strict):
+    """An address-proof document (utility bill or shop licence), read into fields only."""
+
+    doc_type: DocType
+    holder_name: str | None = Field(default=None, max_length=200)
+    address: str | None = Field(default=None, max_length=400)
+    issue_date: date | None = None  # bill date, or the date the licence was issued
+    valid_until: date | None = None
+    number: str | None = Field(default=None, max_length=64)  # consumer / licence number
+    confidence: float = Field(ge=0, le=1)
+
+
 class Transcript(_Strict):
     text: str
     language: str
