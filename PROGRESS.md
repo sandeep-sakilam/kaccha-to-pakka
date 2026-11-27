@@ -42,3 +42,7 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F34 Rate and abuse limits, account-takeover freeze (`feat/f34-abuse-limits`)
 - [x] F35 Evaluation harness: golden set, red-team suite, metrics report (`feat/f35-evaluation`)
 - [x] F36 Accessibility audit fixes (WCAG 2.2 AA) and low-end phone performance budget (`feat/f36-accessibility`)
+
+## Audit fixes (27 Nov 2026)
+
+- [x] F37 Production deploy fix: one-shot web service, demo seed safe with real payment keys, step-by-step VPS guide and smoke test (`feat/f37-deploy-fix`)

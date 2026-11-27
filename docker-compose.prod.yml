@@ -48,9 +48,10 @@ services:
     volumes: ["filestore:/app/var"]
 
   web:
+    # One-shot: copies the built web app into the shared volume, then exits (no restart loop).
     build: ./web
-    restart: unless-stopped
-    command: ["sh", "-c", "mkdir -p /out && cp -r /srv/. /out/"]
+    restart: "no"
+    command: ["sh", "-c", "mkdir -p /out && rm -rf /out/* && cp -r /srv/. /out/"]
     volumes: ["webroot:/out"]
 
   caddy:
@@ -64,12 +65,16 @@ services:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - webroot:/srv:ro
       - caddydata:/data
-    depends_on: [api, web]
+    depends_on:
+      api: { condition: service_healthy }
+      web: { condition: service_completed_successfully }
 
   backup:
     image: postgres:16
     restart: unless-stopped
     environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ktp}
+      POSTGRES_DB: ${POSTGRES_DB:-ktp}
       PGPASSWORD: ${POSTGRES_PASSWORD}
       BACKUP_PASSPHRASE: ${BACKUP_PASSPHRASE:?set BACKUP_PASSPHRASE in .env}
     volumes:

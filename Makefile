@@ -7,7 +7,7 @@ eval:  ## run the evaluation harness (scratch DB ktp_eval) and write backend/eva
 	$(BACKEND) DATABASE_URL=postgresql+psycopg://ktp:ktp@localhost:5432/ktp_eval JOBS_INLINE=true uv run python -m scripts.run_eval
 
 seed:  ## reset the local database and load the Sandbox demo businesses
-	$(BACKEND) uv run python -m scripts.seed_demo
+	$(BACKEND) uv run python -m scripts.seed_demo --reset-database
 
 migrate:  ## apply database migrations
 	$(BACKEND) uv run alembic upgrade head

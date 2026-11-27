@@ -107,7 +107,6 @@ class PublicInvite(BaseModel):
 
 @router.get("/invites/{token}", response_model=PublicInvite)
 def public_invite(token: str, db: DB) -> PublicInvite:
-    from app.adapters.registry import get_adapters
 
     inv = selection.by_token(db, token)
     biz = db.get(Business, inv.business_id)
@@ -124,7 +123,7 @@ def public_invite(token: str, db: DB) -> PublicInvite:
         status=inv.status,
         language=inv.language,
         expires_at=inv.expires_at,
-        sandbox=get_adapters().payments.sandbox,
+        sandbox=penny_drop.gateway_for(db, inv.business_id).sandbox,
     )
 
 
@@ -138,7 +137,6 @@ class PennyDropOut(BaseModel):
 
 @router.post("/invites/{token}/penny-drop", response_model=PennyDropOut)
 def start_penny_drop(token: str, db: DB) -> PennyDropOut:
-    from app.adapters.registry import get_adapters
 
     inv = selection.by_token(db, token)
     req = penny_drop.start(db, inv)
@@ -148,7 +146,7 @@ def start_penny_drop(token: str, db: DB) -> PennyDropOut:
         pay_to_vpa=req.pay_to_vpa,
         amount_paise=req.amount_paise,
         upi_link=req.upi_link,
-        sandbox=get_adapters().payments.sandbox,
+        sandbox=penny_drop.gateway_for(db, inv.business_id).sandbox,
     )
 
 
@@ -177,8 +175,8 @@ def sandbox_pay(ref: str, body: SandboxPayIn) -> dict[str, str]:
     from app.adapters.registry import get_adapters
     from app.core.errors import NotFound
 
-    gw = get_adapters().payments
-    if not isinstance(gw, MockPaymentGateway):
+    gw = get_adapters().sandbox_payments
+    if not isinstance(gw, MockPaymentGateway) or ref not in gw.requests:
         raise NotFound("Not found", "not_found")
     gw.simulate_payment(ref, body.payer_vpa, body.payer_name)
     return {"status": "PAID"}
@@ -223,12 +221,13 @@ def att_out(a: Attestation) -> AttestationOut:
 
 @router.post("/invites/{token}/claim", response_model=AttestationOut)
 def submit_claim(token: str, body: ClaimBody, db: DB) -> AttestationOut:
-    from app.adapters.registry import get_adapters
 
     inv = selection.by_token(db, token)
     payer_name = None
     if inv.penny_ref:
-        payer_name = get_adapters().payments.get_result(inv.penny_ref).payer_name
+        payer_name = (
+            penny_drop.gateway_for(db, inv.business_id).get_result(inv.penny_ref).payer_name
+        )
     att = claims.submit(db, inv, claims.ClaimIn(**body.model_dump()), payer_name)
     db.commit()
     return att_out(att)
