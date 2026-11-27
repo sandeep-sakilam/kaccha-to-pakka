@@ -106,11 +106,18 @@ def readback_prompt(e: LedgerEntry, lang: str) -> str:
     party = e.party_text or ("किसी" if lang == "hi" else "someone")
     amount = rupees_words(e.amount_paise, lang)
     when = date_words(e.entry_date, lang) if e.entry_date else None
+    if e.kind == "credit_given":
+        if lang == "hi":
+            return f"{party} को {amount} का सामान {when + ' को ' if when else ''}उधार दिया: सही?"
+        return f"{party} took {amount} of goods on credit{' on ' + when if when else ''}: right?"
+    how = e.paid_by or ""
+    how_hi = {"cash": "नकद ", "upi": "UPI से ", "bank": "बैंक में "}.get(how, "")
+    how_en = {"cash": " in cash", "upi": " by UPI", "bank": " into the bank"}.get(how, "")
     if lang == "hi":
         verb = "मिले" if e.direction == "in" else "दिए"
-        return f"{party}, {amount}, {when + ' को ' if when else ''}{verb}: सही?"
+        return f"{party}, {amount}, {when + ' को ' if when else ''}{how_hi}{verb}: सही?"
     verb = "received" if e.direction == "in" else "paid"
-    return f"{party}, {amount}, {verb}{' on ' + when if when else ''}: right?"
+    return f"{party}, {amount}, {verb}{how_en}{' on ' + when if when else ''}: right?"
 
 
 @dataclass
@@ -119,6 +126,8 @@ class Correction:
     party_text: str | None = None
     entry_date: date | None = None
     direction: str | None = None
+    kind: str | None = None
+    paid_by: str | None = None
 
 
 def confirm_entry(
@@ -132,6 +141,8 @@ def confirm_entry(
             if value is not None and getattr(e, field) != value:
                 changed[field] = value
                 setattr(e, field, value)
+        if e.kind == "credit_given":  # goods on credit: no money moved, so no payment method
+            e.direction, e.paid_by = "out", None
         e.confirmed_by_owner = True
     else:
         e.confirmed_by_owner = False

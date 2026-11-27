@@ -44,3 +44,30 @@ test("a heard entry is read back and added on yes", async () => {
   await act(async () => fireEvent.click(screen.getByRole("button", { name: "Yes" })));
   expect(screen.getByText("1 entries ready")).toBeInTheDocument();
 });
+
+test("credit spoken aloud is saved as credit given", async () => {
+  setLanguage("en");
+  const saved: unknown[] = [];
+  vi.mocked(fetch).mockImplementation(async (url, init) => {
+    const u = String(url);
+    if (u.includes("/parse"))
+      return json({ understood: true, amount_paise: 120000, direction: "out", kind: "credit_given", paid_by: null, party_text: "Sharma ji", entry_date: null, prompt: "Sharma ji took one thousand two hundred rupees of goods on credit: right?", stt_confidence: 0.9 });
+    if (u.endsWith("/voice-entries")) {
+      saved.push(JSON.parse(String(init?.body)));
+      return json({ evidence_id: "e1", created: true, entries: 1 });
+    }
+    return json({ any_sandbox: true, services: {} });
+  });
+  renderAt(
+    <Routes>
+      <Route path="/voice-entry/:businessId" element={<VoiceEntry />} />
+    </Routes>,
+    "/voice-entry/b1",
+  );
+  fireEvent.change(screen.getByLabelText("Or type here"), { target: { value: "Sharma ji ke naam 1200 likhe" } });
+  await act(async () => fireEvent.click(screen.getByRole("button", { name: "Next" })));
+  expect(await screen.findByTestId("voice-prompt")).toHaveTextContent("on credit");
+  await act(async () => fireEvent.click(screen.getByRole("button", { name: "Yes" })));
+  await act(async () => fireEvent.click(screen.getByRole("button", { name: /Save/ })));
+  expect(saved[0]).toMatchObject({ entries: [{ amount_paise: 120000, direction: "out", kind: "credit_given", paid_by: null, party_text: "Sharma ji" }] });
+});

@@ -16,7 +16,19 @@ type View = {
     monthly_totals_paise: Record<string, { in: number; out: number }>;
     confirmations: { label: string; status: string }[];
     presence: { done: number; failed: number; missed: number };
-    records: { match_rate?: number };
+    records: {
+      match_rate?: number;
+      cash_entries?: number;
+      credit_entries?: number;
+      credit_customers?: number;
+      repeat_credit_customers?: number;
+      credit_given_paise?: number;
+      credit_repaid_bank_paise?: number;
+      credit_repaid_cash_paise?: number;
+      credit_outstanding_paise?: number;
+      median_days_to_repay?: number | null;
+    };
+    avg_monthly_inflow_paise?: number;
     evidence_items: { type: string; status: string; file_hash: string | null }[];
     flags: { code: string; detail: string }[];
   };
@@ -101,7 +113,9 @@ export default function LenderView() {
             <Card>
               <h3 className="font-semibold">{t("lender.records")}</h3>
               <p>{Math.round((ev.records.match_rate ?? 0) * 100)}%</p>
+              {(ev.records.cash_entries ?? 0) > 0 && <p className="text-sm">{t("lender.cash_entries", { count: ev.records.cash_entries })}</p>}
             </Card>
+            {(ev.records.credit_entries ?? 0) > 0 && <CreditBook r={ev.records} monthly={ev.avg_monthly_inflow_paise ?? 0} />}
             <Card>
               <h3 className="font-semibold">{t("lender.confirmations")}</h3>
               <ul>
@@ -144,5 +158,29 @@ export default function LenderView() {
         <p className="text-sm text-gray-700">{t("lender.disclaimer")}</p>
       </Screen>
     </div>
+  );
+}
+
+/** Plain facts about the owner's credit book (udhaar). Not a score: the lender decides. */
+function CreditBook({ r, monthly }: { r: NonNullable<View["evidence"]>["records"]; monthly: number }) {
+  const { t } = useTranslation();
+  const given = r.credit_given_paise ?? 0;
+  const pct = (p: number) => (given ? Math.round((p / given) * 100) : 0);
+  const unpaid = r.credit_outstanding_paise ?? 0;
+  return (
+    <Card>
+      <h3 className="font-semibold">{t("lender.credit_title")}</h3>
+      <ul className="text-sm" data-testid="credit-book">
+        <li>{t("lender.credit_given", { amount: rupees(given), customers: r.credit_customers ?? 0 })}</li>
+        <li>{t("lender.credit_bank", { percent: pct(r.credit_repaid_bank_paise ?? 0) })}</li>
+        <li>{t("lender.credit_cash", { percent: pct(r.credit_repaid_cash_paise ?? 0) })}</li>
+        {r.median_days_to_repay != null && <li>{t("lender.credit_days", { days: r.median_days_to_repay })}</li>}
+        <li>{t("lender.credit_regular", { count: r.repeat_credit_customers ?? 0 })}</li>
+        <li>
+          {t("lender.credit_unpaid", { amount: rupees(unpaid) })}
+          {monthly > 0 && ` (${t("lender.credit_vs_sales", { percent: Math.round((unpaid / monthly) * 100) })})`}
+        </li>
+      </ul>
+    </Card>
   );
 }

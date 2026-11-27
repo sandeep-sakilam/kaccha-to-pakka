@@ -29,6 +29,8 @@ class LedgerEntryOut(BaseModel):
     field_confidence: dict[str, float]
     confirmed_by_owner: bool | None
     status: str
+    kind: str = "money"
+    paid_by: str | None = None
 
 
 def entry_out(e: LedgerEntry) -> LedgerEntryOut:
@@ -39,6 +41,8 @@ def entry_out(e: LedgerEntry) -> LedgerEntryOut:
         party_text=e.party_text,
         amount_paise=e.amount_paise,
         direction=e.direction,
+        kind=e.kind or "money",
+        paid_by=e.paid_by,
         confidence=e.confidence,
         field_confidence=e.field_confidence,
         confirmed_by_owner=e.confirmed_by_owner,
@@ -108,6 +112,8 @@ class ConfirmIn(BaseModel):
     party_text: str | None = Field(None, max_length=200)
     entry_date: date | None = None
     direction: str | None = Field(None, pattern="^(in|out)$")
+    kind: str | None = Field(None, pattern="^(money|credit_given)$")
+    paid_by: str | None = Field(None, pattern="^(cash|upi|bank)$")
 
 
 @router.post("/ledger/{entry_id}/confirm", response_model=LedgerEntryOut)
@@ -122,7 +128,14 @@ def confirm(entry_id: str, body: ConfirmIn, db: DB, user: CurrentUser) -> Ledger
         e,
         f"user:{user.id}",
         body.correct,
-        checks.Correction(body.amount_paise, body.party_text, body.entry_date, body.direction),
+        checks.Correction(
+            body.amount_paise,
+            body.party_text,
+            body.entry_date,
+            body.direction,
+            body.kind,
+            body.paid_by,
+        ),
     )
     db.commit()
     return entry_out(e)
@@ -163,6 +176,8 @@ class VoiceParseOut(BaseModel):
     party_text: str | None
     direction: str | None
     entry_date: date | None
+    kind: str = "money"
+    paid_by: str | None = None
     understood: bool
     prompt: str | None
     stt_confidence: float
@@ -189,6 +204,8 @@ def parse_voice(business_id: str, body: VoiceParseIn, db: DB, user: CurrentUser)
             direction=p.direction or "in",
             party_text=p.party_text,
             entry_date=p.entry_date,
+            kind=p.kind,
+            paid_by=p.paid_by,
         )
         prompt = checks.readback_prompt(probe, "hi" if body.language == "hi" else "en")
     return VoiceParseOut(
@@ -197,6 +214,8 @@ def parse_voice(business_id: str, body: VoiceParseIn, db: DB, user: CurrentUser)
         party_text=p.party_text,
         direction=p.direction,
         entry_date=p.entry_date,
+        kind=p.kind,
+        paid_by=p.paid_by,
         understood=p.understood,
         prompt=prompt,
         stt_confidence=conf,
@@ -211,6 +230,8 @@ class VoiceEntryItem(BaseModel):
     entry_date: date | None = None
     method: str = Field("voice", pattern="^(voice|buttons)$")
     stt_confidence: float = Field(0.9, ge=0, le=1)
+    kind: str = Field("money", pattern="^(money|credit_given)$")
+    paid_by: str | None = Field(None, pattern="^(cash|upi|bank)$")
 
 
 class VoiceEntriesIn(BaseModel):
@@ -233,7 +254,14 @@ def save_voice_entries(
         biz,
         [
             voice_entry.VoiceEntryIn(
-                e.amount_paise, e.direction, e.party_text, e.entry_date, e.method, e.stt_confidence
+                e.amount_paise,
+                e.direction,
+                e.party_text,
+                e.entry_date,
+                e.method,
+                e.stt_confidence,
+                e.kind,
+                e.paid_by,
             )
             for e in body.entries
         ],

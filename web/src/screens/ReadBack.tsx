@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
+import { choiceOf, entryFields, EntryKindPicker, type EntryChoice, type PaidBy } from "@/components/EntryKind";
 import { Keypad } from "@/components/Keypad";
 import { Screen } from "@/components/Screen";
 import { BigButton, Card } from "@/components/ui";
@@ -8,7 +9,7 @@ import { api } from "@/lib/api";
 import { rupeesInWords, speak } from "@/lib/voice";
 
 type Item = {
-  entry: { id: string; amount_paise: number; direction: "in" | "out"; party_text: string | null };
+  entry: { id: string; amount_paise: number; direction: "in" | "out"; kind?: string; paid_by?: PaidBy; party_text: string | null };
   prompt: string;
   reason: "low_confidence" | "page_total";
 };
@@ -20,7 +21,8 @@ export default function ReadBack() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [fixing, setFixing] = useState(false);
   const [amount, setAmount] = useState("");
-  const [direction, setDirection] = useState<"in" | "out">("in");
+  const [choice, setChoice] = useState<EntryChoice>("in");
+  const [paidBy, setPaidBy] = useState<PaidBy>(null);
 
   const load = useCallback(async () => {
     const data = await api<Item[]>(`/businesses/${businessId}/readback?language=${i18n.language}`);
@@ -73,7 +75,8 @@ export default function ReadBack() {
                 icon="👎"
                 onClick={() => {
                   setFixing(true);
-                  setDirection(current.entry.direction);
+                  setChoice(choiceOf(current.entry));
+                  setPaidBy(current.entry.paid_by ?? null);
                   void speak([t("readback.correct_amount")], i18n.language);
                 }}
               >
@@ -88,14 +91,12 @@ export default function ReadBack() {
                 {amount && <span className="block text-base">{rupeesInWords(Number(amount) * 100, i18n.language)}</span>}
               </p>
               <Keypad value={amount} onChange={setAmount} max={9} />
-              <div className="grid grid-cols-2 gap-2" role="radiogroup">
-                {(["in", "out"] as const).map((d) => (
-                  <BigButton key={d} variant={direction === d ? "primary" : "secondary"} aria-pressed={direction === d} onClick={() => setDirection(d)}>
-                    {t(d === "in" ? "readback.received" : "readback.paid")}
-                  </BigButton>
-                ))}
-              </div>
-              <BigButton disabled={!amount} onClick={() => void answer({ correct: false, amount_paise: Number(amount) * 100, direction })}>
+              <EntryKindPicker choice={choice} onChoice={setChoice} paidBy={paidBy} onPaidBy={setPaidBy} />
+              <BigButton
+                onClick={() =>
+                  void answer({ correct: false, ...(amount ? { amount_paise: Number(amount) * 100 } : {}), ...entryFields(choice, paidBy) })
+                }
+              >
                 {t("readback.save")}
               </BigButton>
               <BigButton variant="danger" onClick={() => void answer({ correct: false })}>

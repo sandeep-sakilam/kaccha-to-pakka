@@ -22,6 +22,7 @@ class ExportRow:
     amount_paise: int
     direction: str
     note: str | None = None
+    kind: str = "money"  # credit_given for "You gave" / "Credit" rows in credit-book apps
 
 
 def _norm(h: str) -> str:
@@ -33,20 +34,30 @@ def _amount(v: str | None) -> int:
     return to_paise(v) if v and v not in {"-", "0", "0.00"} else 0
 
 
-def _khatabook(rows: list[dict[str, str]]) -> list[ExportRow]:
+def _khatabook(rows: list[dict[str, str]], title: str = "") -> list[ExportRow]:
+    """A customer statement is a credit book: "You gave" is credit given, "You got" is money
+    received. In a supplier statement "You gave" is money paid, and "You got" is goods bought
+    on credit, which moved no money, so it is left out."""
+    supplier = "supplier" in title.lower() or any("suppliername" in r for r in rows[:1])
     out = []
     for r in rows:
         got, gave = _amount(r.get("yougot")), _amount(r.get("yougave"))
-        party = r.get("customername") or r.get("name") or r.get("partyname")
+        party = (
+            r.get("customername") or r.get("suppliername") or r.get("name") or r.get("partyname")
+        )
         d = parse_date(r["date"])
+        if supplier:
+            if gave:
+                out.append(ExportRow(d, party, gave, "out", r.get("details")))
+            continue
         if got:
             out.append(ExportRow(d, party, got, "in", r.get("details")))
         if gave:
-            out.append(ExportRow(d, party, gave, "out", r.get("details")))
+            out.append(ExportRow(d, party, gave, "out", r.get("details"), "credit_given"))
     return out
 
 
-def _okcredit(rows: list[dict[str, str]]) -> list[ExportRow]:
+def _okcredit(rows: list[dict[str, str]], title: str = "") -> list[ExportRow]:
     out = []
     for r in rows:
         kind = (r.get("type") or r.get("transactiontype") or "").strip().lower()
@@ -61,6 +72,8 @@ def _okcredit(rows: list[dict[str, str]]) -> list[ExportRow]:
                 amt,
                 direction,
                 r.get("note") or r.get("notes"),
+                # OkCredit is a credit book: a "credit" row is credit given to the customer.
+                "credit_given" if direction == "out" else "money",
             )
         )
     return out
@@ -70,7 +83,7 @@ VYAPAR_IN = {"sale", "paymentin", "receivedpayment", "saleorder"}
 VYAPAR_OUT = {"purchase", "paymentout", "expense", "paidpayment"}
 
 
-def _vyapar(rows: list[dict[str, str]]) -> list[ExportRow]:
+def _vyapar(rows: list[dict[str, str]], title: str = "") -> list[ExportRow]:
     out = []
     for r in rows:
         kind = _norm(r.get("type") or r.get("transactiontype") or "")
@@ -95,7 +108,8 @@ def _vyapar(rows: list[dict[str, str]]) -> list[ExportRow]:
     return out
 
 
-FORMATS: dict[str, tuple[set[str], Callable[[list[dict[str, str]]], list[ExportRow]]]] = {
+Parser = Callable[[list[dict[str, str]], str], list[ExportRow]]
+FORMATS: dict[str, tuple[set[str], Parser]] = {
     "khatabook": ({"date", "yougave", "yougot"}, _khatabook),
     "vyapar": ({"date", "partyname", "type", "receivedpaid"}, _vyapar),
     "okcredit": ({"date", "name", "type", "amount"}, _okcredit),
@@ -125,7 +139,7 @@ def parse_export(data: bytes) -> tuple[str, list[ExportRow]]:
                     if any((v or "").strip() for v in r.values())
                 ]
                 try:
-                    return name, parser(rows)
+                    return name, parser(rows, "\n".join(lines[:start]))
                 except (KeyError, ValueError) as exc:
                     raise CSVFormatError(f"Could not read a row: {exc}") from exc
     raise CSVFormatError("Unknown file layout. Export from Khatabook, OkCredit or Vyapar.")

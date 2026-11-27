@@ -66,6 +66,7 @@ def import_csv(
                 party_text=r.party_text,
                 amount_paise=r.amount_paise,
                 direction=r.direction,
+                kind=r.kind,
                 confidence=1.0,
                 field_confidence=full,
                 page_no=i,

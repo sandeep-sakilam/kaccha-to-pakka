@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r2"  # r2: coaching for unconfirmed ledger entries
+RULES_VERSION = "2026.11-r3"  # r3: credit books (udhaar) and cash entries in the records pillar
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -38,6 +38,16 @@ class RecordsFeatures:
     match_rate: float = 0.0  # by value, independent ledgers only
     mirrored_ledgers: int = 0  # typed from the bank statement: counted once (as money)
     pending_confirmation: int = 0  # entries on added pages still waiting for the owner's yes
+    cash_entries: int = 0  # written as cash: not checkable against the bank
+    credit_entries: int = 0  # goods given on credit (udhaar)
+    credit_customers: int = 0
+    repeat_credit_customers: int = 0  # credit given in two or more different months
+    credit_given_paise: int = 0
+    credit_repaid_bank_paise: int = 0
+    credit_repaid_cash_paise: int = 0  # as the owner wrote it
+    credit_outstanding_paise: int = 0
+    credit_bank_repaid_rate: float = 0.0  # repaid through the bank; partial clearing counts half
+    median_days_to_repay: int | None = None
 
 
 @dataclass
@@ -159,11 +169,31 @@ def money_pillar(m: MoneyFeatures) -> float:
     )
 
 
+RECORDS_CASH_CAP = 40.0
+
+
+def mostly_cash(r: RecordsFeatures) -> bool:
+    """More entries written as cash than entries the bank can check."""
+    return r.cash_entries > r.independent_entries + r.credit_entries
+
+
 def records_pillar(r: RecordsFeatures) -> float:
-    if r.independent_entries == 0:
+    """Cash-book entries found in the bank, and credit given that came back through the bank,
+    weighted by how many entries each has. Cash cannot be checked, so a ledger that is mostly
+    cash stays capped until more of it is backed by the bank."""
+    parts: list[tuple[int, float]] = []
+    if r.independent_entries:
+        depth = min(1.0, r.independent_entries / 30)
+        parts.append((r.independent_entries, 100 * r.match_rate * (0.5 + 0.5 * depth)))
+    if r.credit_entries:
+        depth = min(1.0, r.credit_entries / 30)
+        parts.append((r.credit_entries, 100 * r.credit_bank_repaid_rate * (0.5 + 0.5 * depth)))
+    if not parts:
         return 0.0
-    depth = min(1.0, r.independent_entries / 30)
-    return round(_clamp(100 * r.match_rate * (0.5 + 0.5 * depth)), 1)
+    score = sum(n * s for n, s in parts) / sum(n for n, _ in parts)
+    if mostly_cash(r):
+        score = min(score, RECORDS_CASH_CAP)
+    return round(_clamp(score), 1)
 
 
 def network_pillar(n: NetworkFeatures) -> float:
@@ -280,9 +310,20 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
             imp.append((50, Reason("record_payments_in_ledger")))
     elif r.pending_confirmation:
         gaps.append((40, Reason("ledger_unconfirmed")))
-    else:
+    elif not r.credit_entries:
         gaps.append((40, Reason("no_ledger")))
         imp.append((45, Reason("add_ledger")))
+    if r.credit_entries:
+        rate = r.credit_bank_repaid_rate
+        reason = Reason(
+            "credit_repaid_bank", {"percent": round(rate * 100), "customers": r.credit_customers}
+        )
+        (pos if rate >= 0.5 else gaps).append((p["records"], reason))
+        if rate < 0.5:
+            imp.append((50, Reason("ask_customers_upi")))
+    if mostly_cash(r):
+        gaps.append((45, Reason("mostly_cash_entries", {"count": r.cash_entries})))
+        imp.append((55, Reason("ask_customers_upi")))
     if r.pending_confirmation:
         imp.append((70, Reason("confirm_ledger_entries")))
     if r.mirrored_ledgers:

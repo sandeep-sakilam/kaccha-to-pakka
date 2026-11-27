@@ -154,7 +154,13 @@
     "save": "Save",
     "not_mine": "This is not in my ledger",
     "all_done": "All entries checked. Thank you!",
-    "left": "{{count}} left"
+    "left": "{{count}} left",
+    "credit": "Given on credit",
+    "what_happened": "What happened?",
+    "how_paid": "How was it paid?",
+    "not_said": "Not written",
+    "cash": "Cash",
+    "upi": "UPI"
   },
   "voice_entry": {
     "title": "Read your ledger aloud",
@@ -312,7 +318,16 @@
     "flags": "Flags for review",
     "pdf": "Download watermarked PDF",
     "watermark": "Shared with {{lender}} · {{date}} · do not forward",
-    "disclaimer": "We verify evidence. We do not lend and this is not a credit score: the credit decision is yours."
+    "disclaimer": "We verify evidence. We do not lend and this is not a credit score: the credit decision is yours.",
+    "cash_entries": "{{count}} ledger entries are written as cash, which the bank cannot show",
+    "credit_title": "Credit book (udhaar)",
+    "credit_given": "{{amount}} given on credit to {{customers}} customers",
+    "credit_bank": "{{percent}}% came back through the bank",
+    "credit_cash": "{{percent}}% came back in cash, as the owner wrote it",
+    "credit_days": "Customers usually paid after {{days}} days",
+    "credit_regular": "{{count}} regular credit customers (credit in two or more months)",
+    "credit_unpaid": "{{amount}} still unpaid",
+    "credit_vs_sales": "{{percent}}% of a month's money in"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",
