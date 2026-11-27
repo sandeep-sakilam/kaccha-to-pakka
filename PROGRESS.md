@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f43-passport-revoke`
+Current: none; next is `feat/f44-dispute-screens`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -51,3 +51,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F40 Coaching: "Confirm your ledger entries" when pages exist but are not confirmed (`feat/f40-coaching-confirm`)
 - [x] F41 Demo script and seed: actual bands, Raju's passport on hold after the fraud attempt, 3-minute video script (`feat/f41-demo-script`)
 - [x] F42 Flaky e2e helper: wait for the business save after "Skip" before navigating (`feat/f42-e2e-flake`)
+- [x] F43 Owner passport revoke: API route and a button with spoken confirmation (`feat/f43-passport-revoke`)

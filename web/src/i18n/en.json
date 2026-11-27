@@ -251,7 +251,11 @@
     "not_credit": "This is proof of your business, not a loan. The lender decides.",
     "do_it": "Do it now",
     "none": "You do not have a passport yet.",
-    "share": "Share with a lender"
+    "share": "Share with a lender",
+    "revoke": "Withdraw my passport",
+    "revoke_confirm": "Withdraw your passport? Lenders who scan it or open a share link will see it is cancelled. You can make a new one later.",
+    "revoke_yes": "Yes, withdraw it",
+    "revoked": "Your passport is withdrawn. Lenders will see it is cancelled."
   },
   "shares": {
     "title": "Share with a lender",

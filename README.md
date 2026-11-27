@@ -161,7 +161,7 @@ Caps: band A needs all four pillars ≥ 50, B needs three; no AA data → best C
 
 ## Passport
 
-`POST /businesses/{id}/passport` assesses afresh and issues a W3C Verifiable Credential (`BusinessTrustPassport`) signed with Ed25519 (`DataIntegrityProof`, `eddsa-jcs-2022`), valid for up to 60 days (less if the money data is ageing). It contains the band, confidence, pillar scores, reason codes and rules version, never phone numbers or partner names. The QR code encodes `/v/{id}#{token}`: a compact signed summary a lender can verify offline with the public key from `/.well-known/ktp-keys.json`; live status comes from `GET /passports/{id}/status` (valid, on_hold, expired, revoked, superseded). `GET /businesses/{id}/passport.pdf?language=hi|en` renders the passport with WeasyPrint and bundled Noto Sans Devanagari (OFL).
+`POST /businesses/{id}/passport` assesses afresh and issues a W3C Verifiable Credential (`BusinessTrustPassport`) signed with Ed25519 (`DataIntegrityProof`, `eddsa-jcs-2022`), valid for up to 60 days (less if the money data is ageing). It contains the band, confidence, pillar scores, reason codes and rules version, never phone numbers or partner names. The QR code encodes `/v/{id}#{token}`: a compact signed summary a lender can verify offline with the public key from `/.well-known/ktp-keys.json`; live status comes from `GET /passports/{id}/status` (valid, on_hold, expired, revoked, superseded). The owner can withdraw the passport (`POST /businesses/{id}/passport/revoke`, "Withdraw my passport" with a spoken confirmation); QR checks and lender links then show "revoked". `GET /businesses/{id}/passport.pdf?language=hi|en` renders the passport with WeasyPrint and bundled Noto Sans Devanagari (OFL).
 
 ## Owner passport screen
 
