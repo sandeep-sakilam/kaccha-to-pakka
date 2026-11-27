@@ -79,6 +79,7 @@ class LoginResult:
     stage: str
     has_pin: bool
     new_device: bool
+    profiles: int = 1
 
 
 def _issue_session(db: Session, user: User, device_id: str, stage: str, new_device: bool) -> str:
@@ -137,7 +138,8 @@ def verify_otp(
         db.flush()
         raise AuthError("Wrong OTP", "otp_wrong")
     ch.consumed_at = utcnow()
-    user = db.execute(select(User).where(User.phone == phone)).scalar_one_or_none()
+    profiles = profiles_for(db, phone)
+    user = profiles[0] if profiles else None
     if user is None:
         user = User(phone=phone, language=language, roles=["owner"], device_ids=[])
         db.add(user)
@@ -166,7 +168,71 @@ def verify_otp(
         f"user:{user.id}",
         {"device": device_id[-6:], "new_device": new_device},
     )
-    return LoginResult(token, user, "otp", user.pin_hash is not None, new_device)
+    return LoginResult(
+        token, user, "otp", user.pin_hash is not None, new_device, max(len(profiles), 1)
+    )
+
+
+def profiles_for(db: Session, phone: str) -> list[User]:
+    """Active profiles on one phone number, oldest first."""
+    return list(
+        db.execute(
+            select(User)
+            .where(User.phone == phone, User.status == "active")
+            .order_by(User.created_at, User.id)
+        ).scalars()
+    )
+
+
+def primary_user(db: Session, phone: str) -> User | None:
+    """The first profile on a phone (used where only the number is known, e.g. WhatsApp)."""
+    found = profiles_for(db, phone)
+    if found:
+        return found[0]
+    return (
+        db.execute(select(User).where(User.phone == phone).order_by(User.created_at))
+        .scalars()
+        .first()
+    )
+
+
+def _pin_taken(db: Session, phone: str, pin: str, except_user: str | None = None) -> bool:
+    return any(
+        security.verify_pin(pin, u.pin_hash)
+        for u in profiles_for(db, phone)
+        if u.id != except_user and u.pin_hash
+    )
+
+
+def new_profile(db: Session, session: AuthSession, name: str, pin: str) -> User:
+    """Another person on the same phone makes their own profile with their own PIN.
+    The phone was proven by OTP in this session; no existing PIN is needed or revealed."""
+    current = db.get(User, session.user_id)
+    assert current is not None
+    name = " ".join(name.split())[:60]
+    if len(name) < 2:
+        raise AuthError("Give a name for this profile", "bad_profile_name")
+    if any(u.profile_name.lower() == name.lower() for u in profiles_for(db, current.phone)):
+        raise AuthError("This phone already has a profile with that name", "profile_exists")
+    problem = security.pin_problem(pin)
+    if problem:
+        raise AuthError(problem, "weak_pin")
+    if _pin_taken(db, current.phone, pin):
+        raise AuthError("Choose a different PIN from others on this phone", "pin_in_use")
+    user = User(
+        phone=current.phone,
+        profile_name=name,
+        language=current.language,
+        roles=["owner"],
+        device_ids=[],
+        pin_hash=security.hash_pin(pin),
+    )
+    db.add(user)
+    db.flush()
+    _bind_device(db, user, session.device_id)
+    session.user_id, session.stage = user.id, "full"
+    record(db, f"user:{user.id}", "user.profile_created", f"user:{user.id}", {"shared_phone": True})
+    return user
 
 
 def session_for(db: Session, token: str) -> AuthSession | None:
@@ -186,6 +252,8 @@ def set_pin(db: Session, session: AuthSession, pin: str) -> None:
     problem = security.pin_problem(pin)
     if problem:
         raise AuthError(problem, "weak_pin")
+    if _pin_taken(db, user.phone, pin, except_user=user.id):
+        raise AuthError("Choose a different PIN from others on this phone", "pin_in_use")
     user.pin_hash = security.hash_pin(pin)
     user.pin_failures = 0
     session.stage = "full"
@@ -208,9 +276,20 @@ def _check_pin(db: Session, user: User, pin: str) -> None:
 
 
 def verify_pin(db: Session, session: AuthSession, pin: str) -> None:
+    """On a shared phone the PIN says whose profile opens: each profile has its own PIN."""
     user = db.get(User, session.user_id)
     assert user is not None
-    _check_pin(db, user, pin)
+    for other in profiles_for(db, user.phone):
+        if other.id != user.id and other.pin_hash and security.verify_pin(pin, other.pin_hash):
+            if other.pin_locked_until and other.pin_locked_until > utcnow():
+                raise AuthError("PIN locked for 30 minutes after too many tries", "pin_locked")
+            user = other
+            session.user_id = other.id
+            _bind_device(db, other, session.device_id)
+            break
+    else:
+        _check_pin(db, user, pin)
+    user.pin_failures = 0
     session.stage = "full"
     record(db, f"user:{user.id}", "auth.pin_verified", f"user:{user.id}")
 
@@ -218,22 +297,21 @@ def verify_pin(db: Session, session: AuthSession, pin: str) -> None:
 def pin_login(db: Session, phone: str, pin: str, device_id: str) -> LoginResult:
     """Returning user on an already bound device: PIN only. Otherwise OTP is required."""
     phone = normalise_phone(phone)
-    user = db.execute(select(User).where(User.phone == phone)).scalar_one_or_none()
-    bound = (
-        user is not None
-        and db.execute(
+    bound = [
+        u
+        for u in profiles_for(db, phone)
+        if db.execute(
             select(DeviceBinding.id).where(
-                DeviceBinding.user_id == user.id,
+                DeviceBinding.user_id == u.id,
                 DeviceBinding.device_id == device_id,
                 DeviceBinding.revoked_at.is_(None),
             )
         ).first()
         is not None
-    )
-    if user is None or not bound:
+    ]
+    if not bound:
         raise AuthError("Verify your phone with an OTP on this device", "otp_required")
-    if user.status != "active":
-        raise AuthError("This account is not active", "inactive")
+    user = next((u for u in bound if security.verify_pin(pin, u.pin_hash)), bound[0])
     _check_pin(db, user, pin)
     token = _issue_session(db, user, device_id, "full", False)
     record(db, f"user:{user.id}", "auth.pin_login", f"user:{user.id}")

@@ -34,6 +34,7 @@ class LoginOut(BaseModel):
     has_pin: bool
     new_device: bool
     language: str
+    profiles: int = 1
 
 
 class PinIn(BaseModel):
@@ -49,6 +50,7 @@ class PinLogin(BaseModel):
 class Me(BaseModel):
     id: str
     phone: str
+    profile_name: str
     name: str | None
     language: str
     roles: list[str]
@@ -63,6 +65,7 @@ def _out(r: service.LoginResult) -> LoginOut:
         has_pin=r.has_pin,
         new_device=r.new_device,
         language=r.user.language,
+        profiles=r.profiles,
     )
 
 
@@ -122,6 +125,7 @@ def me(user: CurrentUser) -> Me:
     return Me(
         id=user.id,
         phone=user.phone,
+        profile_name=user.profile_name,
         name=user.name,
         language=user.language,
         roles=list(user.roles or []),
@@ -165,3 +169,16 @@ def erase(body: EraseIn, db: DB, user: CurrentUser) -> dict[str, object]:
     report = erase_account(db, user, body.pin, body.confirm)
     db.commit()
     return {"erased": True, **asdict(report)}
+
+
+class NewProfileIn(BaseModel):
+    name: str = Field(min_length=2, max_length=60)
+    pin: str
+
+
+@router.post("/profile/new")
+def new_profile(body: NewProfileIn, db: DB, session: SessionDep) -> dict[str, str]:
+    """Another person on this phone makes their own profile with their own PIN."""
+    user = service.new_profile(db, session, body.name, body.pin)
+    db.commit()
+    return {"stage": "full", "profile_name": user.profile_name}

@@ -25,6 +25,7 @@ from app.modules.consent import service as consent
 from app.modules.evidence.service import CaptureIn, ingest_capture
 from app.modules.extraction.checks import confirm_entry, readback_prompt
 from app.modules.identity import security
+from app.modules.identity.service import primary_user
 
 YES = {"haan", "ha", "han", "yes", "y", "हाँ", "हां", "ji", "sahi", "सही", "1", "ok", "theek"}
 NO = {"nahi", "nahin", "no", "n", "नहीं", "galat", "गलत", "2"}
@@ -153,7 +154,7 @@ class Bot:
     def on_lang(self, c: WaConversation, m: Inbound, text: str, lang: str) -> None:
         lang = "en" if text.lower().startswith("eng") else "hi"
         c.data = {**c.data, "lang": lang}
-        user = self.db.execute(select(User).where(User.phone == m.phone)).scalar_one_or_none()
+        user = primary_user(self.db, m.phone)
         if user is not None and user.pin_hash:
             c.state = "ready" if self._business(user) else "q_name"
             self.send(m.phone, t("ready" if c.state == "ready" else "q_name", lang))
@@ -166,7 +167,7 @@ class Bot:
         if problem:
             self.send(m.phone, problem)
             return
-        user = self.db.execute(select(User).where(User.phone == m.phone)).scalar_one_or_none()
+        user = primary_user(self.db, m.phone)
         if user is None:
             user = User(phone=m.phone, language=lang, roles=["owner"], device_ids=[])
             self.db.add(user)
@@ -360,7 +361,7 @@ class Bot:
         self.send(m.phone, "\n".join(lines))
 
     def _user(self, phone: str) -> User:
-        user = self.db.execute(select(User).where(User.phone == phone)).scalar_one_or_none()
+        user = primary_user(self.db, phone)
         if user is None:
             raise DomainError("unknown user", "unknown_user")
         return user

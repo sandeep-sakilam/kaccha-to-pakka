@@ -131,3 +131,29 @@ test("never-do screen lists the promises", () => {
   renderAt(<Never />);
   expect(screen.getByText("We never sell your data.")).toBeInTheDocument();
 });
+
+test("someone else on a shared phone makes their own profile", async () => {
+  const calls = mockApi([
+    [/POST .*\/auth\/otp\/request/, () => ({ sandbox_code: "123456" })],
+    [/POST .*\/auth\/otp\/verify/, () => ({ token: "t", stage: "otp", has_pin: true, new_device: false, profiles: 1 })],
+    [/POST .*\/auth\/profile\/new/, () => ({ stage: "full", profile_name: "Raju" })],
+  ]);
+  renderAt(
+    <Routes>
+      <Route path="/start" element={<Login />} />
+      <Route path="/consent" element={<p>consent page</p>} />
+    </Routes>,
+    "/start",
+  );
+  await keypad("9812345678");
+  await click("Send OTP");
+  await vi.waitFor(() => screen.getByTestId("sandbox-otp"));
+  await keypad("123456");
+  await click("Check OTP");
+  await click("Someone else on this phone? Make your own profile");
+  fireEvent.change(screen.getByLabelText("Your name (for this profile)"), { target: { value: "Raju" } });
+  await keypad("7391");
+  await click("Make my profile");
+  expect(posted(calls, /profile\/new/)[0].body).toEqual({ name: "Raju", pin: "7391" });
+  await vi.waitFor(() => screen.getByText("consent page"));
+});

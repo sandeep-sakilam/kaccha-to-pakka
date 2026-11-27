@@ -23,6 +23,8 @@ export default function Login() {
   const [newDevice, setNewDevice] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [newProfile, setNewProfile] = useState(false);
+  const [profileName, setProfileName] = useState("");
 
   async function run(fn: () => Promise<void>) {
     setBusy(true);
@@ -60,6 +62,13 @@ export default function Login() {
 
   const submitPin = () =>
     run(async () => {
+      if (newProfile) {
+        await api("/auth/profile/new", { method: "POST", json: { name: profileName, pin } });
+        const token = localStorage.getItem("ktp.token");
+        if (token) await signIn(token);
+        nav("/consent");
+        return;
+      }
       await api(hasPin ? "/auth/pin/verify" : "/auth/pin/set", { method: "POST", json: { pin } });
       const token = localStorage.getItem("ktp.token");
       if (token) await signIn(token);
@@ -101,13 +110,35 @@ export default function Login() {
       {step === "pin" && (
         <>
           {newDevice && <p className="rounded-xl bg-orange-100 p-3">{t("login.new_device")}</p>}
-          <p className="font-semibold">{hasPin ? t("login.enter_pin") : t("login.set_pin")}</p>
-          {!hasPin && <p>{t("login.set_pin_why")} {t("login.pin_hint")}</p>}
+          {newProfile ? (
+            <>
+              <input aria-label={t("login.profile_name")} placeholder={t("login.profile_name")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg" value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+              <p className="font-semibold">{t("login.new_profile_pin")}</p>
+            </>
+          ) : (
+            <p className="font-semibold">{hasPin ? t("login.enter_pin") : t("login.set_pin")}</p>
+          )}
+          {(!hasPin || newProfile) && (
+            <p>
+              {t("login.set_pin_why")} {t("login.pin_hint")}
+            </p>
+          )}
           <Dots value={pin} length={4} label="PIN" />
           <Keypad value={pin} onChange={setPin} max={4} />
-          <BigButton disabled={pin.length !== 4 || busy} onClick={submitPin}>
-            {t("common.next")}
+          <BigButton disabled={pin.length !== 4 || busy || (newProfile && profileName.trim().length < 2)} onClick={submitPin}>
+            {newProfile ? t("login.create_profile") : t("common.next")}
           </BigButton>
+          {hasPin && !newProfile && (
+            <BigButton
+              variant="ghost"
+              onClick={() => {
+                setNewProfile(true);
+                setPin("");
+              }}
+            >
+              {t("login.new_profile")}
+            </BigButton>
+          )}
         </>
       )}
       {error && (
