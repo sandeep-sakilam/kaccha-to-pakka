@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; backlog complete
+Current: none; next is `feat/f38-startup-safety`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
