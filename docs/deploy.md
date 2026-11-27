@@ -79,6 +79,8 @@ Open `.env` (`nano .env`) and set:
 | Provider keys (`SARVAM_API_KEY`, …) | only those you have; every other service stays Sandbox |
 
 
+The API and the worker refuse to start in production if `SECRET_KEY`, `FIELD_ENCRYPTION_KEY` or `PASSPORT_SIGNING_KEY` is missing, malformed or a development default.
+
 **Copy the signing key, the field-encryption key and the backup passphrase to a password manager now.** Without the field key, encrypted names can't be read; without the signing key, you can't keep issuing passports under the same public key; without the passphrase, backups can't be restored.
 
 ## 5. Build the images on the server

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app import job_registry  # noqa: F401  (register jobs)
 from app.adapters.registry import get_adapters
+from app.core import startup
 from app.core.config import get_settings
 from app.core.errors import install_handlers
 from app.db import triggers  # noqa: F401  (database guarantees)
@@ -50,6 +51,7 @@ ROUTERS = [
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    startup.check(settings)
     app = FastAPI(title="Kaccha to Pakka API", version="0.1.0")
     install_handlers(app)
     for router in ROUTERS:
