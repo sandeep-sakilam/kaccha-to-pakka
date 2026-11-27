@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f55-merchant-location`
+Current: none; audit fixes F37-F55 complete
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
