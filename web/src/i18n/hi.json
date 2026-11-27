@@ -332,7 +332,13 @@
     "owner_confirmed": "मिलान का {{percent}}% इसलिए जुड़ा क्योंकि मालिक ने नाम की पुष्टि की",
     "cash_title": "बैंक में जमा नकद बिक्री",
     "cash_deposits": "पिछले 12 में से {{months}} महीनों में {{amount}} नकद जमा (आधा गिना गया: नकद कहाँ से आया, यह पता नहीं)",
-    "daily_sales": "मालिक की बताई रोज़ की बिक्री जाँचे गए {{checked}} में से {{agree}} महीनों में बैंक से मेल खाई"
+    "daily_sales": "मालिक की बताई रोज़ की बिक्री जाँचे गए {{checked}} में से {{agree}} महीनों में बैंक से मेल खाई",
+    "registration_title": "सरकारी पंजीकरण",
+    "registration_verified": "{{source}} पंजीकरण सरकारी रजिस्टर में पक्का, {{date}} को पंजीकृत",
+    "registration_name_mismatch": "{{source}} नंबर किसी दूसरे व्यापार के नाम पर है",
+    "registration_cancelled": "{{source}} पंजीकरण रद्द है",
+    "registration_not_found": "{{source}} नंबर सरकारी रजिस्टर में नहीं मिला",
+    "registration_failed": "{{source}} नंबर की अभी जाँच नहीं हो पाई"
   },
   "sahayak": {
     "title": "सहायक मोड",

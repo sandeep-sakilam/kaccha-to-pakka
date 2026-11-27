@@ -203,6 +203,25 @@ def identity_theft(db: Session) -> CaseResult:
     )
 
 
+def borrowed_registration(db: Session) -> CaseResult:
+    """A shop types another business's GSTIN to look registered."""
+    from app.modules.business import registration
+
+    biz = b.business(db, "Borrowed Number Store", owner_name="Mohan Lal")
+    from app.core.identifiers import make_gstin
+
+    biz.gstin = make_gstin("23", "ABCDE1234X")  # sandbox: a PAN ending in X is someone else's
+    registration.check(db, biz, "redteam")
+    _income(db, biz)
+    a = trust.assess(db, biz)
+    return CaseResult(
+        "Borrowed Udyam / GSTIN",
+        "Register lookup + name match",
+        a.status == "on_hold" and any(f["code"] == "registration_name_mismatch" for f in a.flags),
+        f"{biz.registration_status}, {a.status}",
+    )
+
+
 def sahayak_fakes(db: Session) -> CaseResult:
     from app.modules.review.service import sahayak_stats
 
@@ -348,6 +367,7 @@ CASES: list[Callable[[Session], CaseResult]] = [
     collusion_ring,
     someone_elses_shop,
     identity_theft,
+    borrowed_registration,
     sahayak_fakes,
     account_takeover,
     prompt_injection,

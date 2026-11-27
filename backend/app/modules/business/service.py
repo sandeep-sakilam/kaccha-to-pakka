@@ -80,6 +80,7 @@ def _claim_partner_profile(
         f"business:{biz.id}",
         {"category": p.category, "has_gstin": bool(biz.gstin), "has_udyam": bool(biz.udyam)},
     )
+    _check_registration(db, biz, actor or f"user:{user.id}")
     return biz
 
 
@@ -89,6 +90,26 @@ def create(db: Session, user: User, p: ProfileIn, actor: str | None = None) -> B
     existing = partner_profile(db, user.id)
     if existing is not None:
         return _claim_partner_profile(db, user, existing, p, actor)
+    biz = _new_business(db, user, p)
+    record(
+        db,
+        actor or f"user:{user.id}",
+        "business.create",
+        f"business:{biz.id}",
+        {"category": p.category, "has_gstin": bool(p.gstin), "has_udyam": bool(p.udyam)},
+    )
+    _check_registration(db, biz, actor or f"user:{user.id}")
+    return biz
+
+
+def _check_registration(db: Session, biz: Business, actor: str) -> None:
+    if biz.udyam or biz.gstin:
+        from app.modules.business import registration
+
+        registration.check(db, biz, actor)
+
+
+def _new_business(db: Session, user: User, p: ProfileIn) -> Business:
     biz = Business(
         owner_user_id=user.id,
         name=p.name.strip(),
@@ -104,13 +125,6 @@ def create(db: Session, user: User, p: ProfileIn, actor: str | None = None) -> B
     )
     db.add(biz)
     db.flush()
-    record(
-        db,
-        actor or f"user:{user.id}",
-        "business.create",
-        f"business:{biz.id}",
-        {"category": p.category, "has_gstin": bool(p.gstin), "has_udyam": bool(p.udyam)},
-    )
     return biz
 
 
@@ -152,4 +166,6 @@ def update(
         f"business:{biz.id}",
         {"fields": sorted(changes)},
     )
+    if {"udyam", "gstin", "name"} & set(changes):
+        _check_registration(db, biz, actor or f"user:{user.id}")
     return biz

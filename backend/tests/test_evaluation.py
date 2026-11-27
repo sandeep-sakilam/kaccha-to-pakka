@@ -22,7 +22,7 @@ def test_extraction_scoring_on_sandbox_set() -> None:
 def test_red_team_catches_every_attack(db: Session) -> None:
     results = redteam.run(db)
     missed = [r.attack for r in results if not r.caught]
-    assert len(results) == 13 and missed == []
+    assert len(results) == 14 and missed == []
 
 
 def test_reconciliation_precision_recall(db: Session) -> None:

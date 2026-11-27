@@ -78,6 +78,14 @@ class Business(TimestampMixin, Base):
     women_owned: Mapped[bool] = mapped_column(Boolean, default=False)
     is_sandbox: Mapped[bool] = mapped_column(Boolean, default=False)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # What the government register says about the Udyam / GSTIN number (checked, not claimed).
+    # none | verified | name_mismatch | cancelled | not_found | failed
+    registration_status: Mapped[str] = mapped_column(String(16), default="none")
+    registration_source: Mapped[str | None] = mapped_column(String(8))  # udyam | gstin
+    registration_name: Mapped[str | None] = mapped_column(String(200))
+    registered_on: Mapped[date | None] = mapped_column(Date)
+    registration_started_on: Mapped[date | None] = mapped_column(Date)
+    registration_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class SahayakLink(Base):

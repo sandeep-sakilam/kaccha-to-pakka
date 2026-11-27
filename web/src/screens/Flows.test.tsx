@@ -166,6 +166,7 @@ test("lender view shows a credit book as plain facts", async () => {
     evidence: {
       monthly_totals_paise: {}, confirmations: [], presence: { done: 0, failed: 0, missed: 0 }, evidence_items: [], flags: [],
       avg_monthly_inflow_paise: 10000000,
+      registration: { status: "verified", source: "udyam", registered_on: "2021-03-02" },
       cash_deposit_paise: 2400000,
       cash_deposit_months: 4,
       records: {
@@ -186,6 +187,7 @@ test("lender view shows a credit book as plain facts", async () => {
   expect(book).toHaveTextContent("₹4,000 still unpaid (4% of a month's money in)");
   expect(screen.getByText(/4 ledger entries are written as cash/)).toBeInTheDocument();
   expect(screen.getByText(/25% of the matched value links names to payers because the owner said so/)).toBeInTheDocument();
+  expect(screen.getByTestId("registration")).toHaveTextContent("Udyam registration confirmed in the government register");
   expect(screen.getByTestId("cash-deposits")).toHaveTextContent("₹24,000 paid in as cash in 4 of the last 12 months");
   expect(screen.getByTestId("daily-sales-check")).toHaveTextContent("agreed with the bank in 2 of 3 months checked");
 });

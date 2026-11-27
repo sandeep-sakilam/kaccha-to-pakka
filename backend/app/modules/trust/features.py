@@ -149,6 +149,22 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     )
 
     owner = db.get(User, biz.owner_user_id)
+    if biz.registration_status == "name_mismatch":
+        flags.append(
+            {
+                "code": "registration_name_mismatch",
+                "severity": "hold",
+                "detail": "the Udyam / GST number is registered to a different business",
+            }
+        )
+    elif biz.registration_status == "cancelled":
+        flags.append(
+            {
+                "code": "registration_cancelled",
+                "severity": "warn",
+                "detail": "the Udyam / GST registration is cancelled",
+            }
+        )
     if owner is not None and owner.kyc_status == "name_mismatch":
         flags.append(
             {
@@ -368,6 +384,8 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         checks_failed=sum(1 for r in reqs if r.status == "failed"),
         checks_missed=sum(1 for r in reqs if r.status == "missed"),
         in_person_visits=sum(1 for c in confirmations if c["type"] == "in_person"),
+        registration=biz.registration_status or "none",
+        registration_source=biz.registration_source,
     )
     return Features(
         as_of=today.isoformat(),
