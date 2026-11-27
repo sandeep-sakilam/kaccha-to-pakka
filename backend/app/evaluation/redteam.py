@@ -87,7 +87,6 @@ def staged_ledger(db: Session) -> CaseResult:
 
 
 def friend_as_supplier(db: Session) -> CaseResult:
-    from app.adapters.registry import get_adapters
     from app.modules.attestations import penny_drop, selection
 
     biz = b.business(db, "Friend Supplier Shop")
@@ -105,7 +104,7 @@ def friend_as_supplier(db: Session) -> CaseResult:
     top = selection.top_counterparties(db, biz.id)
     inv = selection.invite(db, owner, biz, top[0].counterparty_id, b.phone(), "hi")
     req = penny_drop.start(db, inv)
-    gw = get_adapters().payments
+    gw = penny_drop.gateway_for(db, biz.id)
     assert isinstance(gw, MockPaymentGateway)
     gw.simulate_payment(req.ref, "friend@okaxis", "REAL SUPPLIER")
     res = penny_drop.check(db, inv)

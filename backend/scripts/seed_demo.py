@@ -1,7 +1,7 @@
 """Reset the local database and load the Sandbox demo (3 Indore businesses + fraud script).
 
-Usage: uv run python -m scripts.seed_demo            (refuses to run in production)
-       uv run python -m scripts.seed_demo --play-fraud   (also plays the friend's ₹1 payment)
+Usage: uv run python -m scripts.seed_demo --reset-database   (refuses APP_ENV=production)
+       add --play-fraud to also play the friend's ₹1 payment
 """
 
 import json
@@ -18,8 +18,14 @@ from app.sandbox import demo
 def main() -> None:
     s = get_settings()
     s.jobs_inline = True  # extraction runs in-process so the seed is complete and deterministic
+    # The demo is Sandbox data: never call real AI, never message the fictional phone numbers,
+    # even on a server where real keys are set. Seeded businesses use the simulated gateway.
+    s.ai_provider = s.fallback_ai_provider = "mock"
+    s.whatsapp_provider = s.sms_provider = s.kyc_provider = s.aa_provider = "mock"
     if s.app_env == "production":
         raise SystemExit("refusing to reset a production database")
+    if "--reset-database" not in sys.argv:
+        raise SystemExit("this ERASES the database; run again with --reset-database to confirm")
     with get_engine().begin() as conn:
         conn.exec_driver_sql("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
     command.upgrade(Config("alembic.ini"), "head")

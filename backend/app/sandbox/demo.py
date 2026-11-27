@@ -12,7 +12,6 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.adapters.payments import MockPaymentGateway
-from app.adapters.registry import get_adapters
 from app.adapters.sandbox_images import ledger_png
 from app.db.base import utcnow
 from app.db.models import Business, EvidenceItem, PresenceRequest, User
@@ -382,7 +381,7 @@ def _shop(db: Session, u: User, biz: Business, d: DemoBusiness) -> None:
 def _confirmations(db: Session, u: User, biz: Business, d: DemoBusiness) -> None:
     top = selection.top_counterparties(db, biz.id)
     by_vpa = {t.vpa_or_account: t for t in top}
-    gw = get_adapters().payments
+    gw = penny_drop.gateway_for(db, biz.id)
     for p in d.partners[: d.confirm]:
         cp = by_vpa.get(p.vpa)
         if cp is None:
@@ -500,7 +499,7 @@ def play_fraud(db: Session, token: str) -> str:
     """The friend opens the link and pays ₹1 from their own UPI account."""
     inv = selection.by_token(db, token)
     req = penny_drop.start(db, inv)
-    gw = get_adapters().payments
+    gw = penny_drop.gateway_for(db, inv.business_id)
     assert isinstance(gw, MockPaymentGateway)
     gw.simulate_payment(req.ref, FRIEND_VPA, FRIEND_NAME)
     return penny_drop.check(db, inv).status

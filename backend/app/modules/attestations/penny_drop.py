@@ -11,14 +11,23 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from app.adapters.errors import AdapterError
-from app.adapters.payments import PennyDropRequest
+from app.adapters.payments import PaymentGateway, PennyDropRequest
 from app.adapters.registry import get_adapters
 from app.core.errors import DomainError
-from app.db.models import Counterparty, CounterpartyInvite, Dispute
+from app.db.models import Business, Counterparty, CounterpartyInvite, Dispute
 from app.modules.audit.service import record
 from app.modules.reconciliation.names import similarity
 
 NAME_MATCH = 80.0
+
+
+def gateway_for(db: Session, business_id: str) -> PaymentGateway:
+    """Sandbox (demo) businesses use the simulated gateway; everyone else the configured one."""
+    adapters = get_adapters()
+    biz = db.get(Business, business_id)
+    if biz is not None and biz.is_sandbox and adapters.sandbox_payments is not None:
+        return adapters.sandbox_payments
+    return adapters.payments
 
 
 def start(db: Session, inv: CounterpartyInvite) -> PennyDropRequest:
@@ -28,7 +37,7 @@ def start(db: Session, inv: CounterpartyInvite) -> PennyDropRequest:
 
     hit("penny_drop_invite", inv.id)
     try:
-        req = get_adapters().payments.create_reverse_penny_drop(f"invite:{inv.id}")
+        req = gateway_for(db, inv.business_id).create_reverse_penny_drop(f"invite:{inv.id}")
     except AdapterError as exc:
         raise DomainError(
             "Payment check is not working right now. Please try later.", "payments_down", 503
@@ -56,7 +65,7 @@ def check(db: Session, inv: CounterpartyInvite) -> ProofResult:
         return ProofResult("rejected", "already_rejected")
     if not inv.penny_ref:
         raise DomainError("Start the ₹1 check first", "no_penny_drop")
-    gw = get_adapters().payments
+    gw = gateway_for(db, inv.business_id)
     try:
         res = gw.get_result(inv.penny_ref)
     except AdapterError as exc:

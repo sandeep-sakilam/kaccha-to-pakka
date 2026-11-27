@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Tick the backlog item, run the quality gate, commit, preflight, push the branch.
-# Usage: bash scripts/ship.sh F03 "commit message (multi-line ok)"
+# Usage: bash scripts/ship.sh F03 "commit message (multi-line ok)" [next-branch]
 set -euo pipefail
-fid="$1"; msg="$2"
-python3 scripts/tick.py "$fid"
+fid="$1"; msg="$2"; next="${3:-}"
+python3 scripts/tick.py "$fid" $next
 make fix >/dev/null 2>&1 || true
 make check
 git add -A

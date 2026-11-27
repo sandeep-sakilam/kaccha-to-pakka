@@ -47,6 +47,17 @@ class Adapters:
     sms: SMS
     kyc: KYCProvider
     storage: Storage
+    # Sandbox businesses (seeded demo data) always use the simulated gateway, even when real
+    # payment keys are set, so a demo never moves real money.
+    sandbox_payments: MockPaymentGateway | None = None
+
+    def __post_init__(self) -> None:
+        if self.sandbox_payments is None:
+            self.sandbox_payments = (
+                self.payments
+                if isinstance(self.payments, MockPaymentGateway)
+                else MockPaymentGateway()
+            )
 
     def sandbox_status(self) -> dict[str, bool]:
         return {
