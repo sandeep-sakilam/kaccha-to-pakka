@@ -27,7 +27,7 @@ def test_sandbox_business_uses_simulated_gateway_with_real_keys(db: Session) -> 
         out = demo.seed_all(db)  # must not touch the real gateway
         fraud = out["fraud"]
         assert isinstance(fraud, dict)
-        assert demo.play_fraud(db, str(fraud["invite_token"])) == "rejected"
+        assert fraud["first_attempt"] == "rejected"
         assert db.get(Business, str(fraud["business_id"])) is not None
     finally:
         adapters.payments, adapters.sandbox_payments = saved

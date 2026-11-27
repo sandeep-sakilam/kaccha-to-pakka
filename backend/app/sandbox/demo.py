@@ -518,15 +518,34 @@ def seed_all(db: Session, today: date | None = None) -> dict[str, object]:
             "status": p.status,
         }
     fraud = seed_fraud(db, today)
+    # The friend's attempt is played once, then Raju's passport is issued: it is on hold.
+    first_attempt = play_fraud(db, fraud.invite_token)
+    raju = issue(db, fraud.business, "seed")
+    # A second invite to the same friend, left open, so the video can show the attempt live.
+    replay = replay_invite(db, fraud.business)
     out["fraud"] = {
         "business_id": fraud.business.id,
         "name": FRAUD.name,
         "phone": FRAUD.phone,
-        "invite_token": fraud.invite_token,
+        "first_attempt": first_attempt,
+        "passport_status": raju.status,
+        "band": raju.vc_json["credentialSubject"]["band"],
+        "replay_invite_token": replay,
         "friend_vpa": FRIEND_VPA,
         "friend_name": FRIEND_NAME,
     }
     return out
+
+
+def replay_invite(db: Session, biz: Business) -> str:
+    owner = db.get(User, biz.owner_user_id)
+    assert owner is not None
+    supplier = next(
+        t
+        for t in selection.top_counterparties(db, biz.id)
+        if t.vpa_or_account == FRAUD.partners[0].vpa
+    )
+    return selection.invite(db, owner, biz, supplier.counterparty_id, FRIEND_PHONE, "hi").token
 
 
 def now_ist() -> str:

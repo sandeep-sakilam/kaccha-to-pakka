@@ -1,7 +1,7 @@
 """Reset the local database and load the Sandbox demo (3 Indore businesses + fraud script).
 
 Usage: uv run python -m scripts.seed_demo --reset-database   (refuses APP_ENV=production)
-       add --play-fraud to also play the friend's ₹1 payment
+       (the friend's first ₹1 attempt is played and Raju's passport issued: on hold)
 """
 
 import json
@@ -32,10 +32,6 @@ def main() -> None:
     db = _session_factory()()
     try:
         out = demo.seed_all(db)
-        if "--play-fraud" in sys.argv:
-            fraud = out["fraud"]
-            assert isinstance(fraud, dict)
-            fraud["friend_payment"] = demo.play_fraud(db, str(fraud["invite_token"]))
         db.commit()
     finally:
         db.close()
@@ -47,7 +43,7 @@ def main() -> None:
         f"\nLog in with any phone above, PIN {demo.DEMO_PIN} (OTP is shown on screen in Sandbox)."
     )
     print(
-        f"Fraud scene: open {base}/confirm/{fraud['invite_token']} and pay from "
+        f"Fraud scene: open {base}/confirm/{fraud['replay_invite_token']} and pay from "
         f"{demo.FRIEND_VPA} / {demo.FRIEND_NAME}."
     )
 
