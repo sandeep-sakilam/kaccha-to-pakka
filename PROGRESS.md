@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f45-consent-screen`
+Current: none; next is `feat/f46-identity-defence`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -53,3 +53,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F42 Flaky e2e helper: wait for the business save after "Skip" before navigating (`feat/f42-e2e-flake`)
 - [x] F43 Owner passport revoke: API route and a button with spoken confirmation (`feat/f43-passport-revoke`)
 - [x] F44 Dispute screens: owner and counterparty raise and follow disputes in the app (`feat/f44-dispute-screens`)
+- [x] F45 Consent screen: see every consent and withdraw with one tap or by voice; withdrawal stops what it allowed (`feat/f45-consent-screen`)

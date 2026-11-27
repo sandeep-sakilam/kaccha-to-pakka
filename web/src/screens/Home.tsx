@@ -125,6 +125,9 @@ export default function Home() {
           {t("home.disputes")}
         </BigButton>
       )}
+      <BigButton variant="ghost" onClick={() => nav("/consents")}>
+        {t("home.consents")}
+      </BigButton>
       <BigButton variant="ghost" onClick={() => nav("/sahayak")}>
         {t("home.sahayak_mode")}
       </BigButton>

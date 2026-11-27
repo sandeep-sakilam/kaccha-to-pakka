@@ -158,7 +158,53 @@ def revoke(db: Session, user: User, consent_id: str) -> Consent:
     if c.revoked_at is None:
         c.revoked_at = utcnow()
         record(db, f"user:{user.id}", "consent.revoke", f"consent:{c.id}", {"purpose": c.purpose})
+        _stop_what_it_allowed(db, user, c)
     return c
+
+
+def _stop_what_it_allowed(db: Session, user: User, c: Consent) -> None:
+    """Withdrawing a consent stops what it allowed, at once: the lender link, the helper's
+    access, or the bank link and its monthly refresh."""
+    import contextlib
+
+    from app.adapters.errors import AdapterError
+    from app.db.models import SahayakLink, Share
+
+    if c.purpose == "share_lender" and c.scope.get("share_id"):
+        share = db.get(Share, str(c.scope["share_id"]))
+        if share is not None and share.revoked_at is None:
+            share.revoked_at = utcnow()
+            record(
+                db,
+                f"user:{user.id}",
+                "share.revoke",
+                f"business:{c.business_id}",
+                {"share_id": share.id, "via": "consent"},
+            )
+    elif c.purpose == "sahayak_help" and c.scope.get("sahayak_user_id"):
+        for link in db.execute(
+            select(SahayakLink).where(
+                SahayakLink.business_id == c.business_id,
+                SahayakLink.sahayak_user_id == str(c.scope["sahayak_user_id"]),
+                SahayakLink.revoked_at.is_(None),
+            )
+        ).scalars():
+            link.revoked_at = utcnow()
+            record(
+                db,
+                f"user:{user.id}",
+                "sahayak.removed",
+                f"business:{c.business_id}",
+                {"sahayak": link.sahayak_user_id, "via": "consent"},
+            )
+    elif c.purpose == "aa_fetch" and c.scope.get("aa_handle"):
+        from app.adapters.registry import get_adapters
+
+        with contextlib.suppress(AdapterError):
+            get_adapters().aa.revoke(str(c.scope["aa_handle"]))
+        for r in active(db, user.id, "monthly_refresh", c.business_id):
+            if r.scope.get("aa_handle") == c.scope["aa_handle"]:
+                revoke(db, user, r.id)
 
 
 def revoke_purpose(db: Session, user: User, purpose: str, business_id: str | None = None) -> int:

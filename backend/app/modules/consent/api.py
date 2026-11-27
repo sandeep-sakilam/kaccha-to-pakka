@@ -34,6 +34,7 @@ class GrantIn(BaseModel):
 class ConsentOut(BaseModel):
     id: str
     purpose: str
+    why: str
     business_id: str | None
     scope: dict[str, Any]
     granted_at: datetime
@@ -47,10 +48,13 @@ class RevokePurposeIn(BaseModel):
     business_id: str | None = None
 
 
-def _out(c: Consent) -> ConsentOut:
+def _out(c: Consent, language: str = "en") -> ConsentOut:
+    p = service.PURPOSES.get(c.purpose)
+    why = (p.why_hi if language == "hi" else p.why_en) if p else c.purpose
     return ConsentOut(
         id=c.id,
         purpose=c.purpose,
+        why=why,
         business_id=c.business_id,
         scope=c.scope,
         granted_at=c.granted_at,
@@ -85,8 +89,8 @@ def grant(body: GrantIn, db: DB, user: CurrentUser) -> ConsentOut:
 
 
 @router.get("", response_model=list[ConsentOut])
-def list_consents(db: DB, user: CurrentUser) -> list[ConsentOut]:
-    return [_out(c) for c in service.list_all(db, user.id)]
+def list_consents(db: DB, user: CurrentUser, language: str = "en") -> list[ConsentOut]:
+    return [_out(c, language) for c in service.list_all(db, user.id)]
 
 
 @router.post("/{consent_id}/revoke", response_model=ConsentOut)
