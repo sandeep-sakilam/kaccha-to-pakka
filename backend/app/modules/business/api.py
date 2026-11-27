@@ -98,7 +98,7 @@ def patch_business(business_id: str, body: BusinessPatch, db: DB, user: CurrentU
 
 
 class InterpretIn(BaseModel):
-    question: str = Field(pattern="^(category|since|place|name)$")
+    question: str = Field(pattern="^(category|since|place|name|full_name)$")
     language: str = "hi"
     transcript: str | None = Field(None, max_length=1000)
     audio_b64: str | None = Field(None, max_length=4_000_000)

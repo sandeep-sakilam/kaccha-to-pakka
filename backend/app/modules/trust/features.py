@@ -138,6 +138,14 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     )
 
     owner = db.get(User, biz.owner_user_id)
+    if owner is not None and owner.kyc_status == "name_mismatch":
+        flags.append(
+            {
+                "code": "kyc_name_mismatch",
+                "severity": "hold",
+                "detail": "the PAN belongs to a different name than the owner gave",
+            }
+        )
     if owner is not None and owner.name:
         for e in good_money.values():
             holder = e.meta.get("holder_name")

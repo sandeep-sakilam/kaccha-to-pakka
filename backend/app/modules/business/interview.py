@@ -166,7 +166,19 @@ def interpret_name(text: str) -> Interpretation:
     )
 
 
+def interpret_full_name(text: str) -> Interpretation:
+    t = re.sub(
+        r"^(mera|meri|my|मेरा|मेरी)\s+(naam|name|नाम)\s*(hai|है|is)?\s*", "", text.strip(), flags=re.I
+    )
+    t = re.sub(r"\s*(hai|है)\.?$", "", t, flags=re.I).strip(" .")
+    ok = len(t.split()) >= 1 and len(t) >= 3
+    return Interpretation(
+        "full_name", t[:200] or None, f"Your full name: {t}. Right?", f"आपका पूरा नाम: {t}। सही?", ok
+    )
+
+
 INTERPRETERS = {
+    "full_name": interpret_full_name,
     "category": interpret_category,
     "since": interpret_since,
     "place": interpret_place,

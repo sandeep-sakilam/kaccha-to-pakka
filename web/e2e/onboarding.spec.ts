@@ -24,6 +24,10 @@ test("owner joins by phone, consents, and builds a profile", async ({ page }) =>
   await expect(page.getByText(/never sell your data/)).toBeVisible();
   await page.getByRole("button", { name: "Yes, I agree" }).click();
 
+  await page.getByLabel("Or type here").fill("Ramesh Kumar Sharma");
+  await page.getByRole("button", { name: "Next" }).click();
+  await expect(page.getByTestId("confirm-box")).toContainText("Ramesh Kumar Sharma");
+  await page.getByRole("button", { name: "Yes", exact: true }).click();
   await page.getByLabel("Or type here").fill("Sharma Kirana");
   await page.getByRole("button", { name: "Next" }).click();
   await expect(page.getByTestId("confirm-box")).toContainText("Sharma Kirana");
@@ -37,6 +41,7 @@ test("owner joins by phone, consents, and builds a profile", async ({ page }) =>
   await page.getByRole("button", { name: "Next" }).click();
   await page.getByRole("button", { name: "Yes", exact: true }).click();
 
+  await page.getByLabel("PAN (optional, verifies your name)").fill("ABCDE1234F");
   await page.getByRole("button", { name: "Skip" }).click();
 
   await expect(page.getByRole("heading", { name: "Photo of your shop front" })).toBeVisible();

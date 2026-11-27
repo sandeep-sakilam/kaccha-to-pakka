@@ -21,16 +21,17 @@ const CATEGORY_ICONS: Record<string, string> = {
   other: "🏪",
 };
 
-type Step = "name" | "category" | "since" | "place" | "ids";
-const ORDER: Step[] = ["name", "category", "since", "place", "ids"];
+type Step = "full_name" | "name" | "category" | "since" | "place" | "ids";
+const ORDER: Step[] = ["full_name", "name", "category", "since", "place", "ids"];
 
 export default function Interview() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
-  const [step, setStep] = useState<Step>("name");
+  const [step, setStep] = useState<Step>("full_name");
   const [profile, setProfile] = useState<Record<string, unknown>>({ city: "Indore", women_owned: false });
   const [udyam, setUdyam] = useState("");
   const [gstin, setGstin] = useState("");
+  const [pan, setPan] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const next = (field: string, value: unknown) => {
@@ -41,7 +42,9 @@ export default function Interview() {
   async function save() {
     setError(null);
     try {
-      const body = { ...profile, udyam: udyam || null, gstin: gstin || null };
+      const { full_name: fullName, ...rest } = profile;
+      await api("/auth/identity", { method: "POST", json: { full_name: fullName, pan: pan.trim().toUpperCase() || null } });
+      const body = { ...rest, udyam: udyam || null, gstin: gstin || null };
       const biz = await api<{ id: string }>("/businesses", { method: "POST", json: body });
       void speak([t("interview.done")], i18n.language);
       nav(`/capture/${biz.id}/shop_front?next=/home`);
@@ -51,6 +54,7 @@ export default function Interview() {
   }
 
   const questions: Record<Step, string> = {
+    full_name: t("interview.q_full_name"),
     name: t("interview.q_name"),
     category: t("interview.q_category"),
     since: t("interview.q_since"),
@@ -64,6 +68,7 @@ export default function Interview() {
         {ORDER.indexOf(step) + 1} / {ORDER.length}
       </p>
       <h2 className="text-xl font-semibold">{questions[step]}</h2>
+      {step === "full_name" && <VoiceAnswer key="full_name" question="full_name" onConfirmed={(v) => next("full_name", v)} />}
       {step === "name" && <VoiceAnswer key="name" question="name" onConfirmed={(v) => next("name", v)} />}
       {step === "category" && (
         <>
@@ -88,6 +93,15 @@ export default function Interview() {
       {step === "ids" && (
         <div className="flex flex-col gap-3">
           <p>{t("interview.ids_hint")}</p>
+          <p className="text-sm">{t("interview.pan_why")}</p>
+          <input
+            aria-label={t("interview.pan")}
+            placeholder={t("interview.pan")}
+            className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg uppercase"
+            value={pan}
+            maxLength={10}
+            onChange={(e) => setPan(e.target.value)}
+          />
           <input
             aria-label="Udyam"
             placeholder="UDYAM-MP-23-0000000"

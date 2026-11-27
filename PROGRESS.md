@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f46-identity-defence`
+Current: none; next is `feat/f47-real-ai-smoke`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -54,3 +54,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F43 Owner passport revoke: API route and a button with spoken confirmation (`feat/f43-passport-revoke`)
 - [x] F44 Dispute screens: owner and counterparty raise and follow disputes in the app (`feat/f44-dispute-screens`)
 - [x] F45 Consent screen: see every consent and withdraw with one tap or by voice; withdrawal stops what it allowed (`feat/f45-consent-screen`)
+- [x] F46 Identity defence: full name and PAN in onboarding, KYC-verified name, holder-name mismatch fires in the product (`feat/f46-identity-defence`)
