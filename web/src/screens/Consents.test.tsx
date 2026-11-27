@@ -51,3 +51,23 @@ test("voice command withdraws the named consent; a bare command asks which one",
   await say("withdraw consent for the lender share");
   expect(revoked).toEqual(["c3"]);
 });
+
+test("delete my account needs the PIN and sends the confirmation", async () => {
+  setLanguage("en");
+  setup();
+  const bodies: unknown[] = [];
+  const base = vi.mocked(fetch).getMockImplementation()!;
+  vi.mocked(fetch).mockImplementation(async (url, init) => {
+    if (String(url).endsWith("/auth/erase")) {
+      bodies.push(JSON.parse(String(init?.body)));
+      return json({ erased: true });
+    }
+    return base(url, init);
+  });
+  renderAt(<Consents />);
+  await act(async () => fireEvent.click(await vi.waitFor(() => screen.getByText("Delete my account"))));
+  expect(screen.getByRole("alert")).toHaveTextContent("cannot be undone");
+  for (const d of "4826") await act(async () => fireEvent.click(screen.getByText(d, { selector: "button" })));
+  await act(async () => fireEvent.click(screen.getByText("Delete everything")));
+  expect(bodies).toEqual([{ pin: "4826", confirm: "DELETE" }]);
+});

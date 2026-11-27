@@ -220,3 +220,7 @@ Onboarding asks for the owner's full name "as on the bank account" and, optional
 ## Real AI smoke test
 
 `make real-ai-smoke` (`scripts/real_ai_smoke.py`) calls the real Sarvam adapters (Vision on ledger pages, Bulbul TTS, Saaras STT, Sarvam-105B) and the fallback model once, and writes every result or exact error to `backend/eval/real_ai_smoke.md`. Keys can be placeholders (`SARVAM_API_KEY=proxy`) when a network proxy injects the real key. Latest run (27 Nov 2026, cloud session): 0/8 calls succeeded, because `api.sarvam.ai` is not allowed by the session's network policy and no network secret was configured for Gemini; see the report.
+
+## Right to erase
+
+"Delete my account" (My permissions screen; `POST /auth/erase` with the PIN and the word `DELETE`) revokes every share, passport, consent, helper link and the Account Aggregator link; deletes stored photos and files, ledger entries, bank transactions, matches and presence records; removes sessions, devices, notifications and WhatsApp state; and anonymises what must stay (the business row, immutable assessments, invites with third parties' phones, disputes, the user row whose phone becomes a non-identifying tag). The hash-chained audit log stays, with ids only, and still verifies. The same phone number can sign up again as a new person.
