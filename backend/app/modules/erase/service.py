@@ -22,6 +22,7 @@ from app.db.models import (
     Consent,
     Counterparty,
     CounterpartyInvite,
+    DailySale,
     DeviceBinding,
     Dispute,
     EvidenceItem,
@@ -155,6 +156,7 @@ def erase_account(db: Session, user: User, pin: str, confirm: str) -> EraseRepor
                 db, delete(EvidenceItem).where(EvidenceItem.id.in_(ev_ids or [""]))
             ),
             "name_aliases": _count(db, delete(NameAlias).where(NameAlias.business_id == biz.id)),
+            "daily_sales": _count(db, delete(DailySale).where(DailySale.business_id == biz.id)),
         }
         for k, v in counts.items():
             rep.records_deleted[k] = rep.records_deleted.get(k, 0) + v

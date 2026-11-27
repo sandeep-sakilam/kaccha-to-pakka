@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r4"  # r4: matches resting on the owner's own answers are capped
+RULES_VERSION = "2026.11-r5"  # r5: cash deposits at half weight; daily sales told by the owner
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -29,6 +29,8 @@ class MoneyFeatures:
     monthly_inflows: dict[str, int] = field(default_factory=dict)  # "YYYY-MM" -> paise
     days_since_last_txn: int | None = None
     netted_round_trip_paise: int = 0
+    cash_deposit_paise: int = 0  # cash paid in at the bank, last 12 months (counted at half)
+    cash_deposit_months: int = 0
 
 
 @dataclass
@@ -49,6 +51,11 @@ class RecordsFeatures:
     credit_bank_repaid_rate: float = 0.0  # repaid through the bank; partial clearing counts half
     median_days_to_repay: int | None = None
     owner_confirmed_share: float = 0.0  # of matched value, how much rests on the owner's answers
+    daily_sales_days: int = 0  # days the owner told the day's sales, last 90 days
+    daily_sales_months_checked: int = 0  # months with enough days told and bank data to compare
+    daily_sales_months_agree: int = 0
+    daily_sales_months_below_bank: int = 0
+    daily_sales_months_far_above_bank: int = 0
 
 
 @dataclass
@@ -171,6 +178,19 @@ def money_pillar(m: MoneyFeatures) -> float:
 
 
 RECORDS_CASH_CAP = 40.0
+DAILY_SALES_BONUS = 5.0
+DAILY_SALES_MIN_MONTHS = 2
+
+
+def daily_sales_agree(r: RecordsFeatures) -> bool:
+    """The owner's own daily totals agreed with the bank month after month, and never failed."""
+    return (
+        r.daily_sales_months_agree >= DAILY_SALES_MIN_MONTHS
+        and r.daily_sales_months_below_bank == 0
+        and r.daily_sales_months_far_above_bank == 0
+    )
+
+
 RECORDS_OWNER_CAP = 60.0
 OWNER_SHARE_LIMIT = 0.5
 
@@ -196,9 +216,11 @@ def records_pillar(r: RecordsFeatures) -> float:
     if r.credit_entries:
         depth = min(1.0, r.credit_entries / 30)
         parts.append((r.credit_entries, 100 * r.credit_bank_repaid_rate * (0.5 + 0.5 * depth)))
-    if not parts:
+    if not parts and not daily_sales_agree(r):
         return 0.0
-    score = sum(n * s for n, s in parts) / sum(n for n, _ in parts)
+    score = sum(n * s for n, s in parts) / sum(n for n, _ in parts) if parts else 0.0
+    if daily_sales_agree(r):
+        score += DAILY_SALES_BONUS  # self-reported: a small, capped addition only
     if mostly_cash(r):
         score = min(score, RECORDS_CASH_CAP)
     if mostly_owner_confirmed(r):
@@ -310,6 +332,10 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
     else:
         gaps.append((100, Reason("no_money_data")))
         imp.append((100, Reason("link_bank")))
+    if m.cash_deposit_months >= 3:
+        pos.append(
+            (p["money"] - 10, Reason("cash_sales_deposited", {"months": m.cash_deposit_months}))
+        )
     if m.source == "pdf":
         gaps.append((60, Reason("pdf_only_capped")))
         imp.append((90, Reason("link_bank")))
@@ -334,6 +360,21 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
     if mostly_cash(r):
         gaps.append((45, Reason("mostly_cash_entries", {"count": r.cash_entries})))
         imp.append((55, Reason("ask_customers_upi")))
+    if daily_sales_agree(r):
+        pos.append((30, Reason("daily_sales_agree", {"months": r.daily_sales_months_agree})))
+    if r.daily_sales_months_below_bank:
+        gaps.append(
+            (38, Reason("daily_sales_below_bank", {"months": r.daily_sales_months_below_bank}))
+        )
+    if r.daily_sales_months_far_above_bank:
+        gaps.append(
+            (
+                38,
+                Reason(
+                    "daily_sales_far_above_bank", {"months": r.daily_sales_months_far_above_bank}
+                ),
+            )
+        )
     if mostly_owner_confirmed(r):
         gaps.append(
             (

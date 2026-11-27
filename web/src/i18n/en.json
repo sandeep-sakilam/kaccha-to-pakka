@@ -117,7 +117,8 @@
     "helpers": "My helpers (Sahayak)",
     "sahayak_mode": "I help other owners",
     "disputes": "Disagree with something?",
-    "consents": "My permissions"
+    "consents": "My permissions",
+    "daily_sales": "Tell today's sales"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -328,7 +329,10 @@
     "credit_regular": "{{count}} regular credit customers (credit in two or more months)",
     "credit_unpaid": "{{amount}} still unpaid",
     "credit_vs_sales": "{{percent}}% of a month's money in",
-    "owner_confirmed": "{{percent}}% of the matched value links names to payers because the owner said so"
+    "owner_confirmed": "{{percent}}% of the matched value links names to payers because the owner said so",
+    "cash_title": "Cash sales deposited",
+    "cash_deposits": "{{amount}} paid in as cash in {{months}} of the last 12 months (counted at half weight: the source of cash is not known)",
+    "daily_sales": "The owner's daily sales totals agreed with the bank in {{agree}} of {{checked}} months checked"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",
@@ -404,5 +408,13 @@
     "erase_warning": "This deletes your account, your photos and records, and stops every share. Lenders will see your passport is cancelled. It cannot be undone. Enter your PIN to confirm.",
     "erase_yes": "Delete everything",
     "erased": "Your account is deleted."
+  },
+  "daily_sales": {
+    "title": "Today's sales",
+    "intro": "Say today's total sales, like: aaj ki bikri 4200.",
+    "why": "This counts only when, month after month, it agrees with your bank. Cash sales are welcome.",
+    "saved": "Saved. Thank you!",
+    "save_today": "Save for today",
+    "recent": "Days you told"
   }
 }

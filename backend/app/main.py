@@ -23,6 +23,7 @@ from app.modules.presence.api import router as presence_router
 from app.modules.reconciliation.api import router as recon_router
 from app.modules.review.api import router as review_router
 from app.modules.sahayak.api import router as sahayak_router
+from app.modules.sales.api import router as sales_router
 from app.modules.shares.api import router as shares_router
 from app.modules.statements.api import router as statements_router
 from app.modules.trust.api import router as trust_router
@@ -49,6 +50,7 @@ ROUTERS = [
     sahayak_router,
     review_router,
     ops_router,
+    sales_router,
 ]
 
 

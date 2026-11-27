@@ -207,7 +207,7 @@ class SetuAccountAggregator:
                         None,
                         t.get("reference"),
                         to_paise(str(t["currentBalance"])) if t.get("currentBalance") else None,
-                        t.get("narration", ""),
+                        _narration(t),
                     )
                     for t in fi.get("transactions", {}).get("transaction", [])
                 ]
@@ -220,6 +220,15 @@ class SetuAccountAggregator:
                     )
                 )
         return accounts
+
+
+def _narration(t: dict[str, Any]) -> str:
+    """Keep the AA transaction mode in the narration when it says cash, so a cash deposit is
+    recognised even when the bank's narration text does not say so."""
+    text = str(t.get("narration", ""))
+    if str(t.get("mode", "")).upper() == "CASH" and "cash" not in text.lower():
+        return f"BY CASH {text}".strip()
+    return text
 
 
 def _vpa_from_narration(narration: str) -> str | None:

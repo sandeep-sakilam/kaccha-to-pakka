@@ -28,7 +28,11 @@ type View = {
       credit_outstanding_paise?: number;
       median_days_to_repay?: number | null;
       owner_confirmed_share?: number;
+      daily_sales_months_checked?: number;
+      daily_sales_months_agree?: number;
     };
+    cash_deposit_paise?: number;
+    cash_deposit_months?: number;
     avg_monthly_inflow_paise?: number;
     evidence_items: { type: string; status: string; file_hash: string | null }[];
     flags: { code: string; detail: string }[];
@@ -111,10 +115,23 @@ export default function LenderView() {
                 </tbody>
               </table>
             </Card>
+            {(ev.cash_deposit_months ?? 0) > 0 && (
+              <Card>
+                <h3 className="font-semibold">{t("lender.cash_title")}</h3>
+                <p className="text-sm" data-testid="cash-deposits">
+                  {t("lender.cash_deposits", { amount: rupees(ev.cash_deposit_paise ?? 0), months: ev.cash_deposit_months })}
+                </p>
+              </Card>
+            )}
             <Card>
               <h3 className="font-semibold">{t("lender.records")}</h3>
               <p>{Math.round((ev.records.match_rate ?? 0) * 100)}%</p>
               {(ev.records.cash_entries ?? 0) > 0 && <p className="text-sm">{t("lender.cash_entries", { count: ev.records.cash_entries })}</p>}
+              {(ev.records.daily_sales_months_checked ?? 0) > 0 && (
+                <p className="text-sm" data-testid="daily-sales-check">
+                  {t("lender.daily_sales", { agree: ev.records.daily_sales_months_agree ?? 0, checked: ev.records.daily_sales_months_checked })}
+                </p>
+              )}
               {(ev.records.owner_confirmed_share ?? 0) > 0 && (
                 <p className="text-sm">{t("lender.owner_confirmed", { percent: Math.round((ev.records.owner_confirmed_share ?? 0) * 100) })}</p>
               )}

@@ -1,6 +1,6 @@
 """Date parsing for exports and statements (Indian day-first formats)."""
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta, timezone
 
 FORMATS = [
     "%d/%m/%Y",
@@ -32,3 +32,11 @@ def parse_date(text: str) -> date:
         except ValueError:
             continue
     raise ValueError(f"unknown date format: {text!r}")
+
+
+IST = timezone(timedelta(hours=5, minutes=30), "IST")
+
+
+def today_ist(now: datetime | None = None) -> date:
+    """The date in India: an owner's "today" at 1 am IST is still yesterday in UTC."""
+    return (now or datetime.now(UTC)).astimezone(IST).date()

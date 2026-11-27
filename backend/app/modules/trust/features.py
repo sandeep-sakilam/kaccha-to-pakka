@@ -23,6 +23,8 @@ from app.db.models import (
 from app.modules.fraud.graph import active_flags, confirmer_standing
 from app.modules.reconciliation.engine import COUNTABLE_LEDGER, reconcile
 from app.modules.reconciliation.names import similarity
+from app.modules.sales import service as sales
+from app.modules.statements.money import is_cash_deposit
 from app.modules.trust.rules import (
     Features,
     MoneyFeatures,
@@ -109,10 +111,17 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     since12 = today - timedelta(days=365)
     since24 = today - timedelta(days=730)
     inflows = [t for t in txns if t.direction == "in" and t.id not in rt_ids]
+    # Cash deposited at the bank counts as sales, at half weight: where the cash came from is
+    # not known (it could be borrowed and deposited to look bigger).
+    cash_ids = {t.id for t in inflows if is_cash_deposit(t)}
+
+    def weighted(t: BankTransaction) -> int:
+        return t.amount_paise // 2 if t.id in cash_ids else t.amount_paise
+
     monthly: dict[str, int] = defaultdict(int)
     for t in inflows:
         if t.txn_date >= since24:
-            monthly[_ym(t.txn_date)] += t.amount_paise
+            monthly[_ym(t.txn_date)] += weighted(t)
     recent = [t for t in inflows if t.txn_date >= since12]
     active_months = len({_ym(t.txn_date) for t in recent})
     all_recent = [t for t in txns if t.txn_date >= since24]
@@ -131,10 +140,12 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         months_of_data=months_of_data,
         active_months=active_months,
         weekly_regularity=round(weekly, 3),
-        avg_monthly_inflow_paise=sum(t.amount_paise for t in recent) // max(active_months, 1),
+        avg_monthly_inflow_paise=sum(weighted(t) for t in recent) // max(active_months, 1),
         monthly_inflows=dict(sorted(monthly.items())),
         days_since_last_txn=(today - last_txn).days if last_txn else None,
         netted_round_trip_paise=netted,
+        cash_deposit_paise=sum(t.amount_paise for t in recent if t.id in cash_ids),
+        cash_deposit_months=len({_ym(t.txn_date) for t in recent if t.id in cash_ids}),
     )
 
     owner = db.get(User, biz.owner_user_id)
@@ -218,6 +229,7 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         le.amount_paise for le in independent if match_rules.get(le.id) == "owner_confirmed"
     )
     credit = stats.credit
+    told = sales.check(db, biz.id, inflows, today)
     records = RecordsFeatures(
         counted_entries=stats.ledger_entries + stats.cash_entries + credit.entries,
         independent_entries=len(independent),
@@ -243,6 +255,11 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         credit_outstanding_paise=credit.outstanding_paise,
         credit_bank_repaid_rate=round(credit.bank_repaid_rate, 4),
         median_days_to_repay=credit.median_days_to_repay,
+        daily_sales_days=told.days_told,
+        daily_sales_months_checked=told.months_checked,
+        daily_sales_months_agree=told.months_agree,
+        daily_sales_months_below_bank=told.months_below_bank,
+        daily_sales_months_far_above_bank=told.months_far_above_bank,
     )
 
     # ---- network
