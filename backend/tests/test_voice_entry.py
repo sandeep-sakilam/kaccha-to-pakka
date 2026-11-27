@@ -83,3 +83,18 @@ def test_parse_not_understood(client: TestClient) -> None:
         json={"transcript": "hmm", "language": "en"},
     ).json()
     assert r["understood"] is False and r["prompt"] is None
+
+
+def test_amounts_are_exact_integers() -> None:
+    assert parse_amount("1.5 lakh") == 15_000_000
+    assert parse_amount("sawa lakh") == 12_500_000
+    assert parse_amount("paune do hazaar") == 175_000
+    assert parse_amount("sawa do hazaar") == 225_000
+    assert parse_amount("saadhe teen hazaar") == 350_000
+    assert parse_amount("paune lakh") == 7_500_000
+    assert parse_amount("dhai hazaar") == 250_000
+    assert parse_amount("0.1 lakh") == 1_000_000  # float math would give 999999.99...
+    assert parse_amount("2.005") == 201  # half up, from the exact value
+    assert parse_amount("1,23,456.78") == 12_345_678
+    for text in ("dedh lakh", "4,000", "चार हज़ार पाँच सौ"):
+        assert isinstance(parse_amount(text), int)
