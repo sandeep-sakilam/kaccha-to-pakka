@@ -14,7 +14,8 @@
 1. Start from an up-to-date `main` and create one feature branch for one functionality only, named as in the backlog (e.g. `feat/f11-readback`).
 2. Implement the functionality with its tests on that branch. Nothing else goes on it.
 3. Run the local quality gate (`make check`), then open a PR to `main` describing what changed and how it was tested.
-   `gh pr` commands are blocked in cloud sessions: open PRs with the GitHub tools or `gh api repos/{owner}/{repo}/pulls`.
+   `gh pr` commands are blocked in cloud sessions. Open every PR with `bash scripts/open_pr.sh "<title>" <body-file>`, which calls `gh api repos/{owner}/{repo}/pulls -f title=... -F body=@file` with an explicit body. Never use a tool that adds its own footer to PR text.
+   After creating a PR, read it back (`bash scripts/preflight.sh --pr N`, done by `open_pr.sh` and again by `merge.sh`); if the title or body mentions the coding assistant, PATCH it before merging. The cloud session's GitHub proxy appends such a footer on PR create and on `gh api` PATCH; the GitHub update-pull-request tool writes the body exactly, so use it for the PATCH and then re-run the read-back.
 4. Merge locally, never with GitHub's merge button: `git checkout main && git merge --no-ff <branch>`, then `git push origin main`. Delete the local branch. (Remote branch deletion is refused by the proxy; Sandeep cleans those up.)
 5. Only then start the next functionality. At most one open feature branch at any moment.
 
@@ -28,7 +29,8 @@
 
 - No commit title or message, merge message, PR title or PR description may mention the coding assistant used to write the code (by product or company name).
 - No co-author trailers, no "Generated with" lines, no session links.
-- Before every push: `git log --format='%B' main..HEAD | grep -i claude` must return nothing. Check PR text before opening and after any edit.
+- Before every push: `git log --format='%B' main..HEAD | grep -i claude` must return nothing.
+- PR text: `bash scripts/preflight.sh --pr N` reads the PR back from GitHub and fails if its title or body mentions the coding assistant. Run it after opening a PR and after any edit; `merge.sh` runs it again before merging. Do not name the working-rules file in PR text (its file name contains the forbidden word); call it "the working rules".
 
 ## Working style
 
@@ -58,4 +60,5 @@ Keep these listed in `README.md` under "What Sandeep must provide"; build everyt
 - `python3 scripts/tick.py F07` ticks a backlog item and updates the "Current" line.
 - `bash scripts/preflight.sh` runs the identity and wording checks for the branch.
 - `bash scripts/ship.sh F07 "<message>"` ticks, runs `make check`, commits, preflights and pushes the branch.
-- `bash scripts/merge.sh <branch> "<title>"` merges locally with `--no-ff`, re-checks, pushes `main`, deletes the local branch.
+- `bash scripts/open_pr.sh "<title>" <body-file>` opens the PR through the REST API and checks its text.
+- `bash scripts/merge.sh <branch> "<title>"` re-checks the PR text, merges locally with `--no-ff`, re-checks commits, pushes `main`, deletes the local branch.
