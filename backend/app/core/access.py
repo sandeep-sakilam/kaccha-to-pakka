@@ -70,6 +70,7 @@ def owned_businesses(db: Session, user: User) -> list[Business]:
         db.execute(
             select(Business)
             .where(Business.owner_user_id == user.id, Business.deleted_at.is_(None))
-            .order_by(Business.created_at)
+            # The owner's own business first, before any partner profile made when they confirmed
+            .order_by(Business.category == "trading_partner", Business.created_at)
         ).scalars()
     )

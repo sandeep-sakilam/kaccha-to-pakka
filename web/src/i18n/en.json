@@ -90,7 +90,8 @@
     "mobile_repair": "Mobile repair",
     "hardware": "Hardware",
     "manufacturing": "Small factory",
-    "other": "Other"
+    "other": "Other",
+    "trading_partner": "Trading partner"
   },
   "home": {
     "title": "My business",

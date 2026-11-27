@@ -134,6 +134,25 @@ def _confirmer_business(
     from app.modules.identity.service import primary_user
 
     user = primary_user(db, inv.phone)
+    if user is not None:
+        # An owner who confirms a partner confirms as their own business, so their own history
+        # gives the confirmation its weight. Never the business being confirmed.
+        own = (
+            db.execute(
+                select(Business)
+                .where(
+                    Business.owner_user_id == user.id,
+                    Business.deleted_at.is_(None),
+                    Business.id != inv.business_id,
+                )
+                .order_by(Business.category == "trading_partner", Business.created_at)
+            )
+            .scalars()
+            .first()
+        )
+        if own is not None:
+            cp.business_id = own.id
+            return own
     if user is None:
         user = User(phone=inv.phone, language=inv.language, roles=["confirmer"], device_ids=[])
         db.add(user)

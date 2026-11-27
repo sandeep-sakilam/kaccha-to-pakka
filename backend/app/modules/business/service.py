@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import DomainError
@@ -36,9 +37,58 @@ def _check_ids(p: ProfileIn) -> None:
         raise DomainError("Start year looks wrong", "bad_year")
 
 
+PARTNER_PROFILE = "trading_partner"
+
+
+def partner_profile(db: Session, user_id: str) -> Business | None:
+    """The profile made when someone confirmed a partner, before they joined as an owner."""
+    return (
+        db.execute(
+            select(Business)
+            .where(
+                Business.owner_user_id == user_id,
+                Business.category == PARTNER_PROFILE,
+                Business.deleted_at.is_(None),
+            )
+            .order_by(Business.created_at)
+        )
+        .scalars()
+        .first()
+    )
+
+
+def _claim_partner_profile(
+    db: Session, user: User, biz: Business, p: ProfileIn, actor: str | None
+) -> Business:
+    """A confirmer who joins as an owner gets one business, not two: the partner profile becomes
+    their business, so the confirmations they gave stay linked to it."""
+    biz.name = p.name.strip()
+    biz.category = p.category
+    biz.sells = p.sells
+    biz.started_on = date(p.started_year, 1, 1) if p.started_year else None
+    biz.address = p.address
+    biz.city = p.city
+    biz.udyam = (p.udyam or "").upper() or biz.udyam
+    biz.gstin = (p.gstin or "").upper() or biz.gstin
+    biz.geo_home = p.geo_home
+    biz.women_owned = p.women_owned
+    db.flush()
+    record(
+        db,
+        actor or f"user:{user.id}",
+        "business.claim_partner_profile",
+        f"business:{biz.id}",
+        {"category": p.category, "has_gstin": bool(biz.gstin), "has_udyam": bool(biz.udyam)},
+    )
+    return biz
+
+
 def create(db: Session, user: User, p: ProfileIn, actor: str | None = None) -> Business:
     consent.require(db, user.id, "build_passport")
     _check_ids(p)
+    existing = partner_profile(db, user.id)
+    if existing is not None:
+        return _claim_partner_profile(db, user, existing, p, actor)
     biz = Business(
         owner_user_id=user.id,
         name=p.name.strip(),
