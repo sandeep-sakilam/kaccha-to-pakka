@@ -37,6 +37,7 @@ function actionFor(code: string, businessId: string): string | null {
       refresh_bank_data: `/link-bank/${businessId}`,
       ask_partners: `/partners/${businessId}`,
       add_ledger: `/capture/${businessId}/ledger_page`,
+      confirm_ledger_entries: `/readback/${businessId}`,
       shop_photo: `/capture/${businessId}/shop_front`,
     }[code] ?? null
   );

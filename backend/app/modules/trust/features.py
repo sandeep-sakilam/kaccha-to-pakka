@@ -203,6 +203,15 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         independent_entries=len(independent),
         match_rate=round(matched_value / ind_value, 4) if ind_value else 0,
         mirrored_ledgers=len(mirrored),
+        pending_confirmation=len(
+            db.execute(
+                select(LedgerEntry.id).where(
+                    LedgerEntry.evidence_id.in_([e.id for e in ledger_ev] or [""]),
+                    LedgerEntry.confirmed_by_owner.is_(None),
+                    LedgerEntry.status.in_(["needs_readback", "on_review"]),
+                )
+            ).all()
+        ),
     )
 
     # ---- network

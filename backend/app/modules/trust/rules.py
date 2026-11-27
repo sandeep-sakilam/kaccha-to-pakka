@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r1"
+RULES_VERSION = "2026.11-r2"  # r2: coaching for unconfirmed ledger entries
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -37,6 +37,7 @@ class RecordsFeatures:
     independent_entries: int = 0
     match_rate: float = 0.0  # by value, independent ledgers only
     mirrored_ledgers: int = 0  # typed from the bank statement: counted once (as money)
+    pending_confirmation: int = 0  # entries on added pages still waiting for the owner's yes
 
 
 @dataclass
@@ -277,9 +278,13 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
         (pos if r.match_rate >= 0.6 else gaps).append((p["records"], reason))
         if r.match_rate < 0.6:
             imp.append((50, Reason("record_payments_in_ledger")))
+    elif r.pending_confirmation:
+        gaps.append((40, Reason("ledger_unconfirmed")))
     else:
         gaps.append((40, Reason("no_ledger")))
         imp.append((45, Reason("add_ledger")))
+    if r.pending_confirmation:
+        imp.append((70, Reason("confirm_ledger_entries")))
     if r.mirrored_ledgers:
         gaps.append((30, Reason("ledger_copied_from_bank", {"count": r.mirrored_ledgers})))
     if confirmed:
