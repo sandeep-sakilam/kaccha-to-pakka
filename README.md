@@ -10,7 +10,7 @@ Status of each functionality is in `PROGRESS.md`; working rules are in `CLAUDE.m
 - [ ] API keys (put them in `.env`, see `.env.example` for where to get each):
   - Sarvam AI
   - Fallback AI (Gemini or Anthropic)
-  - WhatsApp (Meta Cloud API or Twilio)
+  - WhatsApp (Meta Cloud API)
   - Account Aggregator sandbox (Setu or Finvu)
   - Payment gateway sandbox with reverse penny drop (Cashfree or Razorpay)
   - KYC provider (DigiLocker / PAN)
