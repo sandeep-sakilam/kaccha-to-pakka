@@ -29,7 +29,12 @@ export async function onboard(page: Page, name = "Test Kirana") {
   await page.getByLabel("Or type here").fill("Rajwada");
   await page.getByRole("button", { name: "Next" }).click();
   await page.getByRole("button", { name: "Yes", exact: true }).click();
+  // Wait for the save to finish (the app then moves to the shop photo) before navigating away;
+  // navigating immediately could cancel the request and leave no business.
+  const saved = page.waitForResponse((r) => r.url().endsWith("/api/businesses") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Skip" }).click();
+  expect((await saved).status()).toBe(200);
+  await expect(page.getByRole("heading", { name: "Photo of your shop front" })).toBeVisible();
   await page.goto("/home");
   await expect(page.getByTestId("business-name")).toHaveText(name);
   return phone;
