@@ -11,17 +11,22 @@ def test_demo_seed_and_fraud_scene(db: Session) -> None:
     kirana, namkeen, tailor = out["kirana"], out["namkeen"], out["tailor"]
     assert isinstance(kirana, dict) and isinstance(namkeen, dict) and isinstance(tailor, dict)
     print(out)
-    assert kirana["band"] in {"A", "B"} and kirana["status"] == "valid"
-    assert namkeen["band"] in {"A", "B", "C"} and namkeen["status"] == "valid"
-    assert tailor["band"] in {"C", "D"} and tailor["status"] == "valid"  # PDF only: max C
+    # These are the bands the demo script and README promise; if they drift, update both.
+    assert (kirana["band"], kirana["status"]) == ("B", "valid")
+    assert (namkeen["band"], namkeen["status"]) == ("B", "valid")
+    assert (tailor["band"], tailor["status"]) == ("C", "valid")  # PDF only: capped at C
     fraud = out["fraud"]
     assert isinstance(fraud, dict)
-    assert demo.play_fraud(db, str(fraud["invite_token"])) == "rejected"
-    inv = db.execute(
-        select(CounterpartyInvite).where(CounterpartyInvite.token == fraud["invite_token"])
+    assert fraud["first_attempt"] == "rejected" and fraud["passport_status"] == "on_hold"
+    first = db.execute(
+        select(CounterpartyInvite).where(
+            CounterpartyInvite.business_id == fraud["business_id"],
+            CounterpartyInvite.status == "rejected",
+        )
     ).scalar_one()
-    assert inv.flags == ["account_mismatch"]
+    assert first.flags == ["account_mismatch"]
+    # The replay invite (for the live scene) is rejected the same way.
+    assert demo.play_fraud(db, str(fraud["replay_invite_token"])) == "rejected"
     biz = db.get(Business, str(fraud["business_id"]))
     assert biz is not None
-    p = issue(db, biz, "test")
-    assert p.status == "on_hold"
+    assert issue(db, biz, "test").status == "on_hold"

@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f41-demo-script`
+Current: none; next is `feat/f42-e2e-flake`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -49,3 +49,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F38 Startup safety: production refuses missing or development secrets (`feat/f38-startup-safety`)
 - [x] F39 Explanation headline: weak bands are explained by gaps and what would raise them, never by strengths (`feat/f39-explanation-headline`)
 - [x] F40 Coaching: "Confirm your ledger entries" when pages exist but are not confirmed (`feat/f40-coaching-confirm`)
+- [x] F41 Demo script and seed: actual bands, Raju's passport on hold after the fraud attempt, 3-minute video script (`feat/f41-demo-script`)
