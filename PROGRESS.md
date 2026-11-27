@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f39-explanation-headline`
+Current: none; next is `feat/f40-coaching-confirm`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -47,3 +47,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
 - [x] F37 Production deploy fix: one-shot web service, demo seed safe with real payment keys, step-by-step VPS guide and smoke test (`feat/f37-deploy-fix`)
 - [x] F38 Startup safety: production refuses missing or development secrets (`feat/f38-startup-safety`)
+- [x] F39 Explanation headline: weak bands are explained by gaps and what would raise them, never by strengths (`feat/f39-explanation-headline`)

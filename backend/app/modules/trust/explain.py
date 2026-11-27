@@ -147,6 +147,55 @@ def _llm_lines(ai: AIGateway, items: list[dict[str, Any]], lang: str) -> list[st
     return [s.strip() for s in lines]
 
 
+STRONG_BANDS = {"A", "B", "C"}
+
+
+def _lower_first(text: str, lang: str) -> str:
+    return text[0].lower() + text[1:] if lang == "en" and text else text
+
+
+def _headline(
+    band: str, status: str, groups: dict[str, list[dict[str, Any]]], label: str, lang: str
+) -> str:
+    """A, B, C: built from strengths. D, E and U (weak): built only from gaps and what would
+    raise it, never from strengths, so a weak passport is never explained by its good points."""
+
+    def lines(key: str, n: int) -> list[str]:
+        return [template(r["code"], r.get("params", {}), lang) for r in groups[key][:n]]
+
+    if status == "on_hold":
+        return template("on_hold", {}, lang) + "."
+    hi = lang == "hi"
+    if band in STRONG_BANDS:
+        pos = lines("positives", 2)
+        if pos:
+            joined = (" और " if hi else " and ").join(_lower_first(p, lang) for p in pos)
+            return (
+                f"आपका पासपोर्ट {label} है क्योंकि {joined}।"
+                if hi
+                else f"Your passport is {label.lower()} because {joined}."
+            )
+        return f"आपका पासपोर्ट: {label}।" if hi else f"Your passport: {label}."
+    gaps, improve = lines("gaps", 1), lines("improve", 1)
+    head = (
+        f"आपका पासपोर्ट {label} है"
+        if hi
+        else f"Your passport is {label.lower()}"
+        if band != "U"
+        else "Your passport does not have enough evidence yet"
+    )
+    if hi and band == "U":
+        head = "आपके पासपोर्ट के लिए अभी सबूत काफ़ी नहीं हैं"
+    parts = [head + (f": {_lower_first(gaps[0], lang)}" if gaps else "")]
+    if improve:
+        parts.append(
+            f"इसे बढ़ाने के लिए: {improve[0]}"
+            if hi
+            else f"To raise it: {_lower_first(improve[0], lang)}"
+        )
+    return ("। ".join(parts) + "।") if hi else (". ".join(parts) + ".")
+
+
 def explain(
     band: str,
     confidence: str,
@@ -165,25 +214,13 @@ def explain(
     it = iter(lines)
     out = {k: [next(it) for _ in groups[k]] for k in groups}
     label = BAND_LABEL.get(band, BAND_LABEL["U"])[lang]
-    pos = [template(r["code"], r.get("params", {}), lang) for r in groups["positives"][:2]]
-    if status == "on_hold":
-        headline = template("on_hold", {}, lang)
-    elif pos:
-        joiner = " और " if lang == "hi" else " and "
-        because = "क्योंकि" if lang == "hi" else "because"
-        headline = (
-            f"आपका पासपोर्ट {label} है {because} "
-            if lang == "hi"
-            else f"Your passport is {label.lower()} {because} "
-        ) + joiner.join(p[0].lower() + p[1:] if lang == "en" else p for p in pos)
-    else:
-        headline = f"आपका पासपोर्ट: {label}" if lang == "hi" else f"Your passport: {label}"
+    headline = _headline(band, status, groups, label, lang)
     return Explanation(
         lang,
         label,
         CONFIDENCE_LABEL.get(confidence, {}).get(lang, confidence),
         STATUS_LABEL.get(status, {}).get(lang, status),
-        headline + ".",
+        headline,
         out["positives"],
         out["gaps"],
         out["improve"],
