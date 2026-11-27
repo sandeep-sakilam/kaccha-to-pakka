@@ -69,6 +69,22 @@ def raise_counterparty(token: str, body: CounterpartyRaiseIn, db: DB) -> Dispute
     return _out(d)
 
 
+@router.get("/invites/{token}/disputes", response_model=list[DisputeOut])
+def counterparty_disputes(token: str, db: DB) -> list[DisputeOut]:
+    """A confirmer follows the disputes they raised through their invite link."""
+    from sqlalchemy import select
+
+    inv = selection.by_token(db, token)
+    return [
+        _out(d)
+        for d in db.execute(
+            select(Dispute)
+            .where(Dispute.raised_by == f"invite:{inv.id}")
+            .order_by(Dispute.created_at.desc())
+        ).scalars()
+    ]
+
+
 @router.get("/businesses/{business_id}/disputes", response_model=list[DisputeOut])
 def owner_disputes(business_id: str, db: DB, user: CurrentUser) -> list[DisputeOut]:
     from sqlalchemy import select

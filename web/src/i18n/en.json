@@ -107,7 +107,8 @@
     "presence_why": "On a few random days we will ask for a shop photo with location. It proves your shop is real and open.",
     "passport": "My Trust Passport",
     "helpers": "My helpers (Sahayak)",
-    "sahayak_mode": "I help other owners"
+    "sahayak_mode": "I help other owners",
+    "disputes": "Disagree with something?"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -338,5 +339,26 @@
     "sahayaks": "Sahayak monitoring",
     "run": "Run checks now",
     "logged": "Every case you open is logged."
+  },
+  "disputes": {
+    "title": "Disagree with something?",
+    "intro": "If a line, a partner's confirmation or your result is wrong, tell us. A person in our team checks it and you will see the answer here.",
+    "what": "What is wrong?",
+    "t_assessment": "My result (band)",
+    "t_ledger_entry": "A ledger entry",
+    "t_attestation": "A partner's confirmation",
+    "pick": "Choose which one",
+    "reason": "Tell us what is wrong",
+    "speak": "Say it",
+    "send": "Send",
+    "sent": "Sent. We will check it.",
+    "mine": "Your disputes",
+    "none": "No disputes.",
+    "status_open": "Being checked",
+    "status_resolved": "Decided",
+    "res_cleared": "We checked: the evidence was right.",
+    "res_upheld": "You were right: we corrected it.",
+    "cp_link": "Something wrong? Tell us",
+    "cp_intro": "If this business is not really your trading partner, or the details are wrong, tell us. We will check."
   }
 }

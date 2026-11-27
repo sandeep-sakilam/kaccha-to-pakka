@@ -120,6 +120,11 @@ export default function Home() {
           {t("home.helpers")}
         </BigButton>
       )}
+      {biz && (
+        <BigButton variant="ghost" onClick={() => nav(`/disputes/${biz.id}`)}>
+          {t("home.disputes")}
+        </BigButton>
+      )}
       <BigButton variant="ghost" onClick={() => nav("/sahayak")}>
         {t("home.sahayak_mode")}
       </BigButton>

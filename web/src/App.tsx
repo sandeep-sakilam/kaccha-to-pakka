@@ -26,6 +26,7 @@ const Shares = lazy(() => import("@/screens/Shares"));
 const SahayakHome = lazy(() => import("@/screens/SahayakHome"));
 const Helpers = lazy(() => import("@/screens/Helpers"));
 const Review = lazy(() => import("@/screens/Review"));
+const Disputes = lazy(() => import("@/screens/Disputes"));
 const VerifyPassport = lazy(() => import("@/screens/lender/VerifyPassport"));
 const LenderView = lazy(() => import("@/screens/lender/LenderView"));
 const LenderHome = lazy(() => import("@/screens/lender/LenderHome"));
@@ -56,6 +57,7 @@ export function AppRoutes() {
           <Route path="/v/:passportId" element={<VerifyPassport />} />
           <Route path="/l/:token" element={<LenderView />} />
           <Route path="/lender" element={<LenderHome />} />
+          <Route path="/disputes/:businessId" element={<RequireAuth><Disputes /></RequireAuth>} />
           <Route path="/review" element={<RequireAuth><Review /></RequireAuth>} />
           <Route path="/sahayak" element={<RequireAuth><SahayakHome /></RequireAuth>} />
           <Route path="/helpers/:businessId" element={<RequireAuth><Helpers /></RequireAuth>} />
