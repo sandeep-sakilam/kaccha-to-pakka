@@ -6,6 +6,7 @@ from arq import cron
 from arq.connections import RedisSettings
 
 from app import job_registry  # noqa: F401  (register jobs)
+from app.core import startup
 from app.core.config import get_settings
 from app.jobs import MAX_TRIES, run_job
 
@@ -28,6 +29,9 @@ async def daily_aa_refresh(ctx: dict[str, Any]) -> None:
 
 async def ping(ctx: dict[str, Any]) -> str:
     return "pong"
+
+
+startup.check(get_settings())
 
 
 class WorkerSettings:
