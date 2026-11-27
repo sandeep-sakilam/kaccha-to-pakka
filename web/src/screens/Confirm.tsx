@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { ClaimForm } from "@/components/ClaimForm";
+import { CounterpartyDispute } from "@/components/CounterpartyDispute";
 import { Screen } from "@/components/Screen";
 import { BigButton, Card, SandboxBadge } from "@/components/ui";
 import { setLanguage } from "@/i18n";
@@ -113,6 +114,7 @@ export default function Confirm({ children }: { children?: (token: string) => Re
           {children ? children(token) : <ClaimForm token={token} defaultRelationship={inv.relationship} />}
         </>
       )}
+      <CounterpartyDispute token={token} />
     </Screen>
   );
 }
