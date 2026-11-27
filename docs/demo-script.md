@@ -24,8 +24,8 @@ Open http://localhost:5173 on a phone-sized browser window (or the deployed site
 
 | Phone | Business | What the seed built | Band today |
 | --- | --- | --- | --- |
-| 90000 00001 | Sharma Kirana Store, Rajwada | Bank linked 14 months, 3 ledger pages matching supplier payments, 3 suppliers confirmed with ₹1 proof, 3 presence checks | **B**, high confidence |
-| 90000 00002 | Meena Namkeen Udyog, Sanyogitaganj (woman-owned) | 24 months with Diwali peaks, compared with last Diwali; 2 confirmations | **B**, high confidence |
+| 90000 00001 | Sharma Kirana Store, Rajwada | Bank linked 14 months, 3 ledger pages matching supplier payments, 3 suppliers confirmed with ₹1 proof, 3 presence checks. Also: Udyam verified in the register (commencement 2009, so 17 years proven), electricity bill accepted as address proof, weekly cash deposits, Gupta Traders' goods bought on credit and paid by UPI, and an earlier passport so the history reads C → B | **B**, high confidence |
+| 90000 00002 | Meena Namkeen Udyog, Sanyogitaganj (woman-owned) | 24 months with Diwali peaks, compared with last Diwali; 2 confirmations. Also: an udhaar khata with 3 credit customers (one pays on time, one pays two months together late, one paid only part), 75 days of spoken daily sales that agree with the bank, and "only women helpers" switched on | **B**, high confidence |
 | 90000 00003 | Ansari Tailors, Khajrana | UPI statement PDF only, wedding-season peaks; 1 confirmation | **C** (a PDF alone is capped at C) |
 | 90000 00004 | Raju General Store, Bhawarkua | A friend posed as his supplier; the ₹1 came from the wrong account | **On hold** for review |
 
@@ -43,6 +43,15 @@ Sharma Kirana is B, not A, because its three confirmers are new on the platform:
 | 1:55–2:15 | Lender | Share with "SBI Rajwada branch" → open the link in another tab: watermark, evidence → back on the owner phone: "SBI Rajwada branch viewed your passport" | "One lender, a scope and an expiry. Every view is shown to the owner. The QR verifies offline." |
 | 2:15–2:45 | **Fraud attempt** | Open the replay link `/confirm/<token>` → "Raju General Store says you are their supplier" → Pay ₹1 → in the Sandbox payer form enter `pappu.friend@okaxis` / `PAPPU KUMAR` → result. Then log in as 90000 00004 → My Trust Passport | The screen shows: **"The ₹1 came from a different account than the one in their payments, so we cannot accept this confirmation."** (Hindi: "₹1 उनके भुगतानों वाले खाते से नहीं, किसी और खाते से आया, इसलिए यह पुष्टि नहीं मानी जा सकती।") Raju's passport shows **"On hold for review"** and "Your passport is on hold while we check something." Say: "Raju sent his real supplier's invite to a friend. The friend can pay ₹1, but not from the supplier's account, so the confirmation is rejected, the ₹1 is refunded, and Raju's passport goes on hold for a reviewer." |
 | 2:45–3:00 | Close | Passport screen with QR | "We verify evidence; the lender decides. We built this so that no honest small business in India is denied credit because it couldn't prove it was real." |
+
+## Optional scenes (if there is time, or for the Top 10 round)
+
+| Scene | Log in as | On screen | Say |
+| --- | --- | --- | --- |
+| Credit book | 90000 00002 → Share with a lender (Summary and evidence) → open the link | Lender evidence: "Credit book (udhaar)": credit given to 3 customers, share back through the bank, usual days to pay, unpaid dues against a month's money in | "Most shops keep only an udhaar book. We match each customer's payments against their dues, oldest first, even when they pay two months together." |
+| Proven age | 90000 00001 → share → lender link | "Government registration: Udyam confirmed"; "Business age: owner says 17 years; 17 shown by the start date on the Udyam registration"; "Address proof: electricity bill" | "The age the owner says counts at half. Proof from the register or the bank counts fully." |
+| Band over time | 90000 00001 → My Trust Passport | "Your passport over time: C → B" | "Every passport is kept exactly as issued, so a lender sees the trend, not just today." |
+| Daily sales | 90000 00002 → Tell today's sales → say "aaj ki bikri 4200" | "Today's sales, four thousand two hundred rupees: right?" | "Cash sales can't be checked, so the owner's own total counts only when, month after month, it agrees with the bank." |
 
 ## If something goes wrong while recording
 
