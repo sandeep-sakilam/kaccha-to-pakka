@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f62-verified-business-age`
+Current: none; next is `feat/f63-address-proof`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -70,3 +70,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F59 Payer identity: number-only UPI IDs, answers remembered by UPI ID, owner-confirmed matches counted separately and capped, names that only rhyme no longer asked about (`feat/f59-payer-identity`)
 - [x] F60 Cash sales: cash deposits at half weight, owner's spoken daily sales checked month by month against the bank (`feat/f60-cash-sales`)
 - [x] F61 Udyam / GSTIN checked against the government register: name match, hold on a borrowed number, presence points (`feat/f61-registration-check`)
+- [x] F62 Verified business age: register dates and bank history prove age; claimed age counts at half (`feat/f62-verified-business-age`)

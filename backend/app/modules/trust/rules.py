@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r6"  # r6: Udyam / GSTIN checked against the register
+RULES_VERSION = "2026.11-r7"  # r7: business age counts fully only as far as it is proven
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -72,6 +72,9 @@ class PresenceFeatures:
     checks_failed: int = 0
     checks_missed: int = 0
     in_person_visits: int = 0
+    # Proven by the government register or the bank history; business_age_years is claimed.
+    proven_age_years: float | None = None
+    age_proof: str = "none"  # registration | commencement | bank | none
     registration: str = "none"  # none | verified | name_mismatch | cancelled | not_found | failed
     registration_source: str | None = None  # udyam | gstin
 
@@ -239,9 +242,13 @@ def network_pillar(n: NetworkFeatures) -> float:
 REGISTRATION_POINTS = 10.0
 
 
+def age_points(age: float | None) -> float:
+    return 0.0 if age is None else 30 if age >= 5 else 22 if age >= 3 else 15 if age >= 1 else 5
+
+
 def presence_pillar(p: PresenceFeatures) -> float:
-    age = p.business_age_years
-    score = 0.0 if age is None else 30 if age >= 5 else 22 if age >= 3 else 15 if age >= 1 else 5
+    # Proven age counts fully; age the owner only says counts at half.
+    score = max(age_points(p.proven_age_years), age_points(p.business_age_years) / 2)
     score += 15 if p.has_shop_front else 0
     answered = p.checks_done + p.checks_failed + p.checks_missed
     if answered:
@@ -400,8 +407,19 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
         imp.append((80 - 10 * len(confirmed), Reason("ask_partners", {"more": 3 - len(confirmed)})))
     if any(c["status"] == "discrepancy" for c in n.confirmations):
         gaps.append((50, Reason("confirmation_discrepancy")))
-    if pr.business_age_years and pr.business_age_years >= 3:
-        pos.append((p["presence"], Reason("business_age", {"years": int(pr.business_age_years)})))
+    proven = pr.proven_age_years or 0
+    if proven >= 3:
+        pos.append((p["presence"], Reason("business_age", {"years": int(proven)})))
+    if pr.business_age_years and pr.business_age_years >= 3 and pr.business_age_years - proven > 1:
+        gaps.append(
+            (
+                34,
+                Reason(
+                    "age_not_proven",
+                    {"claimed": int(pr.business_age_years), "proven": int(proven)},
+                ),
+            )
+        )
     if pr.checks_done:
         pos.append((p["presence"] - 5, Reason("presence_checks", {"count": pr.checks_done})))
     if not pr.has_shop_front:

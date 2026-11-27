@@ -231,6 +231,11 @@ def evidence_summary(db: Session, biz: Business, a: Assessment) -> dict[str, Any
         "avg_monthly_inflow_paise": features.get("money", {}).get("avg_monthly_inflow_paise"),
         "cash_deposit_paise": features.get("money", {}).get("cash_deposit_paise", 0),
         "cash_deposit_months": features.get("money", {}).get("cash_deposit_months", 0),
+        "age": {
+            "claimed_years": features.get("presence", {}).get("business_age_years"),
+            "proven_years": features.get("presence", {}).get("proven_age_years"),
+            "proof": features.get("presence", {}).get("age_proof", "none"),
+        },
         "registration": {
             "status": biz.registration_status,
             "source": biz.registration_source,

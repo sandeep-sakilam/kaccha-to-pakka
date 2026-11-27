@@ -32,6 +32,7 @@ type View = {
       daily_sales_months_agree?: number;
     };
     registration?: { status: string; source: string | null; registered_on: string | null };
+    age?: { claimed_years: number | null; proven_years: number | null; proof: string };
     cash_deposit_paise?: number;
     cash_deposit_months?: number;
     avg_monthly_inflow_paise?: number;
@@ -116,6 +117,18 @@ export default function LenderView() {
                 </tbody>
               </table>
             </Card>
+            {ev.age && (ev.age.claimed_years != null || ev.age.proven_years != null) && (
+              <Card>
+                <h3 className="font-semibold">{t("lender.age_title")}</h3>
+                <p className="text-sm" data-testid="business-age">
+                  {t("lender.age_line", {
+                    claimed: ev.age.claimed_years != null ? Math.floor(ev.age.claimed_years) : "?",
+                    proven: ev.age.proven_years != null ? Math.floor(ev.age.proven_years) : 0,
+                    proof: t(`lender.age_proof_${ev.age.proof}`),
+                  })}
+                </p>
+              </Card>
+            )}
             {ev.registration && ev.registration.status !== "none" && (
               <Card>
                 <h3 className="font-semibold">{t("lender.registration_title")}</h3>

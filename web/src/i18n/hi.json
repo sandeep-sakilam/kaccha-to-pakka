@@ -338,7 +338,13 @@
     "registration_name_mismatch": "{{source}} नंबर किसी दूसरे व्यापार के नाम पर है",
     "registration_cancelled": "{{source}} पंजीकरण रद्द है",
     "registration_not_found": "{{source}} नंबर सरकारी रजिस्टर में नहीं मिला",
-    "registration_failed": "{{source}} नंबर की अभी जाँच नहीं हो पाई"
+    "registration_failed": "{{source}} नंबर की अभी जाँच नहीं हो पाई",
+    "age_title": "व्यापार की उम्र",
+    "age_line": "मालिक {{claimed}} साल बताते हैं; {{proof}} से {{proven}} साल दिखते हैं",
+    "age_proof_registration": "सरकारी रजिस्टर",
+    "age_proof_commencement": "उद्यम पंजीकरण की शुरुआत की तारीख",
+    "age_proof_bank": "बैंक डेटा",
+    "age_proof_none": "अभी किसी चीज़"
   },
   "sahayak": {
     "title": "सहायक मोड",
