@@ -1,6 +1,7 @@
 """Store money data (from AA or a statement PDF) once: overlapping statements or a re-fetch never
 double-count a payment. Counterparties (UPI IDs / accounts) become graph nodes."""
 
+import re
 from dataclasses import dataclass
 from datetime import date
 
@@ -21,6 +22,22 @@ class MoneyTxn:
     balance_after_paise: int | None
     narration: str | None
     account_ref: str | None
+
+
+CASH_DEPOSIT = re.compile(
+    r"(?<![a-z])(cash\s*dep(osit)?|csh\s*dep|by\s*cash|cash\s*cr|cdm|cash\s*deposit)(?![a-z])",
+    re.I,
+)
+
+
+def is_cash_deposit(t: BankTransaction | MoneyTxn) -> bool:
+    """Money in that was paid in as cash (branch counter or deposit machine), not from a payer's
+    account. Its source is unknown, so it counts for less than UPI or bank transfers."""
+    return (
+        t.direction == "in"
+        and not t.counterparty_vpa
+        and bool(t.narration and CASH_DEPOSIT.search(t.narration))
+    )
 
 
 def _key(t: BankTransaction | MoneyTxn) -> tuple[object, ...]:

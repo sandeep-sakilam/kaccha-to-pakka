@@ -433,3 +433,20 @@ class GraphFlag(TimestampMixin, Base):
     code: Mapped[str] = mapped_column(String(48))
     detail: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
     cleared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class DailySale(TimestampMixin, Base):
+    """The owner's own total of a day's sales, spoken or typed. Self-reported: it only counts
+    when it agrees, month after month, with what the bank shows (UPI and cash deposits)."""
+
+    __tablename__ = "daily_sales"
+    __table_args__ = (
+        UniqueConstraint("business_id", "sale_date", name="one_per_day"),
+        CheckConstraint("amount_paise > 0", name="amount_pos"),
+    )
+    id: Mapped[str] = _id()
+    business_id: Mapped[str] = mapped_column(ForeignKey("businesses.id"), index=True)
+    sale_date: Mapped[date] = mapped_column(Date)
+    amount_paise: Mapped[int] = mapped_column(BigInteger)
+    method: Mapped[str] = mapped_column(String(8))  # voice | typed | buttons
+    actor_user_id: Mapped[str | None] = mapped_column(String(36))

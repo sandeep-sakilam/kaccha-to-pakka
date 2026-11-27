@@ -15,6 +15,22 @@ T: dict[str, dict[str, str]] = {
         "en": "{months} months of real payments in your bank account",
         "hi": "आपके बैंक खाते में {months} महीने के असली भुगतान",
     },
+    "cash_sales_deposited": {
+        "en": "Cash sales deposited in the bank in {months} months",
+        "hi": "{months} महीनों में नकद बिक्री बैंक में जमा हुई",
+    },
+    "daily_sales_agree": {
+        "en": "Your daily sales agreed with the bank for {months} months",
+        "hi": "{months} महीनों तक आपकी रोज़ की बिक्री बैंक से मेल खाई",
+    },
+    "daily_sales_below_bank": {
+        "en": "In {months} months you told less sales than the bank shows",
+        "hi": "{months} महीनों में आपने बैंक से कम बिक्री बताई",
+    },
+    "daily_sales_far_above_bank": {
+        "en": "In {months} months your told sales were far above the bank",
+        "hi": "{months} महीनों में बताई बिक्री बैंक से बहुत ज़्यादा थी",
+    },
     "no_money_data": {"en": "No bank or UPI data yet", "hi": "अभी कोई बैंक या UPI डेटा नहीं"},
     "pdf_only_capped": {
         "en": "Only a PDF statement, so the band can be at most C",

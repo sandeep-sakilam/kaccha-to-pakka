@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f60-cash-sales`
+Current: none; F58-F60 complete
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -68,3 +68,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F57 One business per person: a confirmer who joins as an owner, or an owner who confirms, never gets a second business; partner label translated (`feat/f57-phone-of-seeded-partner`)
 - [x] F58 Credit-book ledgers: credit given and cash entries, per-customer running balances cleared oldest-first within 90 days, credit facts for lenders (`feat/f58-credit-book`)
 - [x] F59 Payer identity: number-only UPI IDs, answers remembered by UPI ID, owner-confirmed matches counted separately and capped, names that only rhyme no longer asked about (`feat/f59-payer-identity`)
+- [x] F60 Cash sales: cash deposits at half weight, owner's spoken daily sales checked month by month against the bank (`feat/f60-cash-sales`)

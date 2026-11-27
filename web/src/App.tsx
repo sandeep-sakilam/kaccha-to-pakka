@@ -15,6 +15,7 @@ const Home = lazy(() => import("@/screens/Home"));
 const Capture = lazy(() => import("@/screens/Capture"));
 const ReadBack = lazy(() => import("@/screens/ReadBack"));
 const VoiceEntry = lazy(() => import("@/screens/VoiceEntry"));
+const DailySales = lazy(() => import("@/screens/DailySales"));
 const ImportCsv = lazy(() => import("@/screens/ImportCsv"));
 const Statement = lazy(() => import("@/screens/Statement"));
 const LinkBank = lazy(() => import("@/screens/LinkBank"));
@@ -73,6 +74,7 @@ export function AppRoutes() {
           <Route path="/statement/:businessId" element={<RequireAuth><Statement /></RequireAuth>} />
           <Route path="/import/:businessId" element={<RequireAuth><ImportCsv /></RequireAuth>} />
           <Route path="/voice-entry/:businessId" element={<RequireAuth><VoiceEntry /></RequireAuth>} />
+          <Route path="/daily-sales/:businessId" element={<RequireAuth><DailySales /></RequireAuth>} />
           <Route path="/readback/:businessId" element={<RequireAuth><ReadBack /></RequireAuth>} />
           <Route path="/capture/:businessId/:kind" element={<RequireAuth><Capture /></RequireAuth>} />
           <Route path="*" element={<Welcome />} />

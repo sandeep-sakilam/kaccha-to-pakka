@@ -86,6 +86,9 @@ export default function Home() {
           <BigButton variant="secondary" icon="🎤" onClick={() => nav(`/voice-entry/${biz.id}`)}>
             {t("home.read_aloud")}
           </BigButton>
+          <BigButton variant="secondary" icon="🪙" onClick={() => nav(`/daily-sales/${biz.id}`)}>
+            {t("home.daily_sales")}
+          </BigButton>
           <BigButton icon="🏦" onClick={() => nav(`/link-bank/${biz.id}`)}>
             {t("home.link_bank")}
           </BigButton>

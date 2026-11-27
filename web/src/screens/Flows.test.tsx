@@ -166,10 +166,13 @@ test("lender view shows a credit book as plain facts", async () => {
     evidence: {
       monthly_totals_paise: {}, confirmations: [], presence: { done: 0, failed: 0, missed: 0 }, evidence_items: [], flags: [],
       avg_monthly_inflow_paise: 10000000,
+      cash_deposit_paise: 2400000,
+      cash_deposit_months: 4,
       records: {
         match_rate: 0.9, cash_entries: 4, credit_entries: 40, credit_customers: 12, repeat_credit_customers: 9,
         credit_given_paise: 4000000, credit_repaid_bank_paise: 2800000, credit_repaid_cash_paise: 800000,
         credit_outstanding_paise: 400000, median_days_to_repay: 33, owner_confirmed_share: 0.25,
+        daily_sales_months_checked: 3, daily_sales_months_agree: 2,
       },
     },
   })]]);
@@ -183,6 +186,8 @@ test("lender view shows a credit book as plain facts", async () => {
   expect(book).toHaveTextContent("₹4,000 still unpaid (4% of a month's money in)");
   expect(screen.getByText(/4 ledger entries are written as cash/)).toBeInTheDocument();
   expect(screen.getByText(/25% of the matched value links names to payers because the owner said so/)).toBeInTheDocument();
+  expect(screen.getByTestId("cash-deposits")).toHaveTextContent("₹24,000 paid in as cash in 4 of the last 12 months");
+  expect(screen.getByTestId("daily-sales-check")).toHaveTextContent("agreed with the bank in 2 of 3 months checked");
 });
 
 test("lender view of a revoked share", async () => {
