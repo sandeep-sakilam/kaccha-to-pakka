@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f59-payer-identity`
+Current: none; next is `feat/f60-cash-sales`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -67,3 +67,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F56 Sentry test isolation: tests never send events to Sentry (`feat/f56-sentry-test-isolation`)
 - [x] F57 One business per person: a confirmer who joins as an owner, or an owner who confirms, never gets a second business; partner label translated (`feat/f57-phone-of-seeded-partner`)
 - [x] F58 Credit-book ledgers: credit given and cash entries, per-customer running balances cleared oldest-first within 90 days, credit facts for lenders (`feat/f58-credit-book`)
+- [x] F59 Payer identity: number-only UPI IDs, answers remembered by UPI ID, owner-confirmed matches counted separately and capped, names that only rhyme no longer asked about (`feat/f59-payer-identity`)

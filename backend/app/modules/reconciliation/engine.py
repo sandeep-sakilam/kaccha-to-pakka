@@ -120,21 +120,42 @@ def _aliases(db: Session, business_id: str) -> dict[tuple[str, str], bool]:
     return {(a.party_key, a.counterparty_key): a.same for a in rows}
 
 
+VPA_KEY = "vpa:"  # an owner's answer remembered by UPI ID: the son's phone, whatever its name
+
+
+def owner_said(aliases: dict[tuple[str, str], bool], pk: str, t: BankTransaction) -> bool | None:
+    """The owner's answer for this ledger name and this payer: by UPI ID first, then by name."""
+    if t.counterparty_vpa:
+        said = aliases.get((pk, VPA_KEY + t.counterparty_vpa.lower()))
+        if said is not None:
+            return said
+    return aliases.get((pk, normalise(_cp_name(t))))
+
+
 def _name_verdict(
     party: str | None, t: BankTransaction, aliases: dict[tuple[str, str], bool]
 ) -> tuple[str, float]:
-    """('sure' | 'maybe' | 'no' | 'unknown', similarity)."""
+    """One of:
+    owner    the owner said this payer is this party
+    no       the owner said it is not
+    sure     the names agree
+    maybe    the names share a word but differ ("Rakesh Sharma" / "AMIT SHARMA"): ask
+    differs  both have names with no word in common: ask only if it is the one candidate
+    unknown  one side has no name (a ledger line without one, a number-only UPI ID)
+    """
     if not party:
         return "unknown", 0.0
-    pk, ck = normalise(party), normalise(_cp_name(t))
-    if (pk, ck) in aliases:
-        return ("sure" if aliases[(pk, ck)] else "no"), 100.0 if aliases[(pk, ck)] else 0.0
+    said = owner_said(aliases, normalise(party), t)
+    if said is not None:
+        return ("owner", 100.0) if said else ("no", 0.0)
+    if not (normalise(t.counterparty_name) or normalise(t.counterparty_vpa)):
+        return "unknown", 0.0  # e.g. 9826012345@ybl with no name: nothing to compare
     sim = max(similarity(party, t.counterparty_name), similarity(party, t.counterparty_vpa))
     if sim >= NAME_SURE:
         return "sure", sim
     if sim >= NAME_MAYBE:
         return "maybe", sim
-    return "no", sim
+    return "differs", sim
 
 
 LEARN_MIN_PAIRS = 3
@@ -179,7 +200,11 @@ def learn_aliases(
     for pk, per_cp in seen.items():
         if len(per_cp) == 1:
             ck, n = next(iter(per_cp.items()))
-            if n >= LEARN_MIN_PAIRS and owner_answers.get((pk, ck)) is not False:
+            if (
+                n >= LEARN_MIN_PAIRS
+                and owner_answers.get((pk, ck)) is not False
+                and owner_answers.get((pk, VPA_KEY + ck)) is not False
+            ):
                 out.add((pk, ck))
     return out
 
@@ -231,12 +256,7 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
             if days > DATE_WINDOW_DAYS:
                 continue
             verdict, sim = _name_verdict(e.party_text, t, aliases)
-            owner_said = (normalise(e.party_text), normalise(_cp_name(t))) in aliases
-            if (
-                verdict in {"no", "maybe"}
-                and not owner_said
-                and (normalise(e.party_text), _cp_key(t)) in learned
-            ):
+            if verdict in {"differs", "maybe"} and (normalise(e.party_text), _cp_key(t)) in learned:
                 verdict, sim = "learned", 100.0
             if verdict == "no":
                 continue
@@ -249,11 +269,15 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
     for score, verdict, e, t in cands:
         if e.id in used_e or t.id in used_t:
             continue
-        if verdict in {"maybe", "unknown"}:
+        if verdict in {"maybe", "unknown", "differs"}:
             # Only auto-accept a nameless match when it is the single candidate both ways.
+            # Names that differ are asked about only then; otherwise they are too weak to ask.
             same_e = [c for c in cands if c[2].id == e.id and c[3].id not in used_t]
             same_t = [c for c in cands if c[3].id == t.id and c[2].id not in used_e]
-            if verdict == "maybe" or len(same_e) > 1 or len(same_t) > 1:
+            unique = len(same_e) == 1 and len(same_t) == 1
+            if verdict == "differs" and not unique:
+                continue
+            if verdict in {"maybe", "differs"} or not unique:
                 if e.id not in ambiguous_e:
                     db.add(
                         ReconMatch(
@@ -270,6 +294,8 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
             score = round(score - 0.15, 3)
         elif verdict == "learned":
             rule = "learned_alias"
+        elif verdict == "owner":
+            rule = "owner_confirmed"  # rests on the owner's own answer: counted separately
         else:
             rule = "amount_date_name"
         db.add(
@@ -302,7 +328,7 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
                         continue
                     if max(abs((t.txn_date - d).days) for d in dates) > DATE_WINDOW_DAYS:
                         continue
-                    if _name_verdict(combo[0].party_text, t, aliases)[0] != "sure":
+                    if _name_verdict(combo[0].party_text, t, aliases)[0] not in {"sure", "owner"}:
                         continue
                     for c in combo:
                         db.add(
@@ -342,10 +368,10 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
                 if a.amount_paise + b.amount_paise != e.amount_paise:
                     continue
                 verdict, _ = _name_verdict(e.party_text, a, aliases)
-                owner_said = (normalise(e.party_text), normalise(_cp_name(a))) in aliases
-                if verdict != "sure" and (
-                    owner_said or (normalise(e.party_text), ck) not in learned
-                ):
+                learned_ok = (
+                    verdict in {"maybe", "differs"} and (normalise(e.party_text), ck) in learned
+                )
+                if verdict not in {"sure", "owner"} and not learned_ok:
                     continue
                 for t in (a, b):
                     db.add(
@@ -445,7 +471,8 @@ def _credit_book(
             ):
                 continue  # the same repayment the owner already wrote (e.g. as cash): count once
             verdict, _ = _name_verdict(dues[0].party_text, bt, aliases)
-            if verdict == "sure" or (verdict != "no" and (pk, _cp_key(bt)) in learned):
+            learned_ok = verdict in {"maybe", "differs"} and (pk, _cp_key(bt)) in learned
+            if verdict in {"sure", "owner"} or learned_ok:
                 events.append((bt.txn_date, 1, bt.amount_paise, "bank_txn", bt))
         ordered = sorted(events, key=lambda x: (x[0], x[1], x[2]))
         # Pass 1: written repayments and bank payments that clear whole dues exactly. Pass 2:
@@ -536,27 +563,36 @@ def questions(db: Session, business_id: str) -> list[Question]:
     for _, e, t in rows:
         party = e.party_text or "?"
         cp = _cp_name(t)
-        key = (normalise(party), normalise(cp))
+        # One question per name pair; a payer with no name is asked about per UPI ID.
+        key = (normalise(party), normalise(cp) or (t.counterparty_vpa or "").lower())
         if key in seen:
             continue
         seen.add(key)
+        shown = t.counterparty_name or _masked(t.counterparty_vpa or cp)
         out.append(
             Question(
                 e.id,
                 t.id,
                 party,
                 cp,
-                f"क्या {party} और {cp} एक ही हैं?",
-                f"Is {party} the same as {cp}?",
+                f"क्या {party} और {shown} एक ही हैं?",
+                f"Is {party} the same as {shown}?",
             )
         )
     return out
 
 
-def answer(
-    db: Session, business_id: str, party_text: str, counterparty_name: str, same: bool, actor: str
-) -> ReconStats:
-    pk, ck = normalise(party_text), normalise(counterparty_name)
+def _masked(vpa: str) -> str:
+    """98••••2345@ybl: a phone number used as a UPI ID is not shown in full."""
+    if "@" not in vpa:
+        return vpa
+    handle, bank = vpa.split("@", 1)
+    if handle.isdigit() and len(handle) > 6:
+        handle = handle[:2] + "•" * (len(handle) - 6) + handle[-4:]
+    return f"{handle}@{bank}"
+
+
+def _remember(db: Session, business_id: str, pk: str, ck: str, same: bool) -> None:
     existing = db.execute(
         select(NameAlias).where(
             NameAlias.business_id == business_id,
@@ -568,12 +604,37 @@ def answer(
         existing.same = same
     else:
         db.add(NameAlias(business_id=business_id, party_key=pk, counterparty_key=ck, same=same))
+
+
+def answer(
+    db: Session,
+    business_id: str,
+    party_text: str,
+    counterparty_name: str,
+    same: bool,
+    actor: str,
+    bank_txn_id: str | None = None,
+) -> ReconStats:
+    """Remember the owner's answer by name and, when the question came from a payment, by that
+    payment's UPI ID too, so later payments from the same phone (a son's, say) are known even
+    when its name differs or is missing."""
+    pk, ck = normalise(party_text), normalise(counterparty_name)
+    vpa = None
+    if bank_txn_id:
+        t = db.get(BankTransaction, bank_txn_id)
+        ev = db.get(EvidenceItem, t.evidence_id) if t else None
+        if t is not None and ev is not None and ev.business_id == business_id:
+            vpa = (t.counterparty_vpa or "").lower() or None
+    if ck:
+        _remember(db, business_id, pk, ck, same)
+    if vpa:
+        _remember(db, business_id, pk, VPA_KEY + vpa, same)
     db.flush()
     record(
         db,
         actor,
         "recon.owner_answer",
         f"business:{business_id}",
-        {"same": same, "party": pk[:40], "counterparty": ck[:40]},
+        {"same": same, "party": pk[:40], "counterparty": ck[:40], "by_upi_id": bool(vpa)},
     )
     return reconcile(db, business_id, actor)

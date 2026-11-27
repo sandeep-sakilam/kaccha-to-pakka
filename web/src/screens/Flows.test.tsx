@@ -169,7 +169,7 @@ test("lender view shows a credit book as plain facts", async () => {
       records: {
         match_rate: 0.9, cash_entries: 4, credit_entries: 40, credit_customers: 12, repeat_credit_customers: 9,
         credit_given_paise: 4000000, credit_repaid_bank_paise: 2800000, credit_repaid_cash_paise: 800000,
-        credit_outstanding_paise: 400000, median_days_to_repay: 33,
+        credit_outstanding_paise: 400000, median_days_to_repay: 33, owner_confirmed_share: 0.25,
       },
     },
   })]]);
@@ -182,6 +182,7 @@ test("lender view shows a credit book as plain facts", async () => {
   expect(book).toHaveTextContent("9 regular credit customers");
   expect(book).toHaveTextContent("₹4,000 still unpaid (4% of a month's money in)");
   expect(screen.getByText(/4 ledger entries are written as cash/)).toBeInTheDocument();
+  expect(screen.getByText(/25% of the matched value links names to payers because the owner said so/)).toBeInTheDocument();
 });
 
 test("lender view of a revoked share", async () => {
@@ -278,7 +279,7 @@ test("CSV and statement uploads report the result", async () => {
 });
 
 test("owner answers a name question", async () => {
-  const qs = [{ party_text: "Pappu", counterparty_name: "PRADEEP KUMAR", prompt: "Is Pappu the same as PRADEEP KUMAR?" }];
+  const qs = [{ party_text: "Pappu", counterparty_name: "PRADEEP KUMAR", prompt: "Is Pappu the same as PRADEEP KUMAR?", bank_txn_id: "t9" }];
   const calls = mockApi([
     [/recon\/answer/, () => {
       qs.pop();
@@ -289,6 +290,7 @@ test("owner answers a name question", async () => {
   at("/recon/b1", "/recon/:businessId", <ReconQuestions />);
   expect(await vi.waitFor(() => screen.getByTestId("recon-prompt"))).toHaveTextContent("Pappu");
   await click("Yes");
-  expect(posted(calls, /recon\/answer/)[0].body).toEqual({ party_text: "Pappu", counterparty_name: "PRADEEP KUMAR", same: true });
+  // The payment's id goes with the answer, so the yes is remembered by UPI ID too.
+  expect(posted(calls, /recon\/answer/)[0].body).toEqual({ party_text: "Pappu", counterparty_name: "PRADEEP KUMAR", same: true, bank_txn_id: "t9" });
   await vi.waitFor(() => screen.getByText(/90% of your ledger/));
 });

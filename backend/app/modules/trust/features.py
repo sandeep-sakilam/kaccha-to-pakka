@@ -203,22 +203,27 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         ).scalars()
     )
     ind_ids = {le.id for le in independent}
-    matched_ids = {
-        lid
-        for (lid,) in db.execute(
-            select(ReconMatch.ledger_entry_id).where(
+    match_rules = {
+        lid: rule
+        for lid, rule in db.execute(
+            select(ReconMatch.ledger_entry_id, ReconMatch.rule).where(
                 ReconMatch.ledger_entry_id.in_(ind_ids or {""}), ReconMatch.status == "matched"
             )
         ).all()
     }
+    matched_ids = set(match_rules)
     ind_value = sum(le.amount_paise for le in independent)
     matched_value = sum(le.amount_paise for le in independent if le.id in matched_ids)
+    owner_value = sum(
+        le.amount_paise for le in independent if match_rules.get(le.id) == "owner_confirmed"
+    )
     credit = stats.credit
     records = RecordsFeatures(
         counted_entries=stats.ledger_entries + stats.cash_entries + credit.entries,
         independent_entries=len(independent),
         match_rate=round(matched_value / ind_value, 4) if ind_value else 0,
         mirrored_ledgers=len(mirrored),
+        owner_confirmed_share=round(owner_value / matched_value, 4) if matched_value else 0.0,
         pending_confirmation=len(
             db.execute(
                 select(LedgerEntry.id).where(

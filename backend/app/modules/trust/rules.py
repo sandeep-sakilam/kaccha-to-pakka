@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r3"  # r3: credit books (udhaar) and cash entries in the records pillar
+RULES_VERSION = "2026.11-r4"  # r4: matches resting on the owner's own answers are capped
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -48,6 +48,7 @@ class RecordsFeatures:
     credit_outstanding_paise: int = 0
     credit_bank_repaid_rate: float = 0.0  # repaid through the bank; partial clearing counts half
     median_days_to_repay: int | None = None
+    owner_confirmed_share: float = 0.0  # of matched value, how much rests on the owner's answers
 
 
 @dataclass
@@ -170,6 +171,13 @@ def money_pillar(m: MoneyFeatures) -> float:
 
 
 RECORDS_CASH_CAP = 40.0
+RECORDS_OWNER_CAP = 60.0
+OWNER_SHARE_LIMIT = 0.5
+
+
+def mostly_owner_confirmed(r: RecordsFeatures) -> bool:
+    """Most of the matched value links ledger names to payers only because the owner said so."""
+    return r.owner_confirmed_share > OWNER_SHARE_LIMIT
 
 
 def mostly_cash(r: RecordsFeatures) -> bool:
@@ -193,6 +201,8 @@ def records_pillar(r: RecordsFeatures) -> float:
     score = sum(n * s for n, s in parts) / sum(n for n, _ in parts)
     if mostly_cash(r):
         score = min(score, RECORDS_CASH_CAP)
+    if mostly_owner_confirmed(r):
+        score = min(score, RECORDS_OWNER_CAP)
     return round(_clamp(score), 1)
 
 
@@ -324,6 +334,14 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
     if mostly_cash(r):
         gaps.append((45, Reason("mostly_cash_entries", {"count": r.cash_entries})))
         imp.append((55, Reason("ask_customers_upi")))
+    if mostly_owner_confirmed(r):
+        gaps.append(
+            (
+                42,
+                Reason("matches_rest_on_owner", {"percent": round(r.owner_confirmed_share * 100)}),
+            )
+        )
+        imp.append((48, Reason("write_full_names")))
     if r.pending_confirmation:
         imp.append((70, Reason("confirm_ledger_entries")))
     if r.mirrored_ledgers:

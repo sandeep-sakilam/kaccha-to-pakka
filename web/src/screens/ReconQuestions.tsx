@@ -6,7 +6,7 @@ import { BigButton, Card } from "@/components/ui";
 import { api } from "@/lib/api";
 import { speak } from "@/lib/voice";
 
-type Q = { party_text: string; counterparty_name: string; prompt: string };
+type Q = { party_text: string; counterparty_name: string; prompt: string; bank_txn_id?: string };
 
 export default function ReconQuestions() {
   const { t, i18n } = useTranslation();
@@ -30,7 +30,7 @@ export default function ReconQuestions() {
     if (!q) return;
     const stats = await api<{ match_rate: number }>(`/businesses/${businessId}/recon/answer`, {
       method: "POST",
-      json: { party_text: q.party_text, counterparty_name: q.counterparty_name, same },
+      json: { party_text: q.party_text, counterparty_name: q.counterparty_name, same, bank_txn_id: q.bank_txn_id },
     });
     const msg = t("recon.done", { rate: Math.round(stats.match_rate * 100) });
     setDone(msg);

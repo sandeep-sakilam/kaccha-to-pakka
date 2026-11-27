@@ -327,7 +327,8 @@
     "credit_days": "Customers usually paid after {{days}} days",
     "credit_regular": "{{count}} regular credit customers (credit in two or more months)",
     "credit_unpaid": "{{amount}} still unpaid",
-    "credit_vs_sales": "{{percent}}% of a month's money in"
+    "credit_vs_sales": "{{percent}}% of a month's money in",
+    "owner_confirmed": "{{percent}}% of the matched value links names to payers because the owner said so"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",
