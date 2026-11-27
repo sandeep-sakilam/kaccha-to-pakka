@@ -5,6 +5,7 @@ import { Screen } from "@/components/Screen";
 import { BigButton, Card, SandboxBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { istDate } from "@/lib/format";
+import { speak } from "@/lib/voice";
 
 type Passport = { id: string; status: string; valid_until: string; qr_png_b64: string; verify_url: string; vc: { credentialSubject: { band: string; sandbox: boolean } } };
 type Explanation = {
@@ -53,6 +54,7 @@ export default function PassportScreen() {
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -79,6 +81,18 @@ export default function PassportScreen() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function askRevoke() {
+    setConfirmRevoke(true);
+    void speak([t("passport.revoke_confirm")], i18n.language);
+  }
+
+  async function revoke() {
+    await api(`/businesses/${businessId}/passport/revoke`, { method: "POST" });
+    setConfirmRevoke(false);
+    void speak([t("passport.revoked")], i18n.language);
+    await load();
   }
 
   async function download(lang: "hi" | "en") {
@@ -161,6 +175,27 @@ export default function PassportScreen() {
             {t("passport.share")}
           </BigButton>
           <p className="text-sm text-gray-700">{t("passport.not_credit")}</p>
+          {passport.status === "revoked" ? (
+            <p role="status" className="rounded-xl bg-red-100 p-3 font-semibold text-red-900" data-testid="revoked">
+              {t("passport.revoked")}
+            </p>
+          ) : confirmRevoke ? (
+            <Card className="flex flex-col gap-2">
+              <p role="alert">{t("passport.revoke_confirm")}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <BigButton variant="danger" onClick={() => void revoke()}>
+                  {t("passport.revoke_yes")}
+                </BigButton>
+                <BigButton variant="secondary" onClick={() => setConfirmRevoke(false)}>
+                  {t("common.no")}
+                </BigButton>
+              </div>
+            </Card>
+          ) : (
+            <BigButton variant="ghost" onClick={askRevoke}>
+              {t("passport.revoke")}
+            </BigButton>
+          )}
         </>
       )}
       <BigButton icon="🛂" disabled={busy} onClick={make}>

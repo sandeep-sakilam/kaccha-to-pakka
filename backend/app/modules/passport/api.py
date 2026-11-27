@@ -56,6 +56,19 @@ def current(business_id: str, db: DB, user: CurrentUser) -> PassportOut:
     return _out(p)
 
 
+@router.post("/businesses/{business_id}/passport/revoke", response_model=PassportOut)
+def revoke(business_id: str, db: DB, user: CurrentUser) -> PassportOut:
+    """The owner withdraws the current passport. Lenders and QR checks then see "revoked"."""
+    business_for(db, user, business_id, allow_sahayak=False)
+    p = service.latest(db, business_id)
+    if p is None:
+        raise NotFound("No passport yet", "no_passport")
+    if p.status not in {"revoked", "superseded"}:
+        service.revoke(db, p, f"user:{user.id}")
+    db.commit()
+    return _out(p)
+
+
 @router.get("/businesses/{business_id}/passport.pdf")
 def passport_pdf(business_id: str, db: DB, user: CurrentUser, language: str = "hi") -> Response:
     business_for(db, user, business_id)
