@@ -2,6 +2,9 @@
 signing-key:  ## print a new Ed25519 passport signing key for .env
 	$(BACKEND) uv run python -c "from app.core.signing import new_key_b64; print(new_key_b64())"
 
+real-ai-smoke:  ## call the real AI providers once and write backend/eval/real_ai_smoke.md
+	$(BACKEND) uv run python -m scripts.real_ai_smoke
+
 eval:  ## run the evaluation harness (scratch DB ktp_eval) and write backend/eval/report.md
 	-sudo -u postgres psql -q -c "CREATE DATABASE ktp_eval OWNER ktp;"
 	$(BACKEND) DATABASE_URL=postgresql+psycopg://ktp:ktp@localhost:5432/ktp_eval JOBS_INLINE=true uv run python -m scripts.run_eval

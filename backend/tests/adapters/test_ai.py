@@ -126,3 +126,27 @@ def test_gemini_and_anthropic_adapters() -> None:
 def test_real_adapter_needs_keys() -> None:
     with pytest.raises(NotConfiguredError):
         SarvamAI(Settings(sarvam_api_key=""))
+
+
+def test_placeholder_key_uses_real_adapter_and_sends_header() -> None:
+    from app.adapters.errors import is_placeholder
+
+    seen: dict[str, str] = {}
+
+    def handle(req: httpx.Request) -> httpx.Response:
+        seen["key"] = req.headers.get("api-subscription-key", "")
+        return httpx.Response(401, json={"error": {"message": "Invalid API key"}})
+
+    assert is_placeholder("proxy") and not is_placeholder("sk-real")
+    s = Settings(sarvam_api_key="proxy")
+    ai = SarvamAI(
+        s,
+        httpx.Client(
+            transport=httpx.MockTransport(handle),
+            base_url="https://api.sarvam.ai",
+            headers={"api-subscription-key": s.sarvam_api_key},
+        ),
+    )
+    with pytest.raises(AdapterError, match=r"HTTP 401 from api\.sarvam\.ai: .*Invalid API key"):
+        ai.generate("s", "p", "en")
+    assert seen["key"] == "proxy"  # the proxy replaces it with the real key in flight

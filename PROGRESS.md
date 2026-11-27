@@ -1,6 +1,6 @@
 # Progress
 
-Current: none; next is `feat/f47-real-ai-smoke`
+Current: none; next is `feat/f48-right-to-erase`
 
 Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 
@@ -55,3 +55,4 @@ Submission cut: F01 to F27 by 30 Nov 2026, 6:00 PM IST.
 - [x] F44 Dispute screens: owner and counterparty raise and follow disputes in the app (`feat/f44-dispute-screens`)
 - [x] F45 Consent screen: see every consent and withdraw with one tap or by voice; withdrawal stops what it allowed (`feat/f45-consent-screen`)
 - [x] F46 Identity defence: full name and PAN in onboarding, KYC-verified name, holder-name mismatch fires in the product (`feat/f46-identity-defence`)
+- [x] F47 Real AI check: placeholder (proxy-injected) keys and a real-AI smoke script; results in `backend/eval/real_ai_smoke.md` (`feat/f47-real-ai-smoke`)

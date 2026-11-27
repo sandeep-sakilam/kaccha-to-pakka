@@ -216,3 +216,7 @@ WCAG 2.2 AA checks (axe-core) and a slow-3G / 4× CPU Moto G4 run are part of `m
 ## Identity
 
 Onboarding asks for the owner's full name "as on the bank account" and, optionally, the PAN. `POST /auth/identity` calls the KYC adapter (Sandbox mock by default): a matching PAN stores the **registered** name (`kyc_status = verified`); a PAN of another name stores the registered name and holds the passport (`kyc_name_mismatch`); without a PAN the name is `self_declared`. The trust engine compares the Account Aggregator account-holder name with this name; a mismatch (`holder_name_mismatch`) puts the passport on hold, so nobody can build a passport on someone else's bank account.
+
+## Real AI smoke test
+
+`make real-ai-smoke` (`scripts/real_ai_smoke.py`) calls the real Sarvam adapters (Vision on ledger pages, Bulbul TTS, Saaras STT, Sarvam-105B) and the fallback model once, and writes every result or exact error to `backend/eval/real_ai_smoke.md`. Keys can be placeholders (`SARVAM_API_KEY=proxy`) when a network proxy injects the real key. Latest run (27 Nov 2026, cloud session): 0/8 calls succeeded, because `api.sarvam.ai` is not allowed by the session's network policy and no network secret was configured for Gemini; see the report.
