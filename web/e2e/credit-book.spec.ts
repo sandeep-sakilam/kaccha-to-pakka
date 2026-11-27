@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { onboard } from "./helpers";
 
-test("owner says a credit entry and a cash repayment aloud; both are saved as said", async ({ page }) => {
+test("owner says credit given, a cash repayment and goods bought on credit; all are saved as said", async ({ page }) => {
   await onboard(page, "Udhaar Kirana");
   await page.getByRole("button", { name: /Read ledger aloud/ }).click();
 
@@ -15,7 +15,12 @@ test("owner says a credit entry and a cash repayment aloud; both are saved as sa
   await expect(page.getByTestId("voice-prompt")).toContainText("received in cash");
   await page.getByRole("button", { name: "Yes", exact: true }).click();
 
-  await expect(page.getByText("2 entries ready")).toBeVisible();
+  await page.getByLabel("Or type here").fill("Gupta Traders se 12000 ka maal udhaar liya");
+  await page.getByRole("button", { name: "Next" }).click();
+  await expect(page.getByTestId("voice-prompt")).toContainText("Bought twelve thousand rupees of goods on credit from Gupta Traders");
+  await page.getByRole("button", { name: "Yes", exact: true }).click();
+
+  await expect(page.getByText("3 entries ready")).toBeVisible();
   await page.getByRole("button", { name: /Save all entries/ }).click();
   await expect(page.getByRole("status").filter({ hasText: "Entries saved" })).toBeVisible();
 
@@ -27,5 +32,6 @@ test("owner says a credit entry and a cash repayment aloud; both are saved as sa
   expect(ledger.map((e) => [e.amount_paise, e.kind, e.paid_by])).toEqual([
     [120000, "credit_given", null],
     [50000, "money", "cash"],
+    [1200000, "credit_taken", null],
   ]);
 });

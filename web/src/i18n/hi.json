@@ -164,7 +164,8 @@
     "how_paid": "कैसे दिया गया?",
     "not_said": "नहीं लिखा",
     "cash": "नकद",
-    "upi": "UPI"
+    "upi": "UPI",
+    "bought": "उधार लिया"
   },
   "voice_entry": {
     "title": "खाता बोलकर लिखवाएँ",
@@ -356,7 +357,13 @@
     "doc_phone_bill": "फ़ोन बिल",
     "doc_shop_licence": "दुकान लाइसेंस",
     "doc_fssai_licence": "FSSAI लाइसेंस",
-    "doc_trade_licence": "ट्रेड लाइसेंस"
+    "doc_trade_licence": "ट्रेड लाइसेंस",
+    "supplier_title": "सप्लायर का उधार",
+    "supplier_taken": "{{suppliers}} सप्लायरों से {{amount}} का सामान उधार लिया",
+    "supplier_bank": "{{percent}}% बैंक से चुकाया",
+    "supplier_cash": "{{percent}}% नकद चुकाया, जैसा मालिक ने लिखा",
+    "supplier_days": "सप्लायरों को आम तौर पर {{days}} दिन बाद चुकाया",
+    "supplier_unpaid": "सप्लायरों का {{amount}} अभी बाकी"
   },
   "sahayak": {
     "title": "सहायक मोड",

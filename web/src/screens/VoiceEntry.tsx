@@ -15,7 +15,7 @@ type Parsed = {
   party_text: string | null;
   direction: "in" | "out" | null;
   entry_date: string | null;
-  kind: "money" | "credit_given";
+  kind: "money" | "credit_given" | "credit_taken";
   paid_by: PaidBy;
   understood: boolean;
   prompt: string | null;
@@ -24,7 +24,7 @@ type Parsed = {
 type Entry = {
   amount_paise: number;
   direction: "in" | "out";
-  kind: "money" | "credit_given";
+  kind: "money" | "credit_given" | "credit_taken";
   paid_by: PaidBy;
   party_text: string | null;
   entry_date: string | null;

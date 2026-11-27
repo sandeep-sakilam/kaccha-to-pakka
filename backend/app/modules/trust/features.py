@@ -286,7 +286,10 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
     credit = stats.credit
     told = sales.check(db, biz.id, inflows, today)
     records = RecordsFeatures(
-        counted_entries=stats.ledger_entries + stats.cash_entries + credit.entries,
+        counted_entries=stats.ledger_entries
+        + stats.cash_entries
+        + credit.entries
+        + stats.supplier_credit.entries,
         independent_entries=len(independent),
         match_rate=round(matched_value / ind_value, 4) if ind_value else 0,
         mirrored_ledgers=len(mirrored),
@@ -310,6 +313,14 @@ def gather(db: Session, biz: Business, today: date | None = None) -> Features:
         credit_outstanding_paise=credit.outstanding_paise,
         credit_bank_repaid_rate=round(credit.bank_repaid_rate, 4),
         median_days_to_repay=credit.median_days_to_repay,
+        supplier_credit_entries=stats.supplier_credit.entries,
+        supplier_credit_suppliers=stats.supplier_credit.customers,
+        supplier_credit_taken_paise=stats.supplier_credit.given_paise,
+        supplier_paid_bank_paise=stats.supplier_credit.repaid_bank_paise,
+        supplier_paid_cash_paise=stats.supplier_credit.repaid_cash_paise,
+        supplier_outstanding_paise=stats.supplier_credit.outstanding_paise,
+        supplier_bank_paid_rate=round(stats.supplier_credit.bank_repaid_rate, 4),
+        median_days_to_pay_suppliers=stats.supplier_credit.median_days_to_repay,
         daily_sales_days=told.days_told,
         daily_sales_months_checked=told.months_checked,
         daily_sales_months_agree=told.months_agree,

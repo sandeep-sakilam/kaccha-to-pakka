@@ -37,7 +37,7 @@ def _amount(v: str | None) -> int:
 def _khatabook(rows: list[dict[str, str]], title: str = "") -> list[ExportRow]:
     """A customer statement is a credit book: "You gave" is credit given, "You got" is money
     received. In a supplier statement "You gave" is money paid, and "You got" is goods bought
-    on credit, which moved no money, so it is left out."""
+    on credit (no money moved; cleared later by the payments)."""
     supplier = "supplier" in title.lower() or any("suppliername" in r for r in rows[:1])
     out = []
     for r in rows:
@@ -47,6 +47,8 @@ def _khatabook(rows: list[dict[str, str]], title: str = "") -> list[ExportRow]:
         )
         d = parse_date(r["date"])
         if supplier:
+            if got:
+                out.append(ExportRow(d, party, got, "in", r.get("details"), "credit_taken"))
             if gave:
                 out.append(ExportRow(d, party, gave, "out", r.get("details")))
             continue

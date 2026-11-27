@@ -61,6 +61,15 @@ T: dict[str, dict[str, str]] = {
         "en": "{percent}% of your matched ledger rests on your own answers about names",
         "hi": "आपके मिलान किए खाते का {percent}% नामों पर आपके अपने जवाबों पर टिका है",
     },
+    "suppliers_paid_bank": {
+        "en": "{percent}% of the goods you bought on credit from {suppliers} suppliers was paid "
+        "through the bank",
+        "hi": "{suppliers} सप्लायरों से उधार लिए सामान का {percent}% बैंक से चुकाया गया",
+    },
+    "pay_suppliers_by_bank": {
+        "en": "Pay your suppliers by UPI or bank transfer",
+        "hi": "सप्लायरों को UPI या बैंक से भुगतान करें",
+    },
     "mostly_cash_entries": {
         "en": "{count} ledger entries are cash, which the bank cannot show",
         "hi": "खाते की {count} एंट्री नकद हैं, जो बैंक में नहीं दिखतीं",

@@ -164,7 +164,8 @@
     "how_paid": "How was it paid?",
     "not_said": "Not written",
     "cash": "Cash",
-    "upi": "UPI"
+    "upi": "UPI",
+    "bought": "Bought on credit"
   },
   "voice_entry": {
     "title": "Read your ledger aloud",
@@ -356,7 +357,13 @@
     "doc_phone_bill": "phone bill",
     "doc_shop_licence": "shop licence",
     "doc_fssai_licence": "FSSAI licence",
-    "doc_trade_licence": "trade licence"
+    "doc_trade_licence": "trade licence",
+    "supplier_title": "Supplier credit",
+    "supplier_taken": "{{amount}} of goods bought on credit from {{suppliers}} suppliers",
+    "supplier_bank": "{{percent}}% paid for through the bank",
+    "supplier_cash": "{{percent}}% paid in cash, as the owner wrote it",
+    "supplier_days": "Suppliers were usually paid after {{days}} days",
+    "supplier_unpaid": "{{amount}} still owed to suppliers"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",

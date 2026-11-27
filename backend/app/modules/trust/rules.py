@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import date
 from typing import Any
 
-RULES_VERSION = "2026.11-r8"  # r8: address proof (utility bill or shop licence)
+RULES_VERSION = "2026.11-r9"  # r9: supplier credit (goods bought on credit, paid later)
 
 PILLAR_WEIGHTS = {"money": 0.40, "records": 0.20, "network": 0.25, "presence": 0.15}
 BANDS = [(80, "A"), (65, "B"), (50, "C"), (35, "D"), (0, "E")]
@@ -51,6 +51,14 @@ class RecordsFeatures:
     credit_bank_repaid_rate: float = 0.0  # repaid through the bank; partial clearing counts half
     median_days_to_repay: int | None = None
     owner_confirmed_share: float = 0.0  # of matched value, how much rests on the owner's answers
+    supplier_credit_entries: int = 0  # goods bought on credit
+    supplier_credit_suppliers: int = 0
+    supplier_credit_taken_paise: int = 0
+    supplier_paid_bank_paise: int = 0
+    supplier_paid_cash_paise: int = 0
+    supplier_outstanding_paise: int = 0
+    supplier_bank_paid_rate: float = 0.0  # paid through the bank; partial clearing counts half
+    median_days_to_pay_suppliers: int | None = None
     daily_sales_days: int = 0  # days the owner told the day's sales, last 90 days
     daily_sales_months_checked: int = 0  # months with enough days told and bank data to compare
     daily_sales_months_agree: int = 0
@@ -210,7 +218,7 @@ def mostly_owner_confirmed(r: RecordsFeatures) -> bool:
 
 def mostly_cash(r: RecordsFeatures) -> bool:
     """More entries written as cash than entries the bank can check."""
-    return r.cash_entries > r.independent_entries + r.credit_entries
+    return r.cash_entries > r.independent_entries + r.credit_entries + r.supplier_credit_entries
 
 
 def records_pillar(r: RecordsFeatures) -> float:
@@ -224,6 +232,11 @@ def records_pillar(r: RecordsFeatures) -> float:
     if r.credit_entries:
         depth = min(1.0, r.credit_entries / 30)
         parts.append((r.credit_entries, 100 * r.credit_bank_repaid_rate * (0.5 + 0.5 * depth)))
+    if r.supplier_credit_entries:
+        depth = min(1.0, r.supplier_credit_entries / 30)
+        parts.append(
+            (r.supplier_credit_entries, 100 * r.supplier_bank_paid_rate * (0.5 + 0.5 * depth))
+        )
     if not parts and not daily_sales_agree(r):
         return 0.0
     score = sum(n * s for n, s in parts) / sum(n for n, _ in parts) if parts else 0.0
@@ -364,7 +377,7 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
             imp.append((50, Reason("record_payments_in_ledger")))
     elif r.pending_confirmation:
         gaps.append((40, Reason("ledger_unconfirmed")))
-    elif not r.credit_entries:
+    elif not r.credit_entries and not r.supplier_credit_entries:
         gaps.append((40, Reason("no_ledger")))
         imp.append((45, Reason("add_ledger")))
     if r.credit_entries:
@@ -375,6 +388,17 @@ def _reasons(f: Features, p: dict[str, float]) -> tuple[list[Reason], list[Reaso
         (pos if rate >= 0.5 else gaps).append((p["records"], reason))
         if rate < 0.5:
             imp.append((50, Reason("ask_customers_upi")))
+    if r.supplier_credit_entries:
+        reason = Reason(
+            "suppliers_paid_bank",
+            {
+                "percent": round(r.supplier_bank_paid_rate * 100),
+                "suppliers": r.supplier_credit_suppliers,
+            },
+        )
+        (pos if r.supplier_bank_paid_rate >= 0.5 else gaps).append((p["records"] - 2, reason))
+        if r.supplier_bank_paid_rate < 0.5:
+            imp.append((45, Reason("pay_suppliers_by_bank")))
     if mostly_cash(r):
         gaps.append((45, Reason("mostly_cash_entries", {"count": r.cash_entries})))
         imp.append((55, Reason("ask_customers_upi")))

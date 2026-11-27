@@ -77,15 +77,16 @@ def money(db: Session, ev: EvidenceItem, rows: list[tuple[Any, ...]]) -> None:
 def ledger(db: Session, ev: EvidenceItem, rows: list[tuple[Any, ...]]) -> list[LedgerEntry]:
     out = []
     for i, row in enumerate(rows):
-        # (date, party, paise, "in" | "out" | "credit"[, paid_by]); "credit" is goods on credit
+        # (date, party, paise, "in" | "out" | "credit" | "bought"[, paid_by]): goods on credit
+        # given to a customer ("credit") or bought from a supplier ("bought")
         d, party, paise, direction = row[:4]
         e = LedgerEntry(
             evidence_id=ev.id,
             entry_date=d,
             party_text=party,
             amount_paise=paise,
-            direction="out" if direction == "credit" else direction,
-            kind="credit_given" if direction == "credit" else "money",
+            direction={"credit": "out", "bought": "in"}.get(direction, direction),
+            kind={"credit": "credit_given", "bought": "credit_taken"}.get(direction, "money"),
             paid_by=row[4] if len(row) > 4 else None,
             confidence=1.0,
             field_confidence=FULL,

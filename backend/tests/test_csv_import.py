@@ -23,11 +23,12 @@ def test_khatabook() -> None:
 
 
 def test_khatabook_supplier_statement() -> None:
-    """Goods bought on credit moved no money; the later payment did."""
+    """Goods bought on credit moved no money (credit taken); the later payment did."""
     src, rows = parse_export((FIX / "khatabook_supplier.csv").read_bytes())
     assert src == "khatabook"
     assert [(r.party_text, r.amount_paise, r.direction, r.kind) for r in rows] == [
-        ("Gupta Traders", 1200000, "out", "money")
+        ("Gupta Traders", 1200000, "in", "credit_taken"),
+        ("Gupta Traders", 1200000, "out", "money"),
     ]
 
 

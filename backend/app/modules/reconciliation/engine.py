@@ -77,7 +77,8 @@ class ReconStats:
     bank_txns: int = 0
     rules: dict[str, int] = field(default_factory=dict)
     cash_entries: int = 0  # written as cash: never looked for in the bank
-    credit: CreditStats = field(default_factory=CreditStats)
+    credit: CreditStats = field(default_factory=CreditStats)  # credit given to customers
+    supplier_credit: CreditStats = field(default_factory=CreditStats)  # goods bought on credit
 
     @property
     def match_rate(self) -> float:
@@ -219,9 +220,10 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
     txns = money_for(db, business_id)
     entry_ids = [e.id for e in countable]
     credit_entries = [e for e in countable if e.kind == "credit_given"]
-    cash = [e for e in countable if e.kind != "credit_given" and e.paid_by == "cash"]
+    supplier_dues = [e for e in countable if e.kind == "credit_taken"]
+    cash = [e for e in countable if e.kind == "money" and e.paid_by == "cash"]
     # Only money that could be in the bank is looked for there.
-    entries = [e for e in countable if e.kind != "credit_given" and e.paid_by != "cash"]
+    entries = [e for e in countable if e.kind == "money" and e.paid_by != "cash"]
     all_entry_ids = [
         eid
         for (eid,) in db.execute(
@@ -395,6 +397,19 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
     stats.credit = _credit_book(
         db, credit_entries, entries + cash, txns, used_e, used_t, aliases, learned, stats.rules
     )
+    # 5. the same for goods bought on credit: payments to the supplier clear the oldest dues
+    stats.supplier_credit = _credit_book(
+        db,
+        supplier_dues,
+        entries + cash,
+        txns,
+        used_e,
+        used_t,
+        aliases,
+        learned,
+        stats.rules,
+        side="supplier",
+    )
     db.flush()
     record(
         db,
@@ -409,6 +424,7 @@ def reconcile(db: Session, business_id: str, actor: str = "system") -> ReconStat
             "ledger_considered": len(entry_ids),
             "credit_entries": stats.credit.entries,
             "credit_repaid_bank_paise": stats.credit.repaid_bank_paise,
+            "supplier_credit_entries": stats.supplier_credit.entries,
         },
     )
     return stats
@@ -424,8 +440,17 @@ def _credit_book(
     aliases: dict[tuple[str, str], bool],
     learned: set[tuple[str, str]],
     rules: dict[str, int],
+    side: str = "customer",
 ) -> CreditStats:
-    """Apply each customer's repayments to their dues, oldest first. Rules only."""
+    """Apply each customer's repayments to their dues, oldest first. Rules only. With
+    side="supplier" the dues are goods bought on credit and the repayments are money paid out to
+    that supplier."""
+    money_dir = "in" if side == "customer" else "out"
+    rule_exact, rule_part = (
+        ("credit_repaid", "credit_repaid_partial")
+        if side == "customer"
+        else ("supplier_paid", "supplier_paid_partial")
+    )
     cs = CreditStats(
         entries=len(dues_entries), given_paise=sum(e.amount_paise for e in dues_entries)
     )
@@ -440,7 +465,7 @@ def _credit_book(
     written: dict[str, list[LedgerEntry]] = defaultdict(list)
     for e in money_entries:
         pk = normalise(e.party_text)
-        if e.direction == "in" and e.entry_date is not None and pk in by_customer:
+        if e.direction == money_dir and e.entry_date is not None and pk in by_customer:
             written[pk].append(e)
     cs.customers = len(by_customer)
     cs.repeat_customers = sum(
@@ -461,7 +486,7 @@ def _credit_book(
             via = "bank" if w.id in used_e else "cash" if w.paid_by == "cash" else "written"
             events.append((w.entry_date, 0, w.amount_paise, via, None))
         for bt in txns:
-            if bt.direction != "in" or bt.id in used_t or bt.txn_date < first:
+            if bt.direction != money_dir or bt.id in used_t or bt.txn_date < first:
                 continue
             if any(
                 w.amount_paise == bt.amount_paise
@@ -511,7 +536,7 @@ def _credit_book(
                     left[d.id] -= take
                     remaining -= take
                     if via == "bank_txn" and t is not None:
-                        rule = "credit_repaid" if exact else "credit_repaid_partial"
+                        rule = rule_exact if exact else rule_part
                         db.add(
                             ReconMatch(
                                 ledger_entry_id=d.id,

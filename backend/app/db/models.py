@@ -141,7 +141,7 @@ class LedgerEntry(TimestampMixin, Base):
     __table_args__ = (
         CheckConstraint("amount_paise >= 0", name="amount_nonneg"),
         CheckConstraint("direction in ('in','out')", name="direction"),
-        CheckConstraint("kind in ('money','credit_given')", name="kind"),
+        CheckConstraint("kind in ('money','credit_given','credit_taken')", name="kind"),
         CheckConstraint("paid_by is null or paid_by in ('cash','upi','bank')", name="paid_by"),
     )
     id: Mapped[str] = _id()
@@ -156,7 +156,8 @@ class LedgerEntry(TimestampMixin, Base):
     page_no: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(24), default="extracted")
     # money: cash actually received or paid. credit_given: goods given on credit (udhaar), no
-    # money moved; it is cleared later by the customer's repayments.
+    # money moved; it is cleared later by the customer's repayments. credit_taken: goods bought
+    # on credit from a supplier, cleared later by payments to the supplier.
     kind: Mapped[str] = mapped_column(String(16), default="money")
     paid_by: Mapped[str | None] = mapped_column(String(8))  # cash | upi | bank, when written
 
