@@ -7,6 +7,7 @@ The owner always hears the result in words and says yes or no; nothing is saved 
 import re
 from dataclasses import dataclass
 from datetime import date, timedelta
+from fractions import Fraction
 
 from app.core.words import _HI
 
@@ -97,7 +98,24 @@ MULTIPLIERS = {
     "karod": 10_000_000,
     "करोड़": 10_000_000,
 }
-HALF = {"dedh": 1.5, "डेढ़": 1.5, "dhai": 2.5, "ढाई": 2.5, "sawa": 1.25, "सवा": 1.25}
+# Exact fractions (never floats): dedh = 3/2, dhai = 5/2, sawa = 5/4, paune = 3/4.
+HALF = {
+    "dedh": Fraction(3, 2),
+    "डेढ़": Fraction(3, 2),
+    "dhai": Fraction(5, 2),
+    "ढाई": Fraction(5, 2),
+}
+# Modifiers on the next number: "sawa do" = 2¼, "saadhe teen" = 3½, "paune do" = 1¾.
+# Before a multiplier they apply to one: "sawa lakh" = 1¼ lakh, "paune lakh" = ¾ lakh.
+MODIFIERS = {
+    "sawa": Fraction(1, 4),
+    "सवा": Fraction(1, 4),
+    "saadhe": Fraction(1, 2),
+    "sadhe": Fraction(1, 2),
+    "साढ़े": Fraction(1, 2),
+    "paune": Fraction(-1, 4),
+    "पौने": Fraction(-1, 4),
+}
 IN_WORDS = [
     "mile",
     "mila",
@@ -187,35 +205,47 @@ class ParsedEntry:
         return self.amount_paise is not None and self.direction is not None
 
 
-def _num(token: str) -> float | None:
+def _num(token: str) -> Fraction | None:
     t = token.lower().strip(".,")
     if re.fullmatch(r"\d+(\.\d+)?", t.replace(",", "")):
-        return float(t.replace(",", ""))
+        return Fraction(t.replace(",", ""))  # exact: Fraction("1.5") == 3/2
     if t in HALF:
         return HALF[t]
-    return ROMAN_0_99.get(t, DEV_0_99.get(token))
+    n = ROMAN_0_99.get(t, DEV_0_99.get(token))
+    return Fraction(n) if n is not None else None
 
 
 def parse_amount(text: str) -> int | None:
     """Indian-style amount from digits and/or number words, in paise."""
     tokens = re.findall(r"[\w\.,ऀ-ॿ]+", text.lower())
-    total = 0.0
-    current = 0.0
+    total = Fraction(0)
+    current = Fraction(0)
     seen = False
+    modifier: Fraction | None = None
     for tok in tokens:
         tok = tok.strip(",")
+        if tok in MODIFIERS:
+            modifier = MODIFIERS[tok]
+            seen = True
+            continue
         mult = MULTIPLIERS.get(tok)
         if mult:
-            current = (current or 1) * mult
+            if modifier is not None:
+                current += 1 + modifier
+                modifier = None
+            current = (current or Fraction(1)) * mult
             if mult >= 1000:
                 total += current
-                current = 0
+                current = Fraction(0)
             seen = True
             continue
         n = _num(tok)
         if n is not None:
             if re.fullmatch(r"(19|20)\d\d", tok) and seen:
                 continue
+            if modifier is not None:
+                n += modifier
+                modifier = None
             current += n
             seen = True
         elif (
@@ -225,13 +255,14 @@ def parse_amount(text: str) -> int | None:
         ):
             # stop at the first non-number word after a number run, unless a day+month follows
             if tok in MONTHS:
-                current = 0
+                current = Fraction(0)
                 break
             break
     value = total + current
     if value <= 0:
         return None
-    return round(value * 100)
+    paise = value * 100  # rupees -> paise, still exact
+    return int((paise.numerator * 2 + paise.denominator) // (paise.denominator * 2))  # half up
 
 
 def parse_direction(text: str) -> str | None:
