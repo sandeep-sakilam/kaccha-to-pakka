@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { BandHistory, type HistoryItem } from "@/components/BandHistory";
+import { bandBg } from "@/lib/bands";
 import { Screen } from "@/components/Screen";
-import { BigButton, Card, SandboxBadge } from "@/components/ui";
+import { BigButton, Card, Pill, SandboxBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { istDate } from "@/lib/format";
 import { speak } from "@/lib/voice";
@@ -21,15 +22,6 @@ type Explanation = {
   improve: string[];
 };
 type Assessment = { reasons: { improve: { code: string }[] } };
-
-const BAND_COLOURS: Record<string, string> = {
-  A: "bg-green-700",
-  B: "bg-green-600",
-  C: "bg-yellow-500",
-  D: "bg-orange-500",
-  E: "bg-red-600",
-  U: "bg-gray-500",
-};
 
 /** Where each coaching tip takes the owner. */
 function actionFor(code: string, businessId: string): string | null {
@@ -115,46 +107,78 @@ export default function PassportScreen() {
       {loaded && !passport && <p>{t("passport.none")}</p>}
       {passport && ex && (
         <>
-          {passport.vc.credentialSubject.sandbox && <SandboxBadge label={t("common.sandbox")} />}
-          <Card className="flex items-center gap-4">
-            <div className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl text-5xl font-bold text-white ${BAND_COLOURS[ex.band] ?? "bg-gray-500"}`} aria-label={`${t("passport.band")} ${ex.band}`} data-testid="band">
-              {ex.band}
+          <Card className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="section-title">{t("passport.title")}</span>
+              {passport.vc.credentialSubject.sandbox && <SandboxBadge label={t("common.sandbox")} />}
             </div>
-            <div>
-              <p className="text-xl font-bold">{ex.band_label}</p>
-              <p>{ex.confidence_label}</p>
-              <p className={ex.status === "final" ? "text-green-800" : "font-semibold text-orange-700"} data-testid="passport-status">
-                {ex.status_label}
-              </p>
-              <p className="text-sm">{t("passport.valid_until", { date: istDate(passport.valid_until, i18n.language) })}</p>
+            <div className="flex items-center gap-4">
+              <div
+                className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl text-6xl font-black text-white shadow-lift ${bandBg(ex.band)}`}
+                aria-label={`${t("passport.band")} ${ex.band}`}
+                data-testid="band"
+              >
+                {ex.band}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <p className="text-2xl font-extrabold leading-tight">{ex.band_label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  <Pill tone="gray">{ex.confidence_label}</Pill>
+                  <span data-testid="passport-status">
+                    <Pill tone={ex.status === "final" ? "green" : "amber"}>{ex.status_label}</Pill>
+                  </span>
+                </div>
+                <p className="text-sm text-gray-700">{t("passport.valid_until", { date: istDate(passport.valid_until, i18n.language) })}</p>
+              </div>
             </div>
+            <p className="border-t border-gray-100 pt-4 text-lg leading-relaxed" data-testid="headline">
+              {ex.headline}
+            </p>
           </Card>
-          <p className="text-lg" data-testid="headline">
-            {ex.headline}
-          </p>
           <BandHistory items={history} />
           {ex.positives.length > 0 && (
-            <section>
-              <h2 className="font-semibold">{t("passport.why")}</h2>
-              <ul className="list-inside list-disc">{ex.positives.map((l) => <li key={l}>{l}</li>)}</ul>
-            </section>
+            <Card>
+              <h2 className="section-title mb-3">{t("passport.why")}</h2>
+              <ul className="flex flex-col gap-2.5">
+                {ex.positives.map((l) => (
+                  <li key={l} className="flex gap-3">
+                    <span aria-hidden="true" className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-800">
+                      ✓
+                    </span>
+                    <span>{l}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
           )}
           {ex.gaps.length > 0 && (
-            <section>
-              <h2 className="font-semibold">{t("passport.gaps")}</h2>
-              <ul className="list-inside list-disc">{ex.gaps.map((l) => <li key={l}>{l}</li>)}</ul>
-            </section>
+            <Card>
+              <h2 className="section-title mb-3">{t("passport.gaps")}</h2>
+              <ul className="flex flex-col gap-2.5">
+                {ex.gaps.map((l) => (
+                  <li key={l} className="flex gap-3">
+                    <span aria-hidden="true" className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-amber-900">
+                      !
+                    </span>
+                    <span>{l}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
           )}
           {ex.improve.length > 0 && (
             <section className="flex flex-col gap-2" data-testid="coaching">
-              <h2 className="font-semibold">{t("passport.improve")}</h2>
+              <h2 className="section-title px-1">{t("passport.improve")}</h2>
               {ex.improve.map((line, i) => {
                 const to = codes[i] ? actionFor(codes[i], businessId) : null;
                 return (
-                  <Card key={line} className="flex items-center justify-between gap-2">
-                    <span>💡 {line}</span>
+                  <Card key={line} className="flex items-center justify-between gap-3 !p-4">
+                    <span className="flex gap-3">
+                      <span aria-hidden="true">💡</span>
+                      <span>{line}</span>
+                    </span>
                     {to && (
-                      <button type="button" className="min-h-12 shrink-0 rounded-xl bg-brand px-3 font-semibold text-white" onClick={() => nav(to)}>
+                      <button type="button" className="min-h-12 shrink-0 rounded-xl bg-brand px-4 font-semibold text-white shadow-sm hover:bg-brand-800" onClick={() => nav(to)}>
                         {t("passport.do_it")}
                       </button>
                     )}
@@ -163,9 +187,9 @@ export default function PassportScreen() {
               })}
             </section>
           )}
-          <Card className="flex flex-col items-center gap-2">
-            <img src={`data:image/png;base64,${passport.qr_png_b64}`} alt={t("passport.scan")} className="h-48 w-48" />
-            <p className="text-center text-sm">{t("passport.scan")}</p>
+          <Card className="flex flex-col items-center gap-3">
+            <img src={`data:image/png;base64,${passport.qr_png_b64}`} alt={t("passport.scan")} className="h-52 w-52 rounded-xl" />
+            <p className="text-center text-sm text-gray-700">{t("passport.scan")}</p>
           </Card>
           <div className="grid grid-cols-2 gap-2">
             <BigButton variant="secondary" onClick={() => void download("hi")}>
@@ -178,7 +202,7 @@ export default function PassportScreen() {
           <BigButton icon="📤" onClick={() => nav(`/shares/${businessId}`)}>
             {t("passport.share")}
           </BigButton>
-          <p className="text-sm text-gray-700">{t("passport.not_credit")}</p>
+          <p className="px-1 text-sm text-gray-700">{t("passport.not_credit")}</p>
           {passport.status === "revoked" ? (
             <p role="status" className="rounded-xl bg-red-100 p-3 font-semibold text-red-900" data-testid="revoked">
               {t("passport.revoked")}

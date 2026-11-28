@@ -60,11 +60,11 @@ export function VoiceAnswer({
         <input
           aria-label={t("interview.or_type")}
           placeholder={t("interview.or_type")}
-          className="min-h-12 flex-1 rounded-xl border-2 border-gray-300 px-3 text-lg"
+          className="field flex-1"
           value={typed}
           onChange={(e) => setTyped(e.target.value)}
         />
-        <button type="submit" className="min-h-12 rounded-xl bg-brand px-4 font-semibold text-white">
+        <button type="submit" className="min-h-14 shrink-0 rounded-xl bg-brand px-5 font-semibold text-white shadow-sm hover:bg-brand-800">
           {t("common.next")}
         </button>
       </form>

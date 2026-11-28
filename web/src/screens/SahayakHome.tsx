@@ -32,7 +32,7 @@ export default function SahayakHome() {
       <p>{t("sahayak.register_intro")}</p>
       {!isSahayak && (
         <Card className="flex flex-col gap-3">
-          <input aria-label={t("sahayak.name")} placeholder={t("sahayak.name")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3" value={name} onChange={(e) => setName(e.target.value)} />
+          <input aria-label={t("sahayak.name")} placeholder={t("sahayak.name")} className="field" value={name} onChange={(e) => setName(e.target.value)} />
           <label className="flex min-h-12 items-center gap-3">
             <input type="checkbox" className="h-6 w-6" checked={woman} onChange={(e) => setWoman(e.target.checked)} />
             {t("sahayak.woman")}

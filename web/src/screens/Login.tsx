@@ -83,7 +83,7 @@ export default function Login() {
       {step === "phone" && (
         <>
           <label className="font-semibold">{t("login.phone")}</label>
-          <p className="rounded-xl border-2 border-gray-300 p-3 text-center text-2xl tracking-widest" data-testid="phone-display">
+          <p className="rounded-2xl bg-white p-4 text-center text-3xl font-bold tabular-nums text-ink shadow-sm ring-1 ring-black/10 tracking-widest" data-testid="phone-display">
             +91 {phone || "__________"}
           </p>
           <Keypad value={phone} onChange={setPhone} max={10} />
@@ -112,7 +112,7 @@ export default function Login() {
           {newDevice && <p className="rounded-xl bg-orange-100 p-3">{t("login.new_device")}</p>}
           {newProfile ? (
             <>
-              <input aria-label={t("login.profile_name")} placeholder={t("login.profile_name")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg" value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+              <input aria-label={t("login.profile_name")} placeholder={t("login.profile_name")} className="field" value={profileName} onChange={(e) => setProfileName(e.target.value)} />
               <p className="font-semibold">{t("login.new_profile_pin")}</p>
             </>
           ) : (

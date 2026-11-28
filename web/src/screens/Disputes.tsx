@@ -71,7 +71,7 @@ export default function Disputes() {
         {target && target !== "assessment" && (
           <label className="flex flex-col gap-1">
             {t("disputes.pick")}
-            <select className="min-h-12 rounded-xl border-2 border-gray-300 px-2" value={targetId ?? ""} onChange={(e) => setTargetId(e.target.value || null)}>
+            <select className="field" value={targetId ?? ""} onChange={(e) => setTargetId(e.target.value || null)}>
               <option value="">—</option>
               {options.map((o) => (
                 <option key={o.id} value={o.id}>

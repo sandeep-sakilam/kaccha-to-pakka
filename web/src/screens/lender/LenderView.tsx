@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { BandHistory, type HistoryItem } from "@/components/BandHistory";
 import { Screen } from "@/components/Screen";
-import { Card, SandboxBadge } from "@/components/ui";
+import { Card, Pill, SandboxBadge } from "@/components/ui";
+import { bandBg } from "@/lib/bands";
 import { api, ApiError } from "@/lib/api";
 import { istDate } from "@/lib/format";
 
@@ -78,49 +79,89 @@ export default function LenderView() {
   const ev = view.evidence;
   return (
     <div className="relative">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-10 flex flex-col justify-around overflow-hidden opacity-[0.12]" data-testid="watermark">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-10 flex flex-col justify-around overflow-hidden opacity-[0.07]" data-testid="watermark">
         {Array.from({ length: 6 }).map((_, i) => (
-          <p key={i} className="-rotate-[30deg] whitespace-nowrap text-2xl font-bold text-red-800">
+          <p key={i} className="-rotate-[30deg] whitespace-nowrap text-2xl font-bold text-gray-900">
             {mark} · {mark}
           </p>
         ))}
       </div>
       <Screen title={view.business.name} spoken={[view.explanation.headline]}>
-        {s.sandbox && <SandboxBadge label={t("common.sandbox")} />}
-        <Card className="flex items-center gap-4">
-          <span className="text-5xl font-bold text-brand" data-testid="band">
-            {s.band}
-          </span>
-          <div>
-            <p className="font-semibold">{view.explanation.band_label}</p>
-            <p>{s.confidence}</p>
-            <p data-testid="live-status">
-              {t("lender.live")}: {t(`lender.status_${view.passport.status}`)}
-            </p>
-            <p className="text-sm">
-              {t("lender.valid_until")}: {istDate(view.passport.valid_until, i18n.language)}
-            </p>
+        <Card className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="section-title">{t("lender.passport_label")}</span>
+            {s.sandbox && <SandboxBadge label={t("common.sandbox")} />}
           </div>
+          <div className="flex items-center gap-4">
+            <span
+              className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl text-5xl font-black text-white shadow-lift ${bandBg(s.band)}`}
+              data-testid="band"
+            >
+              {s.band}
+            </span>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xl font-extrabold">{view.explanation.band_label}</p>
+              <div className="flex flex-wrap gap-1.5">
+                <Pill tone="gray">{s.confidence}</Pill>
+                <span data-testid="live-status">
+                  <Pill tone={view.passport.status === "valid" ? "green" : "amber"}>
+                    {t("lender.live")}: {t(`lender.status_${view.passport.status}`)}
+                  </Pill>
+                </span>
+              </div>
+              <p className="text-sm text-gray-700">
+                {t("lender.valid_until")}: {istDate(view.passport.valid_until, i18n.language)}
+              </p>
+            </div>
+          </div>
+          <p className="border-t border-gray-100 pt-4 text-lg leading-relaxed">{view.explanation.headline}</p>
         </Card>
-        <p>{view.explanation.headline}</p>
         <BandHistory items={view.history ?? []} />
-        <ul className="list-inside list-disc">
-          {[...view.explanation.positives, ...view.explanation.gaps].map((l) => (
-            <li key={l}>{l}</li>
-          ))}
-        </ul>
+        <Card>
+          <ul className="flex flex-col gap-2.5">
+            {view.explanation.positives.map((l) => (
+              <li key={l} className="flex gap-3">
+                <span aria-hidden="true" className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-800">
+                  ✓
+                </span>
+                <span>{l}</span>
+              </li>
+            ))}
+            {view.explanation.gaps.map((l) => (
+              <li key={l} className="flex gap-3">
+                <span aria-hidden="true" className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-amber-900">
+                  !
+                </span>
+                <span>{l}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
         {ev && (
           <section className="flex flex-col gap-3" data-testid="evidence">
-            <h2 className="text-lg font-semibold">{t("lender.evidence")}</h2>
+            <h2 className="section-title px-1 pt-2">{t("lender.evidence")}</h2>
             <Card>
-              <h3 className="font-semibold">{t("lender.monthly")}</h3>
-              <table className="w-full text-sm">
-                <tbody>
+              <h3 className="section-title mb-2">{t("lender.monthly")}</h3>
+              <table className="w-full text-sm tabular-nums">
+                <thead>
+                  <tr className="text-left text-gray-600">
+                    <th scope="col" className="pb-1 font-semibold">
+                      {t("lender.month")}
+                    </th>
+                    <th scope="col" className="pb-1 text-right font-semibold">
+                      {t("lender.money_in")}
+                    </th>
+                    <th scope="col" className="pb-1 text-right font-semibold">
+                      {t("lender.money_out")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
                   {Object.entries(ev.monthly_totals_paise)
                     .slice(-12)
                     .map(([m, v]) => (
                       <tr key={m}>
-                        <td>{m}</td>
+                        <td className="py-1">{m}</td>
                         <td className="text-right text-green-800">{rupees(v.in)}</td>
                         <td className="text-right text-red-800">{rupees(v.out)}</td>
                       </tr>
@@ -130,8 +171,8 @@ export default function LenderView() {
             </Card>
             {ev.age && (ev.age.claimed_years != null || ev.age.proven_years != null) && (
               <Card>
-                <h3 className="font-semibold">{t("lender.age_title")}</h3>
-                <p className="text-sm" data-testid="business-age">
+                <h3 className="section-title mb-2">{t("lender.age_title")}</h3>
+                <p className="text-base" data-testid="business-age">
                   {t("lender.age_line", {
                     claimed: ev.age.claimed_years != null ? Math.floor(ev.age.claimed_years) : "?",
                     proven: ev.age.proven_years != null ? Math.floor(ev.age.proven_years) : 0,
@@ -142,16 +183,16 @@ export default function LenderView() {
             )}
             {(ev.address_proofs ?? []).length > 0 && (
               <Card>
-                <h3 className="font-semibold">{t("lender.address_title")}</h3>
-                <p className="text-sm" data-testid="address-proofs">
+                <h3 className="section-title mb-2">{t("lender.address_title")}</h3>
+                <p className="text-base" data-testid="address-proofs">
                   {t("lender.address_line", { docs: (ev.address_proofs ?? []).map((d) => t(`lender.doc_${d}`)).join(", ") })}
                 </p>
               </Card>
             )}
             {ev.registration && ev.registration.status !== "none" && (
               <Card>
-                <h3 className="font-semibold">{t("lender.registration_title")}</h3>
-                <p className="text-sm" data-testid="registration">
+                <h3 className="section-title mb-2">{t("lender.registration_title")}</h3>
+                <p className="text-base" data-testid="registration">
                   {t(`lender.registration_${ev.registration.status}`, {
                     source: ev.registration.source === "gstin" ? "GST" : "Udyam",
                     date: ev.registration.registered_on ? istDate(ev.registration.registered_on, i18n.language) : "?",
@@ -161,18 +202,18 @@ export default function LenderView() {
             )}
             {(ev.cash_deposit_months ?? 0) > 0 && (
               <Card>
-                <h3 className="font-semibold">{t("lender.cash_title")}</h3>
-                <p className="text-sm" data-testid="cash-deposits">
+                <h3 className="section-title mb-2">{t("lender.cash_title")}</h3>
+                <p className="text-base" data-testid="cash-deposits">
                   {t("lender.cash_deposits", { amount: rupees(ev.cash_deposit_paise ?? 0), months: ev.cash_deposit_months })}
                 </p>
               </Card>
             )}
             <Card>
-              <h3 className="font-semibold">{t("lender.records")}</h3>
+              <h3 className="section-title mb-2">{t("lender.records")}</h3>
               <p>{Math.round((ev.records.match_rate ?? 0) * 100)}%</p>
               {(ev.records.cash_entries ?? 0) > 0 && <p className="text-sm">{t("lender.cash_entries", { count: ev.records.cash_entries })}</p>}
               {(ev.records.daily_sales_months_checked ?? 0) > 0 && (
-                <p className="text-sm" data-testid="daily-sales-check">
+                <p className="text-base" data-testid="daily-sales-check">
                   {t("lender.daily_sales", { agree: ev.records.daily_sales_months_agree ?? 0, checked: ev.records.daily_sales_months_checked })}
                 </p>
               )}
@@ -183,7 +224,7 @@ export default function LenderView() {
             {(ev.records.credit_entries ?? 0) > 0 && <CreditBook r={ev.records} monthly={ev.avg_monthly_inflow_paise ?? 0} />}
             {(ev.records.supplier_credit_entries ?? 0) > 0 && <SupplierBook r={ev.records} />}
             <Card>
-              <h3 className="font-semibold">{t("lender.confirmations")}</h3>
+              <h3 className="section-title mb-2">{t("lender.confirmations")}</h3>
               <ul>
                 {ev.confirmations.map((c, i) => (
                   <li key={i}>
@@ -193,7 +234,7 @@ export default function LenderView() {
               </ul>
             </Card>
             <Card>
-              <h3 className="font-semibold">{t("lender.presence")}</h3>
+              <h3 className="section-title mb-2">{t("lender.presence")}</h3>
               <p>{t("lender.presence_counts", ev.presence)}</p>
             </Card>
             {ev.flags.length > 0 && (
@@ -207,7 +248,7 @@ export default function LenderView() {
               </Card>
             )}
             <Card>
-              <h3 className="font-semibold">{t("lender.files")}</h3>
+              <h3 className="section-title mb-2">{t("lender.files")}</h3>
               <ul className="text-xs">
                 {ev.evidence_items.map((e, i) => (
                   <li key={i}>
@@ -235,8 +276,8 @@ function CreditBook({ r, monthly }: { r: NonNullable<View["evidence"]>["records"
   const unpaid = r.credit_outstanding_paise ?? 0;
   return (
     <Card>
-      <h3 className="font-semibold">{t("lender.credit_title")}</h3>
-      <ul className="text-sm" data-testid="credit-book">
+      <h3 className="section-title mb-2">{t("lender.credit_title")}</h3>
+      <ul className="flex flex-col gap-1 text-base" data-testid="credit-book">
         <li>{t("lender.credit_given", { amount: rupees(given), customers: r.credit_customers ?? 0 })}</li>
         <li>{t("lender.credit_bank", { percent: pct(r.credit_repaid_bank_paise ?? 0) })}</li>
         <li>{t("lender.credit_cash", { percent: pct(r.credit_repaid_cash_paise ?? 0) })}</li>
@@ -258,8 +299,8 @@ function SupplierBook({ r }: { r: NonNullable<View["evidence"]>["records"] }) {
   const pct = (p: number) => (taken ? Math.round((p / taken) * 100) : 0);
   return (
     <Card>
-      <h3 className="font-semibold">{t("lender.supplier_title")}</h3>
-      <ul className="text-sm" data-testid="supplier-book">
+      <h3 className="section-title mb-2">{t("lender.supplier_title")}</h3>
+      <ul className="flex flex-col gap-1 text-base" data-testid="supplier-book">
         <li>{t("lender.supplier_taken", { amount: rupees(taken), suppliers: r.supplier_credit_suppliers ?? 0 })}</li>
         <li>{t("lender.supplier_bank", { percent: pct(r.supplier_paid_bank_paise ?? 0) })}</li>
         <li>{t("lender.supplier_cash", { percent: pct(r.supplier_paid_cash_paise ?? 0) })}</li>

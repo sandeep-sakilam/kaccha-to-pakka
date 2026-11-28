@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { bandBg } from "@/lib/bands";
 
 export type HistoryItem = { issued_at: string; band: string; status: string };
 
@@ -10,13 +11,18 @@ export function BandHistory({ items }: { items: HistoryItem[] }) {
     new Date(iso).toLocaleDateString(i18n.language === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
   return (
     <section aria-label={t("passport.history")}>
-      <h2 className="font-semibold">{t("passport.history")}</h2>
+      <h2 className="section-title mb-2">{t("passport.history")}</h2>
       <ol className="flex flex-wrap items-center gap-2" data-testid="band-history">
         {items.map((h, i) => (
           <li key={h.issued_at} className="flex items-center gap-2">
-            {i > 0 && <span aria-hidden="true">→</span>}
-            <span className="rounded-lg border-2 border-gray-300 px-2 py-1 text-sm">
-              {day(h.issued_at)} <strong>{h.band}</strong>
+            {i > 0 && (
+              <span aria-hidden="true" className="text-gray-400">
+                →
+              </span>
+            )}
+            <span className="flex items-center gap-2 rounded-full bg-white py-1 pl-3 pr-1 text-sm shadow-sm ring-1 ring-black/10">
+              <span className="text-gray-700">{day(h.issued_at)}</span>
+              <strong className={`flex h-7 w-7 items-center justify-center rounded-full text-sm text-white ${bandBg(h.band)}`}>{h.band}</strong>
               {h.status === "on_hold" && <span className="sr-only"> ({t("lender.status_on_hold")})</span>}
             </span>
           </li>

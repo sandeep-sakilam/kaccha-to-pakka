@@ -23,21 +23,23 @@ export function Screen({ title, spoken, children }: { title: string; spoken: str
   }
 
   return (
-    <section className="flex flex-col gap-4" aria-labelledby="screen-title">
-      <div className="flex items-start justify-between gap-3">
-        <h1 id="screen-title" className="text-2xl font-bold text-brand">
+    <section className="flex flex-col gap-5" aria-labelledby="screen-title">
+      <div className="flex items-start justify-between gap-3 pt-1">
+        <h1 id="screen-title" className="text-[1.7rem] font-extrabold leading-tight text-ink">
           {title}
         </h1>
         <button
           type="button"
           onClick={toggle}
           aria-pressed={playing}
-          className="flex min-h-12 min-w-12 shrink-0 items-center gap-2 rounded-full bg-brand-light px-4 text-brand focus-visible:ring-4 focus-visible:ring-yellow-400"
+          className={`flex min-h-12 min-w-12 shrink-0 items-center gap-2 rounded-full px-4 font-semibold shadow-sm ring-1 ${
+            playing ? "bg-brand text-white ring-brand" : "bg-white text-brand-800 ring-brand-200 hover:bg-brand-50"
+          }`}
         >
           <span aria-hidden="true" className="text-xl">
             {playing ? "⏹" : "🔊"}
           </span>
-          <span className="font-semibold">{playing ? t("common.stop") : t("common.listen")}</span>
+          <span>{playing ? t("common.stop") : t("common.listen")}</span>
         </button>
       </div>
       {children}
