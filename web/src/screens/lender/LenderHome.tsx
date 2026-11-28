@@ -50,7 +50,7 @@ export default function LenderHome() {
           </BigButton>
         </>
       )}
-      <input aria-label={t("lender.paste")} placeholder={t("lender.paste")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3" value={link} onChange={(e) => setLink(e.target.value)} />
+      <input aria-label={t("lender.paste")} placeholder={t("lender.paste")} className="field" value={link} onChange={(e) => setLink(e.target.value)} />
       <BigButton disabled={!link} onClick={() => open(link)}>
         {t("lender.open")}
       </BigButton>

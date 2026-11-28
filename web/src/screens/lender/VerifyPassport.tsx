@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useParams } from "react-router-dom";
 import { Screen } from "@/components/Screen";
-import { Card, SandboxBadge } from "@/components/ui";
+import { Card, Pill, SandboxBadge } from "@/components/ui";
+import { bandBg } from "@/lib/bands";
 import { decodeToken, publicKey, verifySignature, type CompactPassport } from "@/lib/verify";
 
 export default function VerifyPassport() {
@@ -35,29 +36,43 @@ export default function VerifyPassport() {
     <Screen title={t("lender.title")} spoken={[valid ? t("lender.signature_ok") : t("lender.signature_bad")]}>
       {valid === null && <p role="status">{t("common.loading")}</p>}
       {valid === false && (
-        <p role="alert" className="rounded-xl bg-red-100 p-4 text-lg font-bold text-red-900" data-testid="signature">
+        <p role="alert" className="rounded-2xl bg-red-100 p-4 text-lg font-bold text-red-900 ring-1 ring-red-200" data-testid="signature">
           ✗ {t("lender.signature_bad")}
         </p>
       )}
       {valid && payload && (
         <>
-          <p className="rounded-xl bg-green-100 p-4 text-lg font-bold text-green-900" data-testid="signature">
+          <p className="rounded-2xl bg-brand-100 p-4 text-lg font-bold text-brand-900 ring-1 ring-brand-200" data-testid="signature">
             ✓ {t("lender.signature_ok")}
           </p>
-          {payload.sb && <SandboxBadge label={t("common.sandbox")} />}
-          <Card>
-            <p className="text-xl font-bold">{payload.n}</p>
-            <p>{payload.c}</p>
-            <p className="text-4xl font-bold text-brand" data-testid="band">
-              {payload.b}
-            </p>
-            <p>{payload.cf}</p>
-            <p>
+          <Card className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="section-title">{t("lender.passport_label")}</span>
+              {payload.sb && <SandboxBadge label={t("common.sandbox")} />}
+            </div>
+            <div className="flex items-center gap-4">
+              <span
+                className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl text-5xl font-black text-white shadow-lift ${bandBg(payload.b)}`}
+                data-testid="band"
+              >
+                {payload.b}
+              </span>
+              <div className="flex min-w-0 flex-col gap-1">
+                <p className="text-xl font-extrabold leading-tight">{payload.n}</p>
+                <p className="text-gray-700">{payload.c}</p>
+                <div>
+                  <Pill tone="gray">{payload.cf}</Pill>
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-gray-700">
               {t("lender.valid_until")}: {payload.vu}
             </p>
           </Card>
           <p className="text-lg" data-testid="live-status">
-            {live ? `${t("lender.live")}: ${t(`lender.status_${live}`)}` : t("lender.offline")}
+            <Pill tone={live === "valid" ? "green" : live ? "amber" : "gray"}>
+              {live ? `${t("lender.live")}: ${t(`lender.status_${live}`)}` : t("lender.offline")}
+            </Pill>
           </p>
           <p className="text-sm text-gray-700">{t("lender.disclaimer")}</p>
         </>

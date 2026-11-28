@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import { Keypad } from "@/components/Keypad";
 import { Screen } from "@/components/Screen";
-import { BigButton, Card } from "@/components/ui";
+import { BigButton, Card, Pill } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { rupeesInWords } from "@/lib/voice";
 
@@ -48,19 +48,21 @@ export default function Partners() {
       {list && list.length === 0 && <p role="status">{t("partners.none")}</p>}
       {list?.map((p) => (
         <Card key={p.counterparty_id}>
-          <p className="text-lg font-semibold">{p.registered_name ?? p.masked_id}</p>
+          <p className="text-lg font-bold">{p.registered_name ?? p.masked_id}</p>
           <p className="text-sm text-gray-700">
             {t(`partners.${p.relationship}`)} · {p.masked_id} · {t("partners.months", { count: p.months_active })}
           </p>
           <p className="text-sm">{rupeesInWords(p.value_paise, i18n.language)}</p>
           {p.invite_status ? (
-            <p className="mt-2 font-semibold text-brand" data-testid="invite-status">
-              {t(`partners.status_${p.invite_status}`)}
+            <p className="mt-3" data-testid="invite-status">
+              <Pill tone={p.invite_status === "confirmed" ? "green" : p.invite_status === "rejected" ? "red" : "amber"}>
+                {t(`partners.status_${p.invite_status}`)}
+              </Pill>
             </p>
           ) : open === p.counterparty_id ? (
             <div className="mt-2 flex flex-col gap-2">
               <p>{t("partners.enter_phone")}</p>
-              <p className="rounded-xl border-2 border-gray-300 p-2 text-center text-xl">+91 {phone || "__________"}</p>
+              <p className="rounded-2xl bg-white p-4 text-center text-3xl font-bold tabular-nums text-ink shadow-sm ring-1 ring-black/10">+91 {phone || "__________"}</p>
               <Keypad value={phone} onChange={setPhone} max={10} />
               <BigButton disabled={phone.length !== 10} onClick={() => void send(p.counterparty_id)}>
                 {t("partners.send")}

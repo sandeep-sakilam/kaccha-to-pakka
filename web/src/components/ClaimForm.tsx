@@ -75,8 +75,8 @@ export function ClaimForm({ token, defaultRelationship }: { token: string; defau
       <Choice label={t("claim.q_years")} value={years} onPick={setYears} options={YEARS.map(([v, k]) => [v, t(`claim.${k}`)])} />
       <Choice label={t("claim.q_value")} value={value} onPick={setValue} options={VALUES.map((v) => [v, `₹${v}`])} />
       <Choice label={t("claim.q_behaviour")} value={behaviour} onPick={setBehaviour} options={["on_time", "sometimes_late", "often_late"].map((v) => [v, t(`claim.${v}`)])} />
-      <input aria-label={t("claim.business_name")} placeholder={t("claim.business_name")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3" value={name} onChange={(e) => setName(e.target.value)} />
-      <input aria-label={t("claim.id_optional")} placeholder={t("claim.id_optional")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3 uppercase" value={gstin} onChange={(e) => setGstin(e.target.value)} />
+      <input aria-label={t("claim.business_name")} placeholder={t("claim.business_name")} className="field" value={name} onChange={(e) => setName(e.target.value)} />
+      <input aria-label={t("claim.id_optional")} placeholder={t("claim.id_optional")} className="field uppercase" value={gstin} onChange={(e) => setGstin(e.target.value)} />
       <p className="text-sm text-gray-700">{t("claim.not_guarantor")}</p>
       <BigButton disabled={!rel || !years || !value || !behaviour} onClick={submit}>
         {t("claim.submit")}

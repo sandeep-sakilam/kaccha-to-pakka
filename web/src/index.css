@@ -2,11 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-html { font-size: 18px; }
-body { @apply bg-white text-gray-900; }
+@layer base {
+  html {
+    @apply bg-canvas;
+    font-size: 18px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  /* A surface on the canvas: white, softly lifted. */
+  .card {
+    @apply rounded-2xl bg-white p-5 shadow-card ring-1 ring-black/5;
+  }
+  /* Every text input and select looks the same. */
+  .field {
+    @apply min-h-14 w-full min-w-0 rounded-xl border border-gray-300 bg-white px-4 text-lg text-ink shadow-sm transition placeholder:text-gray-500 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/20;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold;
+  }
+  .section-title {
+    @apply text-sm font-bold uppercase tracking-wider text-gray-600;
+  }
+  .hint {
+    @apply text-base leading-relaxed text-gray-700;
+  }
+  .link {
+    @apply font-semibold text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand;
+  }
+}
 
 /* WCAG 2.2: visible focus on every interactive element, at least 3px and high contrast. */
 a:focus-visible,
+button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,

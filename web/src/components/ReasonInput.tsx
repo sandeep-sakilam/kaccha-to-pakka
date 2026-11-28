@@ -9,7 +9,7 @@ export function ReasonInput({ value, onChange }: { value: string; onChange: (v: 
   const hasRecogniser = typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
   return (
     <div className="flex gap-2">
-      <input aria-label={t("disputes.reason")} placeholder={t("disputes.reason")} className="min-h-12 flex-1 rounded-xl border-2 border-gray-300 px-3" value={value} onChange={(e) => onChange(e.target.value)} />
+      <input aria-label={t("disputes.reason")} placeholder={t("disputes.reason")} className="field flex-1" value={value} onChange={(e) => onChange(e.target.value)} />
       {hasRecogniser && (
         <button
           type="button"

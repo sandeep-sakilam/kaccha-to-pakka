@@ -119,7 +119,12 @@
     "disputes": "Disagree with something?",
     "consents": "My permissions",
     "daily_sales": "Tell today's sales",
-    "address_proof": "Electricity bill or shop licence"
+    "address_proof": "Electricity bill or shop licence",
+    "section_now": "Do this now",
+    "section_money": "Money and records",
+    "section_shop": "Your shop",
+    "section_people": "People",
+    "section_more": "More"
   },
   "capture": {
     "title_ledger_page": "Photograph a ledger page",
@@ -364,7 +369,11 @@
     "supplier_bank": "{{percent}}% paid for through the bank",
     "supplier_cash": "{{percent}}% paid in cash, as the owner wrote it",
     "supplier_days": "Suppliers were usually paid after {{days}} days",
-    "supplier_unpaid": "{{amount}} still owed to suppliers"
+    "supplier_unpaid": "{{amount}} still owed to suppliers",
+    "month": "Month",
+    "money_in": "In",
+    "money_out": "Out",
+    "passport_label": "Trust Passport"
   },
   "sahayak": {
     "title": "Sahayak (helper) mode",

@@ -142,8 +142,8 @@ export default function VoiceEntry() {
               if (typed.trim()) void parse({ transcript: typed });
             }}
           >
-            <input aria-label={t("interview.or_type")} placeholder={t("interview.or_type")} className="min-h-12 flex-1 rounded-xl border-2 border-gray-300 px-3 text-lg" value={typed} onChange={(e) => setTyped(e.target.value)} />
-            <button type="submit" className="min-h-12 rounded-xl bg-brand px-4 font-semibold text-white">
+            <input aria-label={t("interview.or_type")} placeholder={t("interview.or_type")} className="field flex-1" value={typed} onChange={(e) => setTyped(e.target.value)} />
+            <button type="submit" className="min-h-14 shrink-0 rounded-xl bg-brand px-5 font-semibold text-white shadow-sm hover:bg-brand-800">
               {t("common.next")}
             </button>
           </form>
@@ -165,13 +165,13 @@ export default function VoiceEntry() {
       {buttonsMode && (
         <div className="flex flex-col gap-3" data-testid="buttons-mode">
           <p className="rounded-xl bg-brand-light p-2">{t("voice_entry.buttons_mode")}</p>
-          <p className="rounded-xl border-2 border-gray-300 p-3 text-center text-2xl" aria-live="polite">
+          <p className="rounded-2xl bg-white p-4 text-center text-3xl font-bold tabular-nums text-ink shadow-sm ring-1 ring-black/10" aria-live="polite">
             ₹ {amount || "0"}
             {amount && <span className="block text-base">{rupeesInWords(Number(amount) * 100, i18n.language)}</span>}
           </p>
           <Keypad value={amount} onChange={setAmount} max={9} />
           <EntryKindPicker choice={choice} onChoice={setChoice} paidBy={paidBy} onPaidBy={setPaidBy} />
-          <input aria-label={t("voice_entry.party")} placeholder={t("voice_entry.party")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg" value={party} onChange={(e) => setParty(e.target.value)} />
+          <input aria-label={t("voice_entry.party")} placeholder={t("voice_entry.party")} className="field" value={party} onChange={(e) => setParty(e.target.value)} />
           <BigButton disabled={!amount} onClick={addButtons}>
             {t("voice_entry.add")}
           </BigButton>

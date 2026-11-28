@@ -51,7 +51,7 @@ export default function Review() {
           <p className="font-semibold">{open.business?.name}</p>
           <p>{open.reason}</p>
           <pre className="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(open.target, null, 2)}</pre>
-          <input aria-label={t("review.note")} placeholder={t("review.note")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3" value={note} onChange={(e) => setNote(e.target.value)} />
+          <input aria-label={t("review.note")} placeholder={t("review.note")} className="field" value={note} onChange={(e) => setNote(e.target.value)} />
           <div className="grid grid-cols-2 gap-2">
             <BigButton onClick={() => void decide("cleared")}>{t("review.cleared")}</BigButton>
             <BigButton variant="danger" onClick={() => void decide("upheld")}>

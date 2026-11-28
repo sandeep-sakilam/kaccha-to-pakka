@@ -119,7 +119,12 @@
     "disputes": "किसी बात से असहमत?",
     "consents": "मेरी अनुमतियाँ",
     "daily_sales": "आज की बिक्री बताएँ",
-    "address_proof": "बिजली बिल या दुकान का लाइसेंस"
+    "address_proof": "बिजली बिल या दुकान का लाइसेंस",
+    "section_now": "अभी यह करें",
+    "section_money": "पैसा और खाता",
+    "section_shop": "आपकी दुकान",
+    "section_people": "लोग",
+    "section_more": "और"
   },
   "capture": {
     "title_ledger_page": "खाते के पन्ने की फ़ोटो",
@@ -364,7 +369,11 @@
     "supplier_bank": "{{percent}}% बैंक से चुकाया",
     "supplier_cash": "{{percent}}% नकद चुकाया, जैसा मालिक ने लिखा",
     "supplier_days": "सप्लायरों को आम तौर पर {{days}} दिन बाद चुकाया",
-    "supplier_unpaid": "सप्लायरों का {{amount}} अभी बाकी"
+    "supplier_unpaid": "सप्लायरों का {{amount}} अभी बाकी",
+    "month": "महीना",
+    "money_in": "आया",
+    "money_out": "गया",
+    "passport_label": "ट्रस्ट पासपोर्ट"
   },
   "sahayak": {
     "title": "सहायक मोड",

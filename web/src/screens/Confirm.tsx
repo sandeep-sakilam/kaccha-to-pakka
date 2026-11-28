@@ -82,8 +82,8 @@ export default function Confirm({ children }: { children?: (token: string) => Re
             <Card className="flex flex-col gap-2">
               <SandboxBadge label={t("common.sandbox")} />
               <p className="font-semibold">{t("confirm.sandbox_pay")}</p>
-              <input aria-label={t("confirm.your_vpa")} placeholder={t("confirm.your_vpa")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3" value={vpa} onChange={(e) => setVpa(e.target.value)} />
-              <input aria-label={t("confirm.your_name")} placeholder={t("confirm.your_name")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3" value={name} onChange={(e) => setName(e.target.value)} />
+              <input aria-label={t("confirm.your_vpa")} placeholder={t("confirm.your_vpa")} className="field" value={vpa} onChange={(e) => setVpa(e.target.value)} />
+              <input aria-label={t("confirm.your_name")} placeholder={t("confirm.your_name")} className="field" value={name} onChange={(e) => setName(e.target.value)} />
               <BigButton disabled={!vpa || !name} onClick={sandboxPay}>
                 {t("confirm.pay")}
               </BigButton>

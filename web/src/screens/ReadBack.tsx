@@ -86,7 +86,7 @@ export default function ReadBack() {
           ) : (
             <div className="flex flex-col gap-3">
               <p className="font-semibold">{t("readback.correct_amount")}</p>
-              <p className="rounded-xl border-2 border-gray-300 p-3 text-center text-2xl" aria-live="polite">
+              <p className="rounded-2xl bg-white p-4 text-center text-3xl font-bold tabular-nums text-ink shadow-sm ring-1 ring-black/10" aria-live="polite">
                 ₹ {amount || "0"}
                 {amount && <span className="block text-base">{rupeesInWords(Number(amount) * 100, i18n.language)}</span>}
               </p>

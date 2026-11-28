@@ -42,7 +42,7 @@ export default function Shares() {
     <Screen title={t("shares.title")} spoken={[t("shares.intro")]}>
       <p>{t("shares.intro")}</p>
       <Card className="flex flex-col gap-3">
-        <input aria-label={t("shares.lender")} placeholder={t("shares.lender")} className="min-h-12 rounded-xl border-2 border-gray-300 px-3" value={lender} onChange={(e) => setLender(e.target.value)} />
+        <input aria-label={t("shares.lender")} placeholder={t("shares.lender")} className="field" value={lender} onChange={(e) => setLender(e.target.value)} />
         <div className="grid grid-cols-2 gap-2">
           {(["summary", "evidence"] as const).map((s) => (
             <BigButton key={s} variant={scope === s ? "primary" : "secondary"} aria-pressed={scope === s} onClick={() => setScope(s)}>
@@ -73,7 +73,7 @@ export default function Shares() {
               <p className="break-all text-sm" data-testid="share-link">
                 {s.link}
               </p>
-              <a className="flex min-h-12 items-center justify-center rounded-xl bg-green-600 font-semibold text-white" href={`https://wa.me/?text=${encodeURIComponent(s.link)}`} target="_blank" rel="noreferrer">
+              <a className="flex min-h-12 items-center justify-center rounded-xl bg-green-700 font-semibold text-white" href={`https://wa.me/?text=${encodeURIComponent(s.link)}`} target="_blank" rel="noreferrer">
                 {t("shares.send")}
               </a>
               <BigButton variant="danger" onClick={() => void api(`/shares/${s.id}/revoke`, { method: "POST" }).then(load)}>

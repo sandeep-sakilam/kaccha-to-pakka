@@ -97,7 +97,7 @@ export default function Interview() {
           <input
             aria-label={t("interview.pan")}
             placeholder={t("interview.pan")}
-            className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg uppercase"
+            className="field uppercase"
             value={pan}
             maxLength={10}
             onChange={(e) => setPan(e.target.value)}
@@ -105,14 +105,14 @@ export default function Interview() {
           <input
             aria-label="Udyam"
             placeholder="UDYAM-MP-23-0000000"
-            className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg uppercase"
+            className="field uppercase"
             value={udyam}
             onChange={(e) => setUdyam(e.target.value)}
           />
           <input
             aria-label="GSTIN"
             placeholder="GSTIN"
-            className="min-h-12 rounded-xl border-2 border-gray-300 px-3 text-lg uppercase"
+            className="field uppercase"
             value={gstin}
             onChange={(e) => setGstin(e.target.value)}
           />

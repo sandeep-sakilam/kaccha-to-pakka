@@ -76,7 +76,7 @@ export default function Helpers() {
         {t("sahayak.women_only")}
       </label>
       <ul className="text-sm">{directory.map((d) => <li key={d.phone_last4 + d.name}>{d.name} (…{d.phone_last4})</li>)}</ul>
-      <p className="rounded-xl border-2 border-gray-300 p-2 text-center text-xl">+91 {phone || "__________"}</p>
+      <p className="rounded-2xl bg-white p-4 text-center text-3xl font-bold tabular-nums text-ink shadow-sm ring-1 ring-black/10">+91 {phone || "__________"}</p>
       <Keypad value={phone} onChange={setPhone} max={10} />
       <div className="grid grid-cols-2 gap-2">
         {PERMS.map((p) => (
